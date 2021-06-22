@@ -18,5 +18,6 @@ return [
   'production' => 'Produksi',
   'qty' => 'Jumlah',
   'showcase' => 'Showcase',
-
+  'status' => 'Status',
+  
 ];

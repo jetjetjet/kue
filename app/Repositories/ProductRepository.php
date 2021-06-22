@@ -291,8 +291,8 @@ class ProductRepository
 
     $respon['status'] = $data != null && $cekDelete ? 'success': 'error';
     $data != null && $cekDelete
-      ? array_push($respon['messages'], sprintf('? Berhasil Dihapus.'), trans('fields.product')) 
-      : array_push($respon['messages'], sprintf('? Tidak Ditemukan.'), trans('fields.product'));
+      ? array_push($respon['messages'], trans('fields.product').' Berhasil Dihapus.')
+      : array_push($respon['messages'], trans('fields.product').' Tidak Ditemukan.');
     
     return $respon;
   }

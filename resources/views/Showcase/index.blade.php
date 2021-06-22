@@ -89,7 +89,7 @@
             data:null,
             searchText: true,
             render: function(data, type, full, meta){
-              if(data.showcasestatus == 'Tersedia'){
+              if(data.showcasestatus == 'AVAILABLE'){
                 return '<span class="badge badge-success"> Tersedia </span>';  
               }else{
                 return '<span class="badge badge-danger"> Kosong </span>';
