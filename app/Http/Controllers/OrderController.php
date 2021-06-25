@@ -15,8 +15,6 @@ use App\Repositories\ProductRepository;
 use App\Repositories\AuditTrailRepository;
 use App\Repositories\ShiftRepository;
 use App\Repositories\SettingRepository;
-// use App\Events\OrderProceed;
-// use App\Events\BoardEvent;
 use Auth;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -118,48 +116,19 @@ class OrderController extends Controller
 		return DataTables::of($data)->make(true);
 	}
 
-	public function apiSave(Request $request, $id = null)
-	{
-    
-    $respon = Helpers::$responses;
-		$rules = array(
-			'ordertype' => 'required'
-		);
-		
-		$inputs = $request->all();
-		
-		$validator = validator::make($inputs, $rules);
-
-		if ($validator->fails()){
-			return redirect()->back()->withErrors($validator)->withInput($inputs);
-		}
-
-		$loginid = Auth::user()->getAuthIdentifier();
-    $results = OrderRepository::save($respon, $id, $inputs, $loginid);
-		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Buat Pesanan', $loginid);
-
-    if($results['status'] == "success"){
-			$data = OrderRepository::getOrderReceipt($results['id']);
-			$cetak = Cetak::print($data);
-		}
-		// return response()->json($results);
-	}
-
   public function save(Request $request, $id = null)
   {
     $respon = Helpers::$responses;
 		$rules = array(
-			'ordertype' => 'required',
-			'orderboardid' => 'required_if:ordertype,DINEIN'
+			// 'ordertype' => 'required',
+			// 'orderboardid' => 'required_if:ordertype,DINEIN'
 		);
 		
 		$inputs = $request->all();
 
 		// Subs.
 		$inputs['dtl'] = $this->mapRowsX(isset($inputs['dtl']) ? $inputs['dtl'] : null);
-		
 		$validator = validator::make($inputs, $rules);
-		// return redirect()->back()->withInput($inputs);
 
 		if ($validator->fails()){
 			return redirect()->back()->withErrors($validator)->withInput($inputs);
@@ -169,21 +138,12 @@ class OrderController extends Controller
     $results = OrderRepository::save($respon, $id, $inputs, $loginid);
 		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Buat Pesanan', $loginid);
 
-    $request->session()->flash($results['status'], $results['messages']);
-		
-    if($results['status'] == "double"){
-      return redirect()->back()->withErrors($results['messages'])->withInput($inputs);
+		if($results['status'] == 'error'){
+			$request->session()->flash($results['status'], $results['messages']);
+			return redirect()->back()->withInput($inputs);
 		}
 
-		return redirect('/order/meja/view');
-  }
-
-  public function deliver(Request $request, $id, $idSub){
-    $respon = Helpers::$responses;
-		$results = OrderRepository::deliver($respon, $id, $idSub, Auth::user()->getAuthIdentifier());
-    // event(new OrderProceed('ok'));
-
-		return response()->json($results);
+		return redirect()->action([OrderController::class, 'detail'], ['id' => $results['id']]);
   }
 
   public function deleteById(Request $request, $id)
@@ -217,9 +177,6 @@ class OrderController extends Controller
 		$loginid = Auth::user()->getAuthIdentifier();
 		$results = OrderRepository::void($respon, $id, $loginid, $inputs);
 		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Batalkan Pesanan', $loginid);
-
-		// if($results['status'] == "success")
-		// 	event(new BoardEvent('ok'));
 
 		return response()->json($results);
 	}

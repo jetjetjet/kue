@@ -143,18 +143,14 @@ class ProductRepository
       ->where('showcaseactive', '1')
       ->where('products.id', $id)
       ->whereNull('showcaseexpiredat')
-      ->select('showcasecode')
+      ->select('s.id','showcasecode')
       ->get();
 
     if(count($query) <= 0){
       $respon['status'] = 'error';
       array_push($respon['messages'], sprintf('Data %s tidak ditemukan', trans('fields.showcase')));
     } else {
-      $data = Array();
-      foreach($query as $q){
-        array_push($data, $q->showcasecode);
-      }
-      $respon['data'] = $data;
+      $respon['data'] = $query;
       $respon['status'] = 'success';
     }
 
