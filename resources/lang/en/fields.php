@@ -1,6 +1,7 @@
 <?php
 
 return [
+  'back' => 'Kembali',
   'add' => 'Tambah',
   'category' => 'Kategori',
   'code' => 'Kode',
@@ -13,11 +14,13 @@ return [
   'modifiedBy' => 'Diubah oleh: ',
   'name' => 'Nama',
   'outOfStock' => 'Stok Habis',
+  'preOrder' => 'Pre Order',
   'price' => 'Harga',
+  'proceed' => 'Proses',
   'product' => 'Produk',
   'production' => 'Produksi',
   'qty' => 'Jumlah',
+  'readyStock' => 'Ready Stock',
   'showcase' => 'Showcase',
-  'status' => 'Status',
-  
+  'status' => 'Status'
 ];

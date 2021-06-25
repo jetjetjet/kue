@@ -378,7 +378,7 @@ function showPopupOrder(paramBody, actFn){
   $(this).attr('data-toggle', 'modal');
   $(this).attr('data-target', '#uiModalInstance');
 
-  let $modal = cloneModal($('#menuModal'));
+  let $modal = cloneModal($('#productModal'));
   // $('#uiModalInstance').modal({
   //   // backdrop: 'static',
   //   keyboard: true
@@ -389,21 +389,21 @@ function showPopupOrder(paramBody, actFn){
       if(paramBody['promo']){
         pricePromoText = '&nbsp;<span class="badge outline-badge-info"> Harga Normal ' + paramBody['priceRaw'] +'</span>';
         $modal.find('#rowPromo').removeClass('d-none')
-        $modal.find('#menuPopupPromo').html(paramBody['promo'] + '<p><span class="badge outline-badge-info"> Promo '
+        $modal.find('#productPopupPromo').html(paramBody['promo'] + '<p><span class="badge outline-badge-info"> Promo '
           + paramBody['promoText'] + ' s/d '+ paramBody['promoEnd'] +'</span></p>');
       }
 
       $modal.find('.modal-title').html('Tambah');
-      $modal.find('#menuPopupText').html(paramBody['text']);
-      $modal.find('#menuPopupPrice').html(paramBody['price'] + pricePromoText);
+      $modal.find('#productPopupText').html(paramBody['text']);
+      $modal.find('#productPopupPrice').html(paramBody['price'] + pricePromoText);
 
       if(paramBody['promo']){
         $modal.find('#rowPromo').removeClass('d-none')
-        $modal.find('#menuPopupPromo').html(paramBody['promo'] + '<p><span class="badge outline-badge-info"> Promo '
+        $modal.find('#productPopupPromo').html(paramBody['promo'] + '<p><span class="badge outline-badge-info"> Promo '
           + paramBody['promoText'] + ' s/d '+ paramBody['promoEnd'] +'</span></p>');
       }
       
-      let inputQty = $modal.find('#menuPopupQty');
+      let inputQty = $modal.find('#productPopupQty');
       //console.log(inputQty)
       inputNumber(inputQty);
       $modal.modal({
@@ -516,7 +516,7 @@ $('table,.subitem-container')
   $table.triggerHandler("row-removed", [$tr]);
 
   $table.attr('data-has-changed', '1');
-}).on('click', '[deliver-row]', function(e){
+}).on('change', '[deliver-row]', function(e){
   var $tr = $(this).closest('tr,.panel,.rowpanel'),
       $table = $tr.closest('table,.subitem-container');
   

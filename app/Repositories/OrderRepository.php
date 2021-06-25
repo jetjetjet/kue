@@ -398,15 +398,6 @@ class OrderRepository
     $respon['success'] = false;
     $id = $id != null ? $id : $inputs['id'] ;
     $details = $inputs['dtl'];
-
-    $cekMeja = self::cekMejaStatus($inputs['orderboardid']);
-    if($cekMeja > 0 && !$id){
-      $respon['status'] = "double";
-      array_push($respon['messages'], 'Pesanan sudah dibuat/Meja sudah terisi.');
-
-      return $respon;
-    }
-
     try{
       DB::transaction(function () use (&$respon, $id, $inputs, $loginid)
       {
@@ -439,12 +430,9 @@ class OrderRepository
         $data = Order::create([
           'orderinvoice' => $inv['invoice'],
           'orderinvoiceindex' => $inv['index'],
-          'orderboardid' => $inputs['orderboardid'],
-          'ordertype' => $inputs['ordertype'],
-          // 'ordercustname' => $inputs['ordercustname'],
           'orderdate' => now()->toDateTimeString(),
           'orderprice' => $inputs['orderprice'] ?? 1,
-          'orderstatus' => 'PROCEED',
+          'orderstatus' => 'DRAFT',
           'orderdetail' => $inputs['orderdetail'] ?? null,
           'orderpaid' => '0',
           'orderactive' => '1',
@@ -454,7 +442,7 @@ class OrderRepository
         if($data->id != null){
           $respon['id'] = $data->id;
           $respon['success'] = true;
-          array_push($respon['messages'], 'Pesanan sudah ditambahkan dan sedang diproses.');
+          array_push($respon['messages'], 'OK');
         } else {
           throw new Exception('rollback');
         }
@@ -462,8 +450,6 @@ class OrderRepository
         $data = Order::where('orderactive', '1')
           ->where('id', $id)
           ->update([
-            'orderboardid' => $inputs['orderboardid'] ?? null,
-            'ordertype' => $inputs['ordertype'],
             'orderprice' => $inputs['orderprice'] ?? 1,
             // 'orderstatus' => 'ADDITIONAL',
             'orderdetail' => $inputs['orderdetail'] ?? "",
@@ -509,7 +495,6 @@ class OrderRepository
   public static function saveDetailOrder($respon, $id, $details, $loginid)
   {
     $idHeader = $id != null ? $id : $respon['id'];
-    // dd($details);
     $detRow = "";
     try{
       foreach ($details as $dtl){
@@ -517,14 +502,15 @@ class OrderRepository
           if($dtl->odqty > 0){
             $detRow = OrderDetail::create([
               'odorderid' => $idHeader,
-              'odmenuid' => $dtl->odmenuid,
+              'odshowcaseid' => $dtl->odshowcaseid,
+              'odtype' => $dtl->odtype,
+              'odproductid' => $dtl->odproductid,
               'odqty' => $dtl->odqty,
               'odprice' => $dtl->odprice,
               'odtotalprice' => ($dtl->odprice * $dtl->odqty),
               'odpriceraw' => $dtl->odpriceraw,
               'odtotalpriceraw' => ($dtl->odpriceraw * $dtl->odqty),
               'odremark' => $dtl->odremark,
-              'oddelivered' => '0',
               'odindex' => $dtl->index,
               'odispromo' => isset($dtl->odpromoid) ? '1' : '0',
               'odpromoid' => $dtl->odpromoid ?? null,
@@ -532,19 +518,15 @@ class OrderRepository
               'odcreatedat' => now()->toDateTimeString(),
               'odcreatedby' => $loginid
             ]);
-  
-              $updStatus = Order::where('orderactive', '1')
-              ->where('id', $idHeader)
-              ->update([
-                'orderstatus' => 'ADDITIONAL'
-              ]);
           }
         } else {
           $detRow = OrderDetail::where('odactive', '1')
             ->where('id', $dtl->id);
           if($dtl->odqty > 0){
             $detRow->update([
-              'odmenuid' => $dtl->odmenuid,
+              'odproductid' => $dtl->odproductid,
+              'odshowcaseid' => $dtl->odshowcaseid,
+              'odtype' => $dtl->odtype,
               'odqty' => $dtl->odqty,
               'odprice' => $dtl->odprice,
               'odtotalprice' => ($dtl->odprice * $dtl->odqty),
@@ -559,7 +541,9 @@ class OrderRepository
             ]);
           }else{
             $detRow->update([
-              'odmenuid' => $dtl->odmenuid,
+              'odproductid' => $dtl->odproductid,
+              'odshowcaseid' => $dtl->odshowcaseid,
+              'odtype' => $dtl->odtype,
               'odqty' => $dtl->odqty,
               'odprice' => $dtl->odprice,
               'odtotalprice' => ($dtl->odprice * $dtl->odqty),
@@ -577,21 +561,9 @@ class OrderRepository
         }
       }
 
-      $doubleCek = OrderDetail::where('odactive', '1')
-        ->where('odorderid', $idHeader)
-        ->where('oddelivered', '0')
-        ->first();
-      if($doubleCek == null){
-        Order::where('orderactive', '1')
-          ->where('id', $idHeader)
-          ->where('orderpaid', '0')
-          ->update([
-            'orderstatus' => 'COMPLETED'
-          ]);
-      }
-
       $respon['success'] = true;
     }catch(\Exception $e){
+      dd($e);
       $eMsg = $e->getMessage() ?? "NOT_RECORDED";
       Log::channel('errorKape')->error("OrderDetailSave_" . trim($eMsg));
       throw new Exception('rollbacked');
@@ -609,7 +581,6 @@ class OrderRepository
     $ui->odmenuid = $db->odmenuid ?? null;
     $ui->odmenutext = $db->odmenutext ?? null;
     $ui->odmenutype = $db->odmenutype ?? null;
-    $ui->oddelivered = $db->oddelivered ?? false;
     $ui->odqty = $db->odqty ?? null;
     $ui->odprice = $db->odprice ?? "";
     $ui->odtotalprice = $db->odtotalprice ?? "";
@@ -678,41 +649,6 @@ class OrderRepository
       $invoice['invoice'] = $invoicePref . Carbon::now()->format('ymd'). $incr ;
     }
     return $invoice;
-  }
-
-  public static function deliver($respon, $id, $idSub, $loginid)
-  {
-    try{
-      DB::beginTransaction();
-      $data = OrderDetail::where('id', $idSub)
-        ->where('odorderid', $id)
-        ->where('oddelivered', '0')
-        ->where('odactive', '1');
-
-      $upd = $data->update([
-        'oddelivered' => '1',
-        'odmodifiedby' => $loginid,
-        'odmodifiedat' => now()->toDateTimeString()
-      ]);
-
-      $cekDelivered = OrderDetail::where('oddelivered', '0')->where('odactive', '1')->where('odorderid', $id)->first();
-      if($cekDelivered == null){
-        $updH = Order::where('orderactive', '1')
-          ->where('id', $id)->first();
-        $headerUpdated = $updH->update(['orderstatus' => 'COMPLETED']);
-      }
-
-      DB::commit();
-      $respon['status'] = 'success';
-      array_push($respon['messages'], 'Menu sudah diantar');
-    }catch(\Exception $e){
-      $eMsg = $e->getMessage() ?? "NOT_RECORDED";
-      Log::channel('errorKape')->error("OrderDeliver_" . trim($eMsg));
-      $respon['status'] = 'error';
-      array_push($respon['messages'], 'Kesalahan! Tidak dapat memproses.');
-    }
-    
-    return $respon;
   }
 
   public static function delete($respon, $id, $loginid)
