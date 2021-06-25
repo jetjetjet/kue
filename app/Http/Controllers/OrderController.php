@@ -25,31 +25,14 @@ class OrderController extends Controller
 		return view('Order.index');
 	}
 
-	
-	public function indexBungkus()
-	{
-		return view('Order.indexBungkus');
-	}
-
-	public function indexCustomer(Request $request)
-	{
-		$respon = Helpers::$responses;
-    $menu = MenuRepository::getMenu();
-    return view('Order.orderCustomer')->with('menu', $menu);
-	}
-
-  public function getGridaway(Request $request)
+	public function grid(Request $request)
 	{
 		$filter = Helpers::getFilter($request);
-		$results = OrderRepository::gridTakeAway($filter);
-		
-		return response()->json($results);
-	}
-
-	public function getGridin(Request $request)
-	{
-		$filter = Helpers::getFilter($request);
-		$results = OrderRepository::gridDineIn($filter);
+		$permission = Array(
+			'save' => (Auth::user()->can(['order_simpan']) == true ? 1 : 0),
+			'delete' => (Auth::user()->can(['order_hapus']) == true ? 1 : 0)
+		);
+		$results = OrderRepository::grid($filter, $permission);
 		
 		return response()->json($results);
 	}
@@ -95,44 +78,13 @@ class OrderController extends Controller
     return view('Order.detail')->with('data', $results['data']);
   }
 
-	public function orderView()
-	{
-		return view('Order.boardView');
-	}
-
-	public function orderViewLists()
-	{
-		$perms = Array(
-			'is_kasir' => (Auth::user()->can(['order_pembayaran']) == true ? "true" : "false") . " as is_kasir",
-			'is_pelayan' => (Auth::user()->can(['order_pelayan']) == true ? "true" : "false") . " as is_pelayan"
-		);
-		$data = OrderRepository::orderGrid($perms);
-		return response()->json($data);
-	}
-
-	public function orderBungkus()
-	{
-		$data = OrderRepository::orderBungkus();
-		return DataTables::of($data)->make(true);
-	}
-
   public function save(Request $request, $id = null)
   {
     $respon = Helpers::$responses;
-		$rules = array(
-			// 'ordertype' => 'required',
-			// 'orderboardid' => 'required_if:ordertype,DINEIN'
-		);
-		
 		$inputs = $request->all();
 
 		// Subs.
 		$inputs['dtl'] = $this->mapRowsX(isset($inputs['dtl']) ? $inputs['dtl'] : null);
-		$validator = validator::make($inputs, $rules);
-
-		if ($validator->fails()){
-			return redirect()->back()->withErrors($validator)->withInput($inputs);
-		}
 
 		$loginid = Auth::user()->getAuthIdentifier();
     $results = OrderRepository::save($respon, $id, $inputs, $loginid);
@@ -153,17 +105,6 @@ class OrderController extends Controller
 		$loginid = Auth::user()->getAuthIdentifier();
 		$results = OrderRepository::delete($respon, $id, $loginid);
 		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Hapus Pesanan', $loginid);
-
-		return response()->json($results);
-	}
-
-	public function deleteMenuOrder(Request $request, $id, $idSub)
-	{
-		$respon = Helpers::$responses;
-
-		$loginid = Auth::user()->getAuthIdentifier();
-		$results = OrderRepository::deleteMenuOrder($respon, $id, $idSub, $loginid);
-		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Hapus Menu Pesanan', $loginid);
 
 		return response()->json($results);
 	}

@@ -14,7 +14,7 @@
 @section('content-table')
   <div class="widget-content widget-content-area br-6">
     <div class="mb-4">
-      <h3>Pesanan Ditempat (7 Hari Terakhir)</h3>
+      <h3>Pesanan 30 Hari Terakhir</h3>
     </div>
     <fieldset>
       <div class="form-row ml-4">
@@ -30,9 +30,9 @@
         <div class="form-group col-1 pl-0">
           <select id="filterColumn" class="form-control form-control-sm" style="border-top-left-radius: 0px!important; border-bottom-left-radius: 0px!important;">
             <option value=""></option>
-            <option value="orderinvoice">No. Invoice</option>
-            <option value="orderboard">Meja</option>
-            <option value="orderprice">Total Harga</option>
+            <option value="orderinvoice">{{ trans('fields.invoiceNo') }}</option>
+            <option value="ordercustname">{{ trans('fields.customerName') }}</option>
+            <option value="orderprice">{{ trans('fields.price') }}</option>
             <!-- <option value="orderstatus">Meja</option> -->
           </select>
         </div>
@@ -46,12 +46,11 @@
       <table id="griddinein" class="table table-hover" style="width:100%">
         <thead>
           <tr>
-            <th>No.Invoice</th>
-            <th>No.meja</th>
-            <th>Tipe pesanan</th>
-            <th>tanggal</th>
-            <th>total</th>
-            <th>status</th>
+            <th>{{ trans('fields.invoiceNo') }}</th>
+            <th>{{ trans('fields.customerName') }}</th>
+            <th>{{ trans('fields.dateOrder') }}</th>
+            <th>{{ trans('fields.price') }}</th>
+            <th>{{ trans('fields.status') }}</th>
             <th class="no-content"></th>
           </tr>
         </thead>
@@ -59,12 +58,11 @@
         </tbody>
         <tfoot>
           <tr>
-          <th>No.Invoice</th>
-            <th>No.Meja</th>
-            <th>Tipe Pesanan</th>
-            <th>Tanggal</th>
-            <th>Total</th>
-            <th>Status</th>
+            <th>{{ trans('fields.invoiceNo') }}</th>
+            <th>{{ trans('fields.customerName') }}</th>
+            <th>{{ trans('fields.dateOrder') }}</th>
+            <th>{{ trans('fields.price') }}</th>
+            <th>{{ trans('fields.status') }}</th>
             <th></th>
           </tr>
         </tfoot>
@@ -100,7 +98,7 @@
 
       let grid2 = $('#griddinein').DataTable({
         ajax: {
-            url: "{{ url('order/index/grid/dinein') }}",
+            url: "{{ url('order/index/grid') }}",
             "data": function(dt){
               return $.extend( {}, dt, {
                 "filterDate" : $('#periodeLog').val(),
@@ -138,11 +136,7 @@
             searchText: true
           },
           { 
-              data: 'orderboardtext',
-              searchText: true
-          },
-          { 
-              data: 'ordertypetext',
+              data: 'ordercustname',
               searchText: true
           },
           { 
