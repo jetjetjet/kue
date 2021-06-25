@@ -373,7 +373,7 @@ function gridDeleteSub(url, title, message, callBackfn){
   });
 }
 
-function showPopupOrder(paramBody, actFn){
+function showPopupOrder(param, actFn, closeFn){
   // Enables modal on current element.
   $(this).attr('data-toggle', 'modal');
   $(this).attr('data-target', '#uiModalInstance');
@@ -384,32 +384,6 @@ function showPopupOrder(paramBody, actFn){
   //   keyboard: true
   // });
   $modal.on('show.bs.modal', function (){
-      // Draws text.
-      let pricePromoText = '';
-      if(paramBody['promo']){
-        pricePromoText = '&nbsp;<span class="badge outline-badge-info"> Harga Normal ' + paramBody['priceRaw'] +'</span>';
-        $modal.find('#rowPromo').removeClass('d-none')
-        $modal.find('#productPopupPromo').html(paramBody['promo'] + '<p><span class="badge outline-badge-info"> Promo '
-          + paramBody['promoText'] + ' s/d '+ paramBody['promoEnd'] +'</span></p>');
-      }
-
-      $modal.find('.modal-title').html('Tambah');
-      $modal.find('#productPopupText').html(paramBody['text']);
-      $modal.find('#productPopupPrice').html(paramBody['price'] + pricePromoText);
-
-      if(paramBody['promo']){
-        $modal.find('#rowPromo').removeClass('d-none')
-        $modal.find('#productPopupPromo').html(paramBody['promo'] + '<p><span class="badge outline-badge-info"> Promo '
-          + paramBody['promoText'] + ' s/d '+ paramBody['promoEnd'] +'</span></p>');
-      }
-      
-      let inputQty = $modal.find('#productPopupQty');
-      //console.log(inputQty)
-      inputNumber(inputQty);
-      $modal.modal({
-          backdrop: 'static',
-          keyboard: false
-        });
       $('.modal-add-row')
       .click(function (){
         if (actFn){
@@ -417,7 +391,26 @@ function showPopupOrder(paramBody, actFn){
         }
         $modal.modal('hide');
       });
+      $('.modal-close-row')
+      .click(function (){
+        if (closeFn){
+          closeFn();
+        }
+        $modal.modal('hide');
+      });
   }).modal('show');
+  
+  $modal.find('#showcasePopup').on('change', function(){
+    let thisSelect = $(this).val();
+    console.log(param, thisSelect)
+    $.each( param, function( key, value ) {
+      if(value.id == thisSelect){
+        $modal.find('#popupStock').val(value.qty);
+        $modal.find('#popupShowcaseCode').val(value.showcasecode);
+        return false;
+      }
+    });
+  })
 }
 
 $.fn.registerAddRow = function ($rowTemplateContainer, $addRow, rowAddedFn, validationFn){

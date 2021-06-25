@@ -1,3 +1,20 @@
+<style>
+.navbar .navbar-item .nav-item.dropdown.notification-dropdown .nav-link span.badge {
+    position: absolute;
+    top: 11px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 100%;
+    padding: 3px 0px 0px;
+    font-size: 10px;
+    color: #fff!important;
+    background: #f33421;
+    display: block;
+    border: 1px solid #fff;
+}
+</style>
+
 <div class="header-container">
 	<header class="header navbar navbar-expand-sm">
 		<a href="javascript:void(0);" class="sidebarCollapse" data-placement="bottom"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></a>
@@ -164,9 +181,39 @@
 			</div>
 		</ul>
 		<ul class="navbar-item flex-row ml-auto"></ul>
-		<span id="notiferror" class="badge badge-danger d-none">Notif Error</span> &nbsp;&nbsp;
+		
 		<a class="text-dark" href="#!" onclick="javascript:toggleFullScreen()"><i data-feather="maximize"></i></a>
 		<ul class="navbar-item flex-row nav-dropdowns">
+			<li class="nav-item dropdown notification-dropdown">
+				<a href="javascript:void(0);" class="nav-link dropdown-toggle" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+					<span class="badge badge-danger counter"></span>
+				</a>
+				<div class="dropdown-menu position-absolute animated fadeInUp" aria-labelledby="notificationDropdown">
+					<div class="notification-scroll">
+						<div class="dropdown-item">
+							<div class="media server-log">
+								<div class="media-body">
+									<div class="data-info ">
+										<h6 class="">Server Rebooted</h6>
+										<p class="">45 min ago</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="dropdown-item">
+							<div class="media server-log">
+								<div class="media-body">
+									<div class="data-info ">
+										<h6 class="">Server Rebooted</h6>
+										<p class="">45 min ago</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</li>
 
 			<li class="nav-item dropdown user-profile-dropdown order-lg-0 order-1">
 				<a href="javascript:void(0);" class="nav-link dropdown-toggle user" id="user-profile-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

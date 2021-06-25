@@ -665,4 +665,25 @@ class OrderRepository
     }
     return $dataOrder;
   }
+
+  private static function getNotif()
+  {
+    return Order::join('orderdetail as od', 'orders.id', 'odorderid')
+    ->where('orderactive', '1')
+    ->where('odactive', '1')
+    ->where('orderpaid', '0')
+    ->whereNull('ordervoid')
+    ->where('odtype', 'PO');
+  }
+
+  public static function notifCount($respon)
+  {
+    $count = self::getNotif()
+      ->select(DB::raw('true'))
+      ->first();
+    
+    $respon['status'] = $count != null ? 'success' : 'error';
+
+    return $respon;
+  }
 }

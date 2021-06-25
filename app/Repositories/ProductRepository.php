@@ -139,11 +139,14 @@ class ProductRepository
   public static function apiShowcaseCode($respon, $id)
   {
     $query = Product::join('showcases as s', 'products.id', 'showcaseproductid')
+      ->join('product_stock as ps', function($join){
+        $join->on('ps.productid', 'products.id')
+        ->on('ps.stockshowcaseid', 's.id');})
       ->where('productactive','1')
       ->where('showcaseactive', '1')
       ->where('products.id', $id)
       ->whereNull('showcaseexpiredat')
-      ->select('s.id','showcasecode')
+      ->select('s.id','showcasecode', 'ps.qty')
       ->get();
 
     if(count($query) <= 0){

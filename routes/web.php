@@ -21,6 +21,7 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\PromoController;
 use App\Http\Controllers\ShowcaseController;
+use App\Http\Controllers\NotifController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -82,6 +83,8 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::get('/menu-category/search', [MenuCategoryController::class, 'search']);
   Route::post('/menu-category/save', [MenuCategoryController::class, 'save'])->middleware('can:menu_simpan');
   Route::post('/menu-category/delete/{id?}', [MenuCategoryController::class, 'delete'])->middleware('can:menu_simpan');
+  
+  Route::get('/notif/icon', [NotifController::class, 'notifIcon']);
 
   Route::get('/setting', [SettingController::class, 'index'])->middleware('can:pengaturan_lihat');
   Route::get('/setting/grid', [SettingController::class, 'getLists'])->middleware('can:pengaturan_lihat');

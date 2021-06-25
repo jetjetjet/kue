@@ -173,23 +173,17 @@
     <script src="{{ url('/') }}/plugins/sweetalerts/sweetalert2.min.js"></script>
     <script src="{{ url('/') }}/plugins/flatpickr/flatpickr.js"></script>
     <script src="{{ url('/') }}/plugins/flatpickr/custom-flatpickr.js"></script>
-    <script>
-      const pMaster = getIPWS();
-      let ws = new WebSocket('ws://'+ pMaster +':8910/kapews');
-      ws.onopen = function(e) {
-        $('#notiferror').addClass('d-none')
-        localStorage.setItem("notif", "1");
-        ws.send('Ok')
-      }
-      ws.onerror = function(e) {
-        localStorage.removeItem("notif");
-        $('#notiferror').removeClass('d-none')
-      }
-      $(document).ready(function (){
-        feather.replace();
-      })
-    </script>
     <script src="{{ url('/') }}/assets/js/custom.js"></script>
+    <script>
+      $.get("{{ url('notif/icon') }}", function( data ) {
+        // $( ".result" ).html( data );
+        if(data.status == 'success'){
+          $('.counter').removeClass('d-none')
+        } else {
+          $('.counter').addClass('d-none')
+        }
+      });
+    </script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
     <script src="{{ url('/') }}/plugins/table/datatable/datatables.js"></script>
     <script src="{{ url('/') }}/plugins/rowgroup/dataTables.rowGroup.min.js"></script>

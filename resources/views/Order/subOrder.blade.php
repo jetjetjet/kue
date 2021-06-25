@@ -11,6 +11,7 @@
   $productDelivered = $sub->oddelivered ?? null;
   $productTotalprice = $sub->odtotalprice ?? null;
   $odshowcaseid = $sub->odshowcaseid ?? null;
+  $odshowcasecode = $sub->odshowcasecode ?? null;
   $odtype = $sub->odtype ?? null;
   $showcaseCode = $sub->showcaseCode ?? null;
   $orderPaid = $data->orderpaid;
@@ -28,6 +29,7 @@
   </td>
   <td>
     <input type="hidden" name="dtl[{{ $rowIndex }}][odshowcaseid]" value="{{$odshowcaseid}}" />
+    <input type="hidden" name="dtl[{{ $rowIndex }}][odshowcasecode]" value="{{$odshowcasecode}}" />
     <select id="productType" class="" name="dtl[{{ $rowIndex }}][odtype]" deliver-row>
       <option value="PO">{{ trans('fields.preOrder') }}</option>
       <option value="READYSTOCK">{{ trans('fields.readyStock') }}</option>
