@@ -30,9 +30,9 @@
 							</a>
 						</li>
 					@if(Perm::can(['user_lihat']) || Perm::can(['jabatan_lihat']) ||
-						Perm::can(['meja_lihat']) ||Perm::can(['menu_lihat']))
+						Perm::can(['product_lihat']))
 							<?php
-								$segm = (Request::segment(1) == 'menu' || Request::segment(1) == 'user' || Request::segment(1) == 'jabatan' || Request::segment(1) == 'meja');
+								$segm = (Request::segment(1) == 'product' || Request::segment(1) == 'user' || Request::segment(1) == 'jabatan');
 							?>
 							<li class="menu single-menu {{ $segm ? 'active' : ''}}">
 								<a href="#app" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
@@ -53,11 +53,8 @@
 									@if(Perm::can(['user_lihat']) || Perm::can(['jabatan_lihat']))
 										<li class="menu-title"><hr style="margin:0; border-top: solid 1px lightgrey" /> </li>
 									@endif
-									@if(Perm::can(['meja_lihat']))
-										<li><a href="{{ url('/meja') }}">Meja</a></li>
-									@endif
-									@if(Perm::can(['menu_lihat']))
-										<li><a href="{{ url('/menu') }}">Menu</a></li>
+									@if(Perm::can(['product_lihat']))
+										<li><a href="{{ url('/product') }}">{{trans('fields.product')}}</a></li>
 									@endif
 									@if(Perm::can(['promo_lihat']))
 										<li><a href="{{ url('/promo') }}">Promo</a></li>
@@ -94,16 +91,16 @@
 								</ul>
 							</li>
 						@endif
-						@if(Perm::can(['shift_lihat']))
+						@if(Perm::can(['showcase_lihat']))
 						<?php
-							$segm = Request::segment(1) == 'shift';
+							$segm = Request::segment(1) == 'showcase';
 						?>
 						<li class="menu {{ $segm ? 'active' : ''}}">
-							<a href="{{url('/shift')}}" class="dropdown-toggle">
+							<a href="{{url('/showcase')}}" class="dropdown-toggle">
 								<div class="">
 									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
 									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock shadow-icons"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-									<span>Shift</span>
+									<span>{{trans('fields.showcase')}}</span>
 								</div>
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 							</a>

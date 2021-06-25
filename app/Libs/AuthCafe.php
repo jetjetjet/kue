@@ -46,11 +46,19 @@ class AuthCafe
     'promo_simpan',
     'promo_hapus',
 
+    'product_lihat',
+    'product_simpan',
+    'product_hapus',
+
     'shift_lihat',
     'shift_simpan',
     'shift_tutup',
     'shift_hapus',
     'shift_detail',
+
+    'showcase_lihat',
+    'showcase_simpan',
+    'showcase_hapus',
 
     'user_lihat',
     'user_simpan',

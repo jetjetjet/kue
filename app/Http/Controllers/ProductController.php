@@ -20,8 +20,8 @@ class ProductController extends Controller
   public function getGrid()
   {
     $permission = Array(
-			'save' => (Auth::user()->can(['product_simpan']) == true ? 1 : 0),
-			'delete' => (Auth::user()->can(['product_hapus']) == true ? 1 : 0)
+			'save' => (Auth::user()->can(['product_simpan']) == true ? 1 : 0)."as can_save",
+			'delete' => (Auth::user()->can(['product_hapus']) == true ? 1 : 0)."as can_delete"
 		);
 		$results = ProductRepository::grid($permission);
 		

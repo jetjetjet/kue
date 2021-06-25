@@ -18,8 +18,8 @@ class ShowcaseRepository
       'productcode',
       'productprice',
       'showcaseqty',
-      'showcasedate', 
-      'showcaseexpdate',
+      DB::raw("to_char(showcasedate, 'DD-MM-YYYY') as showcasedate"),
+      DB::raw("to_char(showcaseexpdate, 'DD-MM-YYYY') as showcaseexpdate"), 
       'showcasestatus',
       DB::raw($perms['save']),
       DB::raw($perms['delete']))
@@ -120,7 +120,7 @@ class ShowcaseRepository
 
   public static function delete($respon, $id, $loginid)
   {
-    $data = Product::where('showcaseactive', '1')
+    $data = Showcase::where('showcaseactive', '1')
     ->where('id', $id)
     ->first();
 
@@ -138,8 +138,8 @@ class ShowcaseRepository
 
     $respon['status'] = $data != null && $cekDelete ? 'success': 'error';
     $data != null && $cekDelete
-      ? array_push($respon['messages'], sprintf('? Berhasil Dihapus.'), trans('fields.showcase')) 
-      : array_push($respon['messages'], sprintf('? Tidak Ditemukan.'), trans('fields.showcase'));
+      ? array_push($respon['messages'], trans('fields.showcase'). ' Berhasil Dihapus.')
+      : array_push($respon['messages'], trans('fields.showcase'). ' Tidak Ditemukan.');
     
     return $respon;
   }
