@@ -36,6 +36,17 @@
             <!-- <option value="orderstatus">Meja</option> -->
           </select>
         </div>
+        <div class="form-group col-1 pl-0">
+          <select id="filterStatus" class="form-control form-control-sm" >
+            <option value="">{{ trans('fields.all') }} {{ trans('fields.status') }}</option>
+            <option value="DRAFT">{{ trans('fields.draft') }}</option>
+            <option value="DP">{{ trans('fields.dp') }}</option>
+            <option value="PAID">{{ trans('fields.paid') }}</option>
+            <option value="COMPLETED">{{ trans('fields.complete') }}</option>
+            <option value="VOIDED">{{ trans('fields.void') }}</option>
+            <!-- <option value="orderstatus">Meja</option> -->
+          </select>
+        </div>
         <div class="form-group col-2">
           <button class="btn btn-danger" id="reset">Reset</button>
           <button class="btn btn-success" id="apply">Terapkan</button>
@@ -103,7 +114,8 @@
               return $.extend( {}, dt, {
                 "filterDate" : $('#periodeLog').val(),
                 'filterText': $('#filterText').val(), 
-                'filterColumn': $('#filterColumn').val()
+                'filterColumn': $('#filterColumn').val(), 
+                'filterStatus': $('#filterStatus').val()
               } );
             },
             // dataSrc:''
@@ -181,6 +193,7 @@
 
       $('#reset').on('click', function(e){
         $('#filterColumn').val("").change();
+        $('#filterStatus').val("").change();
         $('#periodeLog').val(null);
         fDate.clear();
         $('#filterText').val(null);

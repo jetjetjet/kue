@@ -40,6 +40,12 @@
 			</div>
 			<div class="tile is-parent">
 				<article class="tile is-child box">
+					<p class="title">{{ $data->count['orderDraft'] }}</p>
+					<p class="subtitle">{{ trans('fields.totalDraft') }}</p>
+				</article>
+			</div>
+			<div class="tile is-parent">
+				<article class="tile is-child box">
 					<p class="title">{{ $data->count['expenseCount'] }}</p>
 					<p class="subtitle">Total Pengeluaran</p>
 				</article>
@@ -60,62 +66,58 @@
 	</section>
   <div class="row layout-top-spacing">
 		<div class="col-md-12 col-sm-12 col-12 layout-spacing">
-			<a href="{{url('order/index')}}">
-				<div class="widget widget-card-four">
-					<div class="widget-content">
-						<div class="card-body">
-							<div class="d-md-flex align-items-center">
-								<div>
-									<h4 class="card-title">Top Selling Products</h4>
-								</div>
+			<div class="widget widget-card-four">
+				<div class="widget-content">
+					<div class="card-body">
+						<div class="d-md-flex align-items-center">
+							<div>
+								<h4 class="card-title">Pesanan {{ trans('fields.preOrder') }}</h4>
 							</div>
 						</div>
-						<div class="table-responsive">
-							<table class="table v-middle">
-								<thead>
-										<tr class="bg-light">
-											<th class="border-top-0">{{ trans('fields.customerName') }}</th>
-											<th class="border-top-0">{{ trans('fields.productName') }}</th>
-											<th class="border-top-0">{{ trans('fields.estDate') }}</th>
-											<th class="border-top-0">{{ trans('fields.qty') }}</th>
-											<th class="border-top-0">{{ trans('fields.remark') }}</th>
-										</tr>
-								</thead>
-								<tbody>
-										<!-- <td>
-											<div class="d-flex align-items-center">
-													<div class="m-r-10"><a class="btn btn-circle btn-info text-white">EA</a></div>
-													<div class="">
-															<h4 class="m-b-0 font-16">Elite Admin</h4>
-													</div>
-											</div>
-										</td> -->
-									@foreach($data->PO as $itemPO)
-										<tr>
-											<td>
-												<h4 class="m-b-0 font-16">{{ $itemPO->ordercustname }}</h4>
-											</td>
-											<td>
-												<label class="label label-danger">{{ $itemPO->productname }}</label>
-											</td>
-											<td>
-												<label class="label label-danger">{{ $itemPO->estdate }}</label>
-											</td>
-											<td>
-												<label class="label label-danger">{{ $itemPO->odqty }}</label>
-											</td>
-											<td> {{ $itemPO->odremark }} </td>
-										</tr>
-									@endforeach
-								</tbody>
-							</table>
-						</div>
-						<div class="text-right">
-							<a class="btn btn-info" href="#" onclick="myFunction()">{{ trans('fields.readMore') }}</a>
-						</div>
 					</div>
+					<div class="table-responsive">
+						<table class="table v-middle">
+							<thead>
+								<tr class="bg-light">
+									<th class="border-top-0">{{ trans('fields.customerName') }}</th>
+									<th class="border-top-0">{{ trans('fields.productName') }}</th>
+									<th class="border-top-0">{{ trans('fields.estDate') }}</th>
+									<th class="border-top-0">{{ trans('fields.qty') }}</th>
+									<th class="border-top-0">{{ trans('fields.remark') }}</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								@foreach($data->PO as $itemPO)
+									<tr>
+										<td>
+											<h4 class="m-b-0 font-16">{{ $itemPO->ordercustname }}</h4>
+										</td>
+										<td>
+											<label class="label label-danger">{{ $itemPO->productname }}</label>
+										</td>
+										<td>
+											<label class="label label-danger">{{ $itemPO->estdate }}</label>
+										</td>
+										<td>
+											<label class="label label-danger">{{ $itemPO->odqty }}</label>
+										</td>
+										<td> {{ $itemPO->odremark }} </td>
+										<td> 
+											<a type="button" href="{{ url('/') }}/order/detail/{{ $itemPO->id }}" title="{{ trans('fields.view') }}" style="border:none; background:transparent">
+												<span class="badge badge-info">{{ trans('fields.view') }}</span>
+											</a>
+										</td>
+									</tr>
+								@endforeach
+							</tbody>
+						</table>
+					</div>
+					{{--<div class="text-right">
+						<a class="btn btn-success" href="#" onclick="myFunction()">{{ trans('fields.readMore') }}</a>
+					</div> --}}
 				</div>
-			</a>
+			</div>
 		</div>
 		<!-- </div> -->
 		@if(Perm::can(['laporan_lihat']))
@@ -288,8 +290,8 @@
 			tbody.find('.menuItem').remove();
 
 			data.topMenu.map((val, index) => {
-				let tr = '<tr class="menuItem"><td><div class="td-content product-name">'+ val.menuname+'</div></td>'+
-					'<td><div class="td-content"><span class="pricing">'+ formatter.format(val.menuprice) +'</span></div></td>'+
+				let tr = '<tr class="menuItem"><td><div class="td-content product-name">'+ val.productname+'</div></td>'+
+					'<td><div class="td-content"><span class="pricing">'+ formatter.format(val.productprice) +'</span></div></td>'+
 					'<td><div class="td-content">'+ formatter.format(val.totalorder) +'</div></td></tr>';
 				tbody.append(tr);
 			})

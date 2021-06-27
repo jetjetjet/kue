@@ -15,4 +15,12 @@ class NotifController extends Controller
 		
 		return response()->json($results);
 	}
+
+	public function getNotif()
+	{
+		$respon = Helpers::$responses;
+		$results = OrderRepository::notifTopbar($respon);
+		
+		return response()->json($results);
+	}
 }

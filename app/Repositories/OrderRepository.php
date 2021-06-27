@@ -19,7 +19,11 @@ class OrderRepository
         'ordercustname',
         DB::raw("to_char(orderdate, 'dd-mm-yyyy HH24:MI:SS') as orderdate"),
         'orderprice', 
-        DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Draf' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' END as orderstatuscase"),
+        DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN '<span class=". '"' ."badge badge-warning". '"' .">Draf</span>' 
+          WHEN orders.orderstatus = 'DP' THEN '<span class=". '"' ."badge badge-secondary". '"' .">Bayar Dimuka</span>'
+          WHEN orders.orderstatus = 'PAID' THEN '<span class=". '"' ."badge badge-info". '"' .">Lunas</span>'
+          WHEN orders.orderstatus = 'COMPLETED' THEN '<span class=". '"' ."badge badge-primary". '"' .">Selesai</span>'
+          WHEN orders.orderstatus = 'VOIDED' THEN '<span class=". '"' ."badge badge-danger". '"' .">Batal</span>' END as orderstatuscase"),
         //Action
         DB::raw("CASE WHEN orderpaid = '0' and 1 = " . $perms['save'] . " THEN true ELSE false END as can_save"),
         DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' AND 1 = " . $perms['delete'] . " THEN true ELSE false END as can_delete")
@@ -44,6 +48,14 @@ class OrderRepository
         $text = strtolower(implode('%', explode(' ', $trimmedText)));
         $q->whereRaw('upper('.$filterCol .') like upper(?)', [ '%' . $text . '%']);
       }
+
+      //Filter Status.
+      if (!empty($filter->filterStatus)){
+        // if (empty($filterText)) continue;
+        $trimmedFilter= trim($filter->filterStatus);
+        // $text = strtolower(implode('%', explode(' ', $trimmedText)));
+        $q->where('orderstatus', $trimmedFilter);
+      }
   
       $countFiltered = $q->count();
       // Order.
@@ -54,7 +66,7 @@ class OrderRepository
           $q->orderBy($field, $value->dir);
         }
       } else {
-        $q->orderBy('ordercreatedat', 'DESC');
+        $q->orderByRaw("case orderstatus when 'DRAFT' then 1 else 2 end, ordercreatedat desc");
       }
   
       // Paging.
@@ -667,12 +679,15 @@ class OrderRepository
 
   private static function getNotif()
   {
-    return Order::join('orderdetail as od', 'orders.id', 'odorderid')
-    ->where('orderactive', '1')
-    ->where('odactive', '1')
-    ->where('orderpaid', '0')
-    ->whereNull('ordervoid')
-    ->where('odtype', 'PO');
+    return DB::table('orderdetail as od')
+      ->join('orders as o', 'o.id', 'od.odorderid')
+      ->join('products as p', 'p.id', 'odproductid')
+      ->where('orderactive', '1')
+      ->where('odactive', '1')
+      ->whereNull('ordervoid')
+      ->where('odtype', 'PO')
+      ->where('orderpaid', '0')
+      ->whereNotIn('orderstatus', Array('DRAFT', 'COMPLETED', 'VOID'));
   }
 
   public static function notifCount($respon)
@@ -686,10 +701,23 @@ class OrderRepository
     return $respon;
   }
 
+  public static function notifTopbar($respon)
+  {
+    $data = self::dashboardPO(2);
+    $respon['status'] = count($data) > 0 ? 'success' : 'error';
+    $respon['data'] = count($data) > 0 ? $data  : [];
+
+    return $respon;
+  }
+
   public static function dashboardCount()
   {
     $qOrder = Order::where('orderactive', '1')
-      ->whereIn('orderstatus', Array('DRAFT', 'VOIDED'))
+      ->whereNotIn('orderstatus', Array('DRAFT', 'VOIDED'))
+      ->count();
+
+    $qDraft = Order::where('orderactive', '1')
+      ->where('orderstatus', 'DRAFT')
       ->count();
     
     $qExpense = DB::table('expenses as e')
@@ -699,6 +727,7 @@ class OrderRepository
     
     $qPO = DB::table('orderdetail as od')
       ->join('orders as o', 'o.id', 'od.odorderid')
+      ->whereNotIn('orderstatus', Array('DRAFT', 'VOIDED'))
       ->where('orderactive', '1')
       ->where('odactive', '1')
       ->where('orderpaid', '0')
@@ -710,32 +739,24 @@ class OrderRepository
 
     return Array(
       'orderCount' => $qOrder,
+      'orderDraft' => $qDraft,
       'expenseCount' => $qExpense,
       'preOrderSum' => $qPO,
       'stockSum' => $qRstock
     );
   }
 
-  public static function dashboardPO()
+  public static function dashboardPO($limit = 5)
   {
-    return DB::table('orderdetail as od')
-      ->join('orders as o', 'o.id', 'od.odorderid')
-      ->join('products as p', 'p.id', 'odproductid')
-      ->where('orderactive', '1')
-      ->where('odactive', '1')
-      ->where('orderpaid', '0')
-      ->where('odtype', 'PO')
-      ->where('orderpaid', '0')
-      // ->whereNotIn('orderstatus', Array('DRAFT'))
-      // BLM TAMBAH FILTER ORDERSETTLED
-      ->select(
+    return self::getNotif()->select(
+        'o.id',
         'ordercustname',
         'productname',
-        DB::raw("'01-06-2021' as estdate"),
+        DB::raw("to_char(orderestdate, 'dd-mm-yyyy') as estdate"),
         'odqty',
         'odremark'
       )
-      // ->orderBy('') // ORDER BY ESTDATE ASC
-      ->limit(5)->get();
+      ->orderBy('orderestdate', 'ASC') // ORDER BY ESTDATE ASC
+      ->limit($limit)->get();
   }
 }

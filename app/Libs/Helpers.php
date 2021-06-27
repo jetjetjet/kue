@@ -83,6 +83,7 @@ class Helpers
       $tempDate->to = Carbon::now()->format('d-m-Y');
     }
     $filter->filterDate = $tempDate;
+    
     // Global filter.
     // $filter->filterTexts = preg_split('/(-|\/)/', $request->input('search')['value']);
 
@@ -92,6 +93,7 @@ class Helpers
     // Filter columns.
     $filter->filterColumn = $request->input('filterColumn') ?? null;
     $filter->filterText = $request->input('filterText') ?? null;
+    $filter->filterStatus = $request->input('filterStatus') ?? null;
     
     // Sort columns.
     $filter->sortColumns = array();
@@ -108,7 +110,6 @@ class Helpers
     // Paging.
     $filter->pageLimit = $request->input('length') ?: 1;
     $filter->pageOffset = $request->input('start') ?: 0;
-    
     // Log::info(json_encode($filter));
     return $filter;
   }

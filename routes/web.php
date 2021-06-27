@@ -85,6 +85,7 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::post('/menu-category/delete/{id?}', [MenuCategoryController::class, 'delete'])->middleware('can:menu_simpan');
   
   Route::get('/notif/icon', [NotifController::class, 'notifIcon']);
+  Route::get('/notif/get', [NotifController::class, 'getNotif']);
 
   Route::get('/setting', [SettingController::class, 'index'])->middleware('can:pengaturan_lihat');
   Route::get('/setting/grid', [SettingController::class, 'getLists'])->middleware('can:pengaturan_lihat');

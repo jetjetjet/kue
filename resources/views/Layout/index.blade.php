@@ -181,6 +181,18 @@
           $('.counter').removeClass('d-none')
         } else {
           $('.counter').addClass('d-none')
+          $('#notifDropDown').remove()
+        }
+      });
+      
+      $.get("{{ url('notif/get') }}", function( data ) {
+        if(data.status == 'success'){
+          $.each( data.data, function( key, value ) {
+            var url = "{{ url('/') }}/order/detail/" + value.id;
+            var content = '<div class="dropdown-item"><a href="'+ url +'"><div class="media server-log"><div class="media-body"><div class="data-info "><h6 class="">'+ value.ordercustname + ' / Pesanan: ' + value.productname +'</h6><p class="">'+ value.estdate +'"</p></div></div></div></a></div>'
+            
+            $('.notification-scroll').prepend(content);
+          })
         }
       });
     </script>
