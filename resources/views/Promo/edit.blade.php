@@ -79,7 +79,7 @@
             </div>
             <hr />
             <fieldset>
-              <legend>Detail Promo Menu</legend>
+              <legend>Detail Promo {{trans('fields.product')}}</legend>
               @if($canEdit)
                 <div class="float-right mb-1">
                   <button type="button" class="btn btn-sm btn-success add-row {{ empty($data->promoid) ? 'hidden' : null }}">
@@ -91,12 +91,11 @@
                 <table id="subOrder" class="table" cellspacing="0" width="100%">
                   <thead>
                       <tr>
-                        <th>Menu</th>
-                        <th>Tipe</th>
+                        <th>{{trans('fields.product')}}</th>
+                        <th>Code</th>
                         <th>Kategori</th>
                         <th>Harga</th>
                         <th>Harga Promo</th>
-                        <th>Status</th>
                         <th></th>
                       </tr>
                   </thead>
@@ -176,10 +175,10 @@
         $('.pembulatanPromo').addClass('d-none')
         let mPrice = $targetContainer.find('.subItem')
         mPrice.each(function(index, item){
-          let rowPrice = $(this).find('[name^=sub][name$="[menuPrice]"]').val();
+          let rowPrice = $(this).find('[name^=sub][name$="[productPrice]"]').val();
           let calcRow = Number(rowPrice) - promoVal
-          $(this).find('[id^=sub][id$="[menuPromo]"]').html(formatter.format(calcRow));
-          $(this).find('[name^=sub][name$="[menuPromo]"]').val(calcRow);
+          $(this).find('[id^=sub][id$="[productPromo]"]').html(formatter.format(calcRow));
+          $(this).find('[name^=sub][name$="[productPromo]"]').val(calcRow);
         })
         $('#saveBtn').removeAttr('disabled');
       }
@@ -192,7 +191,7 @@
       form.addEventListener('submit', function(event) {
         
         let subRowMinus = true
-        let mPrice = $targetContainer.find('[name^=sub][name$="[menupromo]"]')
+        let mPrice = $targetContainer.find('[name^=sub][name$="[productpromo]"]')
         mPrice.each(function(index, item){
           let rowPromo = $(this).val();
           if(Number(rowPromo) < 0){
@@ -255,32 +254,33 @@
 
   function setupDetailPromo($targetContainer)
   {
-    inputSearch($targetContainer.find('[name^=sub][name$="[spmenuid]"]'), 
-      "{{ Url('/menu/search') }}", 
+    inputSearch($targetContainer.find('[name^=sub][name$="[spproductid]"]'), 
+      "{{ Url('/product/search') }}", 
       '250px', 
       function(item) {
         return {
           text: item.text,
           id: item.id,
-          category: item.menucategory,
-          price: item.menuprice,
-          type: item.menutype
+          category: item.productcategory,
+          price: item.productprice,
+          code: item.productcode,
         }
     });
 
-    $targetContainer.find('[name^=sub][name$="[spmenuid]"]').on('select2:select', function (e) {
+    $targetContainer.find('[name^=sub][name$="[spproductid]"]').on('select2:select', function (e) {
       let dt = e.params.data;
       let promoPrice = dt.price - $('#promodiscount').val();
+      console.log(dt)
 
-      $targetContainer.find('[name^=sub][name$="[menuname]"]').val(dt.text);
-      $targetContainer.find('[id^=sub][id$="[menuType]"]').html(dt.type);
-      $targetContainer.find('[name^=sub][name$="[menutype]"]').val(dt.type);
-      $targetContainer.find('[id^=sub][id$="[menuCategory]"]').html(dt.category);
-      $targetContainer.find('[name^=sub][name$="[menucategory]"]').val(dt.category);
-      $targetContainer.find('[name^=sub][name$="[menuprice]"]').val(dt.price);
-      $targetContainer.find('[id^=sub][id$="[menuPriceText]"]').html(formatter.format(dt.price));
-      $targetContainer.find('[id^=sub][id$="[menuPromo]"]').html(formatter.format(promoPrice));
-      $targetContainer.find('[name^=sub][name$="[menupromo]"]').val(promoPrice);
+      $targetContainer.find('[name^=sub][name$="[productname]"]').val(dt.text);
+      $targetContainer.find('[id^=sub][id$="[productCode]"]').html(dt.code);
+      $targetContainer.find('[name^=sub][name$="[productcode]"]').val(dt.code);
+      $targetContainer.find('[id^=sub][id$="[productCategory]"]').html(dt.category);
+      $targetContainer.find('[name^=sub][name$="[productcategory]"]').val(dt.category);
+      $targetContainer.find('[name^=sub][name$="[productprice]"]').val(dt.price);
+      $targetContainer.find('[id^=sub][id$="[productPriceText]"]').html(formatter.format(dt.price));
+      $targetContainer.find('[id^=sub][id$="[productPromo]"]').html(formatter.format(promoPrice));
+      $targetContainer.find('[name^=sub][name$="[productpromo]"]').val(promoPrice);
 
       $targetContainer.find('[id^=sub][id$="[subAvail]"]').removeClass('d-none');
     });

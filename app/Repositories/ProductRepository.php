@@ -431,15 +431,14 @@ class ProductRepository
   {
     $promo = self::searchPromo();
     
-    return Product::join('productcategory as mc', 'mc.id', 'productmcid')
+    return Product::join('productcategories as mc', 'mc.id', 'productpcid')
       ->leftJoinSub($promo, 'promo', function ($join) {
         $join->on('products.id', '=', 'promo.spproductid');
       })
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
       ->where('productactive', '1')
-      ->where('productavaible', '1')
       ->whereNull('promoid')
-      ->select('products.id', 'mcname as productcategory', 'productname as text', 'producttype', 'productprice')
+      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productcode', 'productprice')
       ->orderby('productname', 'ASC')
       ->limit(5)
       ->get();
