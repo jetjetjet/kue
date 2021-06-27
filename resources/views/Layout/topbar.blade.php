@@ -219,7 +219,7 @@
 				<a href="javascript:void(0);" class="nav-link dropdown-toggle user" id="user-profile-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<div class="media">
 						<div class="media-body align-self-center">
-								<h6 style="margin-bottom: .3rem !important;"><span>Halo,</span> {{ session('username') }}</h6>
+								<h6 style="margin-bottom: .3rem !important;">{{ session('username') }}</h6>
 						</div>
 						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 						<img src="{{ asset('/images/avatar.png') }}" class="img-fluid">

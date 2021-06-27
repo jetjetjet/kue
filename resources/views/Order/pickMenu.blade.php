@@ -271,7 +271,8 @@
                     <div class="product_card_slider_container">
                       <div class=" product_card_item">
                         <div class="product_card_image">
-                          <img src="{{ isset($shc->productimg) ? asset($shc->productimg) : asset('/public/images/fnb.jpg') }}" onerror="this.onerror=null;this.src='{{asset('/images/fnb.jpg')}}';" alt="">
+                          {{-- <img src="{{ isset($shc->productimg) ? asset($shc->productimg) : asset('/public/images/fnb.jpg') }}" onerror="this.onerror=null;this.src='{{asset('/images/fnb.jpg')}}';" alt=""> --}}
+                          <img src="{{'/kincaycake' . $shc->productimg}}" alt="">
                         </div>
                         <div class="product_card_content">
                           @if($shc->promodiscount)
