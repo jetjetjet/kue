@@ -19,7 +19,7 @@ class OrderRepository
         'ordercustname',
         DB::raw("to_char(orderdate, 'dd-mm-yyyy HH24:MI:SS') as orderdate"),
         'orderprice', 
-        DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Draf' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' END as orderstatuscase"),
+        DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Draf' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' END as orderstatuscase"),
         //Action
         DB::raw("CASE WHEN orderpaid = '0' and 1 = " . $perms['save'] . " THEN true ELSE false END as can_save"),
         DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' AND 1 = " . $perms['delete'] . " THEN true ELSE false END as can_delete")
@@ -109,6 +109,7 @@ class OrderRepository
     $data = new \StdClass();
     if($id){
       $data = Order::leftJoin('users as uvoid', 'uvoid.id', 'ordervoidedby')
+        ->leftJoin('users as ucom', 'ucom.id', 'ordercompletedby')
         ->where('orderactive', '1')
         ->where('orders.id', $id)
         ->select(
@@ -129,8 +130,11 @@ class OrderRepository
           'ordervoidreason',
           'ordervoidedby',
           'orderdiscountprice',
+          'ordercompleteddate',
+          'ordercompletedby',
+          'ucom.username as ordercompletedname',
           'uvoid.username as ordervoidedusername',
-          DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Diproses' WHEN orders.orderstatus = 'DP' THEN 'DP' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' END as orderstatuscase")
+          DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Diproses' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' END as orderstatuscase")
         )->first();
       if($data == null){
         $respon['status'] = 'error';
@@ -555,7 +559,41 @@ class OrderRepository
       }else{
         $respon['status'] = 'success';
         array_push($respon['messages'], 'Pesanan Dibayar Dimuka');
+      }
+      if ($inputs['orderstatus'] == "COMPLETED"){
+        $data->update([
+          'orderstatus' => 'COMPLETED',
+          'ordercompletedby' => $loginid,
+          'ordercompleteddate' => now()->toDateTimeString()
+        ]);
+        $respon['status'] = 'success';
+        array_push($respon['messages'], 'Pesanan Dibayar & Diambil');
       }       
+      $cekDelete = true;
+
+    }else{
+      $respon['status'] = 'error';
+      array_push($respon['messages'], 'Kesalahan');
+    }
+    return $respon;
+  }
+
+  public static function complete($respon, $id, $loginid)
+  {
+    $data = Order::where('orderactive', '1')
+      ->where('id', $id)
+      ->first();
+
+    $cekDelete = false;
+    if ($data != null){
+      $data->update([
+        'orderstatus' => 'COMPLETED',
+        'ordercompletedby' => $loginid,
+        'ordercompleteddate' => now()->toDateTimeString()
+      ]);
+        $respon['status'] = 'success';
+        array_push($respon['messages'], 'Pesanan Diambil');
+      
       $cekDelete = true;
 
     }else{

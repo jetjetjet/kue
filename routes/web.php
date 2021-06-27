@@ -111,6 +111,7 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::post('/order/hapus/{id}', [OrderController::class, 'deleteById'])->middleware('can:order_hapus');
   Route::post('/order/batal/{id}', [OrderController::class, 'voidById'])->middleware('can:order_batal');
   Route::post('/order/bayar/{id}', [OrderController::class, 'paidById'])->middleware('can:order_pembayaran');
+  Route::post('/order/selesai/{id}', [OrderController::class, 'completeById'])->middleware('can:order_pembayaran');
   Route::post('/order/delivered/{id}/{idSub}', [OrderController::class, 'deliver'])->middleware('can:order_simpan');
 
   Route::get('/pengeluaran', [ExpenseController::class, 'index'])->middleware('can:pengeluaran_lihat,pengeluaran_simpan');
