@@ -22,5 +22,6 @@ return [
   'qty' => 'Jumlah',
   'readyStock' => 'Ready Stock',
   'showcase' => 'Showcase',
-  'status' => 'Status'
+  'status' => 'Status',
+  'stock' => 'Stok',
 ];

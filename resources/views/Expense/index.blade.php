@@ -99,7 +99,7 @@
               render: function(data, type, full, meta){
                 if(data.expenseexecutedat == null){
                   return '<span class="badge badge-warning">Draft</span>';  
-                }else{
+                } else{
                   return '<span class="badge badge-success">Selesai</span>';
                 }
               }

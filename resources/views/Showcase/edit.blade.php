@@ -76,48 +76,78 @@
                       <input type="text" id="showcasecode" name="showcasecode" value="{{ $data->showcasecode }}" style="font-weight: bold;" class="form-control" readonly>
                     </div>
                     @endif
-                    <div class="col-12">
-                      <label for="cate">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
-                      <select class="" id="productsearch" name="showcaseproductid">
-                        <option value="">Hapus</option>
-                        @if($data->showcaseproductid)
-                          <option value="{{$data->showcaseproductid}}" selected="selected">{{$data->productcode}} - {{$data->productname}}</option>
-                        @endif
-                      </select>
-                    </div>
-                    <div class="col-6 mb-2">
-                      <label for="name">{{ trans('fields.price') }}</label>
-                      <div class="input-group">
-                        <div class="input-group-prepend">
-                          <span class="input-group-text" id="inputGroup-sizing-sm">Rp </span>
-                        </div>
-                        <input type="text" id="prodPrice" value="{{ $data->productprice }}" style="font-weight: bold;" class="form-control text-right" readonly>
+                    @if(empty($data->showcaseexpiredat))
+                      <div class="col-12">
+                        <label for="cate">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
+                        <select class="" id="productsearch" name="showcaseproductid">
+                          <option value="">Hapus</option>
+                          @if($data->showcaseproductid)
+                            <option value="{{$data->showcaseproductid}}" selected="selected">{{$data->productcode}} - {{$data->productname}}</option>
+                          @endif
+                        </select>
                       </div>
-                    </div>
-                    <div class="col-6 mb-2">
-                      <label for="name">{{ trans('fields.qty') }} {{ trans('fields.showcase') }}</label>
-                      <input type="number" id="showcaseqty" name="showcaseqty" value="{{ old('showcaseqty', $data->showcaseqty) }}" class="form-control text-right">
-                    </div>
-                    <div class="col-6 mb-2">
-                      <label for="showcasedate">{{ trans('fields.date') }} {{ trans('fields.product') }} </label>
-                      <input type="text" name="showcasedate" id="showcasedate" value="{{ old('showcasedate', $data->showcasedate) }}" class="form-control flatpickr flatpickr-input active">
-                    </div>
-                    <div class="col-6 mb-2">
-                      <label for="showcaseexpdate">{{ trans('fields.expDate') }} {{ trans('fields.product') }}</label>
-                      <input type="text" name="showcaseexpdate" id="showcaseexpdate" value="{{ old('showcaseexpdate', $data->showcaseexpdate) }}" class="form-control flatpickr flatpickr-input active" {{ $data->showcaseexpdate ? "" : "disabled" }} >
-                    </div>
+                      <div class="col-6 mb-2">
+                        <label for="name">{{ trans('fields.price') }}</label>
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">Rp </span>
+                          </div>
+                          <input type="text" id="prodPrice" value="{{ $data->productprice }}" style="font-weight: bold;" class="form-control text-right" readonly>
+                        </div>
+                      </div>
+                      <div class="col-6 mb-2">
+                        <label for="name">{{ trans('fields.qty') }} {{ trans('fields.showcase') }}</label>
+                        <input type="number" id="showcaseqty" name="showcaseqty" value="{{ old('showcaseqty', $data->showcaseqty) }}" class="form-control text-right">
+                      </div>
+                      <div class="col-6 mb-2">
+                        <label for="showcasedate">{{ trans('fields.date') }} {{ trans('fields.product') }} </label>
+                        <input type="text" name="showcasedate" id="showcasedate" value="{{ old('showcasedate', $data->showcasedate) }}" class="form-control flatpickr flatpickr-input active">
+                      </div>
+                      <div class="col-6 mb-2">
+                        <label for="showcaseexpdate">{{ trans('fields.expDate') }} {{ trans('fields.product') }}</label>
+                        <input type="text" name="showcaseexpdate" id="showcaseexpdate" value="{{ old('showcaseexpdate', $data->showcaseexpdate) }}" class="form-control flatpickr flatpickr-input active" {{ $data->showcaseexpdate ? "" : "disabled" }} >
+                      </div>
+                    @else
+                      <div class="col-12">
+                        <label for="cate">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
+                        <input value="{{$data->productcode}} - {{$data->productname}}" class="form-control" readonly>
+                      </div>
+                      <div class="col-6 mb-2">
+                        <label for="name">{{ trans('fields.price') }}</label>
+                        <div class="input-group">
+                          <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">Rp </span>
+                          </div>
+                          <input type="text" id="prodPrice" value="{{ $data->productprice }}" style="font-weight: bold;" class="form-control text-right" readonly>
+                        </div>
+                      </div>
+                      <div class="col-6 mb-2">
+                        <label for="name">{{ trans('fields.qty') }} {{ trans('fields.showcase') }}</label>
+                        <input type="number" id="showcaseqty" name="showcaseqty" value="{{ old('showcaseqty', $data->showcaseqty) }}" class="form-control text-right" readonly>
+                      </div>
+                      <div class="col-6 mb-2">
+                        <label for="showcasedate">{{ trans('fields.date') }} {{ trans('fields.product') }} </label>
+                        <input type="text" name="showcasedate" value="{{ old('showcasedate', $data->showcasedate) }}" class="form-control" readonly>
+                      </div>
+                      <div class="col-6 mb-2">
+                        <label for="showcaseexpdate">{{ trans('fields.expDate') }} {{ trans('fields.product') }}</label>
+                        <input type="text" name="showcaseexpdate" value="{{ old('showcaseexpdate', $data->showcaseexpdate) }}" class="form-control" readonly {{ $data->showcaseexpdate ? "" : "disabled" }} >
+                      </div>
+                    @endif
                   </div>
                   <div class="float-left mt-2">
-                    @if(isset($data->id) && Perm::can(['order_pelayan']))
+                    @if(isset($data->id) && empty($data->showcaseexpiredat) && Perm::can(['order_pelayan']))
                       <a href="" type="button" id="oosBtn" class="btn btn-success mt-2">{{ trans('fields.outOfStock') }}</a>
                     @endif
-                    @if(isset($data->id) && Perm::can(['order_pelayan']))
-                      <a href="" type="button" id="expBtn" class="btn btn-danger mt-2">{{ trans('fields.expired') }}</a>
+                    @if(isset($data->id) && empty($data->showcaseexpiredat) && Perm::can(['order_pelayan']))
+                      <a type="button" id="expBtn" class="btn btn-danger mt-2">{{ trans('fields.expired') }}</a>
                     @endif
                   </div>
                   <div class="float-right mt-2">
                     <a href="{{ url('/showcase') }}" type="button" class="btn btn-danger mt-2" type="submit">Batal</a>
+                    @if(empty($data->showcaseexpiredat))
                     <button class="btn btn-primary mt-2" id="sub" type="submit">Simpan</button>
+                    @endif
                   </div>
                 </form>
               </div>
@@ -184,6 +214,33 @@
 
   $(document).ready(function (){
     $('[type=number]').setupMask(0);
+    $('#expBtn').click(function(){
+      let qty=$('#showcaseqty').val()
+      $.ajax({
+        url: "{{url('showcase/expired')}}"+"/"+"{{$data->id}}",
+        type: "post",
+        data: {
+          expiredqty: qty
+        },
+        success: function(result){
+          let msg=result.messages[0]
+          if(result.status == "success"){
+            toast({
+              type: 'success',
+              title: msg
+            })
+          } else{
+            toast({
+              type: 'error',
+              title: msg
+            })
+          }
+        },
+        error: function(error){
+          console.log(error)
+        }
+      })
+    })
 
     inputSearch('#productsearch', "{{ Url('/product/search-showcase') }}", 'resolve', function(item) {
       return {

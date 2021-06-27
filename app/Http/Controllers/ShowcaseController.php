@@ -83,4 +83,16 @@ class ShowcaseController extends Controller
 
 		return response()->json($results);
 	}
+
+  public function expiredById(Request $request, $id)
+	{
+		$respon = Helpers::$responses;
+    $inputs = $request->all();
+    
+		$loginid = Auth::user()->getAuthIdentifier();
+		$results = ShowcaseRepository::expired($respon, $id, $loginid, $inputs);
+		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Showcase expired', $loginid);
+
+		return response()->json($results);
+	}
 }
