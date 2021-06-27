@@ -458,8 +458,9 @@ class OrderRepository
       $datasub = OrderDetail::where('odactive', '1')
         ->where('odorderid', $id);
       
-      $ceksub = $datasub->where('oddelivered', '1')->first();
-      if($ceksub != null)
+      $ceksub = $data->whereIn('orderstatus', ["DRAFT"])->first();
+
+      if($ceksub == null)
         throw new Exception('subDelivered');
 
       $upd = $datasub->update([
@@ -487,7 +488,7 @@ class OrderRepository
       DB::rollback();
       $respon['status'] = 'error';
       if ($e->getMessage() === 'subDelivered') 
-        $ext = "Tidak dapat hapus Pesanan yang sudah diantar.";
+        $ext = "Tidak dapat hapus Pesanan sudah dibayar.";
       array_push($respon['messages'], 'Kesalahan!' . $ext);
     }
  

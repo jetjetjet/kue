@@ -210,7 +210,7 @@
                           <h4>Nama Pelanggan</h4>
                         </div>
                         <div class='col-md-7 col-sm-6 xs-6 mt-1'>
-                          <input type="text" class="form-control" required name="ordercustname" id="custs" value="{{ old('ordercustname', $data->ordercustname) }}" placeholder="Nama Pelanggan">
+                          <input type="text" class="form-control" {{($data->orderstatus == 'DP') ? 'readonly' : ''}} required name="ordercustname" id="custs" value="{{ old('ordercustname', $data->ordercustname) }}" placeholder="Nama Pelanggan">
                         </div>
                         @if($data->orderstatus == 'DP')
                         @elseif($data->odTypeCek['odcek'])
@@ -290,6 +290,13 @@
     <div id="fixbot" class="row fixed-bottom">
       <div class="col-sm-12 ">
         <div class="widget-content widget-content-area" style="padding:10px">
+          <div class="float-left">
+            @if(Perm::can(['order_batal']) && isset($data->id) && !($data->orderstatus == "VOIDED" || $data->orderstatus == "PAID" || $data->orderstatus == "DRAFT"))
+              <a id="void" type="button" class="btn btn-danger mt-2">Batalkan Pesanan</a>
+            @elseif($data->orderstatus == "DRAFT")
+              <a href="" id="deleteOrder" type="button" class="btn btn-danger mt-2">{{trans('fields.delete')}}</a>
+            @endif
+          </div>
           <div class="float-right">
             <a href="{{url('/')}}" id="back" type="button" class="btn btn-warning mt-2">Kembali</a>
             @if($data->orderstatus == 'PAID')
@@ -437,6 +444,28 @@
 
 
   $(document).ready(function (){
+
+    $('#deleteOrder').on('click', function (e) {
+      e.preventDefault();
+      
+      const url = "{{ url('order/hapus') . '/' }}" + '{{$data->id}}';
+      const title = 'Hapus Pesanan';
+      gridDeleteInput3(url, title, null, function(callb){
+        setTimeout(() => {
+          window.location = "{{ url('/') }}";
+        }, 2000);
+      });
+    });
+
+    $('#void').on('click', function (e) {
+      e.preventDefault();
+      
+      const url = "{{ url('order/batal') . '/' }}" + '{{$data->id}}';
+      const title = 'Batalkan Pesanan';
+      const pesan = 'Alasan batal?'
+      gridDeleteInput2(url, title, pesan, null);
+    });
+
     //hotkey
       Mousetrap.bind('enter', function() {
         let sPrice = $("#startPrice").val(); 
