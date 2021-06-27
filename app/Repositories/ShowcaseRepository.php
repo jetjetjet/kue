@@ -20,7 +20,8 @@ class ShowcaseRepository
       'productprice',
       'ps.qty as showcaseqty',
       DB::raw("to_char(showcasedate, 'DD-MM-YYYY') as showcasedate"),
-      DB::raw("to_char(showcaseexpdate, 'DD-MM-YYYY') as showcaseexpdate"), 
+      DB::raw("to_char(showcaseexpdate, 'DD-MM-YYYY') as showcaseexpdate"),
+      DB::raw("case when showcaseexpiredat is not null then 'Kadaluarsa' when showcaseexpiredat is null and ps.qty > 1  then 'Readystock' when showcaseexpiredat is null and ps.qty is null then 'Habis' end as status"),
       DB::raw($perms['save']),
       DB::raw($perms['delete']))
     ->get();

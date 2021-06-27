@@ -18,6 +18,7 @@
           <tr>
             <th>{{ trans('fields.name')}} {{trans('fields.product')}}</th>
             <th>{{ trans('fields.stock') }}</th>
+            <th>{{ trans('fields.status') }}</th>
             <th>{{ trans('fields.date') }}</th>
             <th>{{ trans('fields.expDate') }}</th>
             <th class="no-content"></th>
@@ -73,7 +74,18 @@
             }
           },
           { 
-            data: 'showcaseqty',
+            data: null,
+            searchText: true,
+            render: function(data, type, full, meta){
+              if(data.showcaseqty){
+                return data.showcaseqty;
+              } else{
+                return "-";
+              }
+            }
+          },
+          { 
+            data: 'status',
             searchText: true
           },
           { 

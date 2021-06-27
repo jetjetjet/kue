@@ -32,10 +32,10 @@
 @section('content-form')
 
   @if(isset($data->id))
-  <div class="alert alert-light-warning" role="alert">
+  <!-- <div class="alert alert-light-warning" role="alert">
     <button type="button" class="close" data-dismiss="alert" aria-label="Close"><svg> ... </svg></button>
     <strong>Primary!</strong> Lorem Ipsum is simply dummy text of the printing.
-  </div>
+  </div> -->
   @endif
   <div class="d-flex justify-content-between">
     <div class="col-3">
