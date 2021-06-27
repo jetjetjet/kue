@@ -98,6 +98,8 @@ Route::group(array('middleware' => 'auth'), function ()
   
   Route::get('/order/index', [OrderController::class, 'index'])->middleware('can:order_lihat');
   Route::get('/order/index/grid', [OrderController::class, 'grid'])->middleware('can:order_lihat');
+  Route::get('/order/preorder', [OrderController::class, 'preOrder'])->middleware('can:order_lihat');
+  Route::get('/order/preorder/grid', [OrderController::class, 'getPO'])->middleware('can:order_lihat');
   Route::get('/order/{id?}', [OrderController::class, 'order'])->middleware('can:order_lihat');
   Route::get('/order/detail/{id?}', [ OrderController::class, 'detail' ])->middleware('can:order_lihat');
   Route::get('/order/detail/grid/{idOrder}', [ OrderController::class, 'getDetail' ]);

@@ -54,6 +54,21 @@ class OrderController extends Controller
 			->with('data', $data['data']);
   }
 
+  public function preOrder()
+	{
+		return view('order.preorder');
+	}
+
+	public function getPO(Request $request)
+	{
+		$permission = Array(
+			'save' => (Auth::user()->can(['order_simpan']) == true ? "true" : "false") . " as can_save",
+		);
+		$results = OrderRepository::preOrderGrid($permission);
+		
+		return response()->json($results);
+	}
+
   public function detail(Request $request, $id)
   {
     $url = $request->path();

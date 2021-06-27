@@ -416,7 +416,12 @@
         $('#lblBayar').html(formatter.format(pay));
         $("#lblDP").html(formatter.format(dp));
         $('#drawer').removeAttr('disabled');
-      } else {
+      }else if(!tgl){
+        $("#lblKembalian").html(formatter.format(change));
+        $('#lblBayar').html(formatter.format(pay));
+        $("#lblDP").html(formatter.format(dp));
+        $("#date").css('border-color', '#FF0000')
+      }else{
         $("#lblDP").html(formatter.format(0));
         $('#lblKembalian').html(0);
         $('#lblBayar').html(0);
@@ -468,6 +473,7 @@
         $('#drawer').removeAttr('disabled');
         // $("#afterPrice").val(Number(discPrice));
       } else if(Number(dp) && !Number(pay)){
+        $("#date").css('border-color', '#FF0000')
         $("#lblSisa").html(formatter.format(discPrice));
         $("#lblDP").html(formatter.format(dp));
       } else {
@@ -686,7 +692,9 @@
         defaultDate: "{{Carbon\Carbon::now()}}",
         position: "above",
         onChange: function(){
+          payAndchange();
           DPChange();
+          $("#date").css('border-color', '')
         }
       });
 

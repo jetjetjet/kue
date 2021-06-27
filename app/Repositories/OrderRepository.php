@@ -104,6 +104,23 @@ class OrderRepository
     return $data;
   }
 
+  public static function preOrderGrid($perms)
+  {
+    return Order::where('orderactive', '1')
+    ->whereIn('orderstatus', ['DP', 'PAID'])
+    ->select('id',
+      'orderinvoice', 
+      'ordercustname', 
+      DB::raw("to_char(orderdate, 'dd-mm-yyyy HH24:MI:SS') as orderdate"), 
+      DB::raw("to_char(orderestdate, 'dd-mm-yyyy') as orderestdate"),
+      'orderprice',
+      DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Diproses' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' END as orderstatuscase"),
+      DB::raw($perms['save']))
+    ->orderBy('orderestdate', 'asc')
+    ->get();
+  }
+
+
   public static function getOrder($respon, $id)
   {
     $data = new \StdClass();
@@ -567,7 +584,7 @@ class OrderRepository
           'ordercompleteddate' => now()->toDateTimeString()
         ]);
         $respon['status'] = 'success';
-        array_push($respon['messages'], 'Pesanan Dibayar & Diambil');
+        array_push($respon['messages'], 'Pesanan Diambil');
       }       
       $cekDelete = true;
 
