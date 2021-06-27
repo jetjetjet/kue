@@ -36,6 +36,8 @@ class Order extends Model
 		'ordermodifiedat',
 		'ordermodifiedby',
 		'orderdiscountprice',
-    'orderestdate'
+    'orderestdate',
+    'ordercompleteddate',
+    'ordercompletedby'
   ];
 }

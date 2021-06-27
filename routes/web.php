@@ -99,6 +99,8 @@ Route::group(array('middleware' => 'auth'), function ()
   
   Route::get('/order/index', [OrderController::class, 'index'])->middleware('can:order_lihat');
   Route::get('/order/index/grid', [OrderController::class, 'grid'])->middleware('can:order_lihat');
+  Route::get('/order/preorder', [OrderController::class, 'preOrder'])->middleware('can:order_lihat');
+  Route::get('/order/preorder/grid', [OrderController::class, 'getPO'])->middleware('can:order_lihat');
   Route::get('/order/{id?}', [OrderController::class, 'order'])->middleware('can:order_lihat');
   Route::get('/order/detail/{id?}', [ OrderController::class, 'detail' ])->middleware('can:order_lihat');
   Route::get('/order/detail/grid/{idOrder}', [ OrderController::class, 'getDetail' ]);
@@ -112,6 +114,7 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::post('/order/hapus/{id}', [OrderController::class, 'deleteById'])->middleware('can:order_hapus');
   Route::post('/order/batal/{id}', [OrderController::class, 'voidById'])->middleware('can:order_batal');
   Route::post('/order/bayar/{id}', [OrderController::class, 'paidById'])->middleware('can:order_pembayaran');
+  Route::post('/order/selesai/{id}', [OrderController::class, 'completeById'])->middleware('can:order_pembayaran');
   Route::post('/order/delivered/{id}/{idSub}', [OrderController::class, 'deliver'])->middleware('can:order_simpan');
 
   Route::get('/pengeluaran', [ExpenseController::class, 'index'])->middleware('can:pengeluaran_lihat,pengeluaran_simpan');

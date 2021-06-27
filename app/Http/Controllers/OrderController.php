@@ -54,6 +54,21 @@ class OrderController extends Controller
 			->with('data', $data['data']);
   }
 
+  public function preOrder()
+	{
+		return view('order.preorder');
+	}
+
+	public function getPO(Request $request)
+	{
+		$permission = Array(
+			'save' => (Auth::user()->can(['order_simpan']) == true ? "true" : "false") . " as can_save",
+		);
+		$results = OrderRepository::preOrderGrid($permission);
+		
+		return response()->json($results);
+	}
+
   public function detail(Request $request, $id)
   {
     $url = $request->path();
@@ -72,7 +87,7 @@ class OrderController extends Controller
 
 		if($results['status'] == 'error'){
 			$request->session()->flash($results['status'], $results['messages']);
-			return redirect()->action([OrderController::class, 'orderView']);
+			return redirect()->action([OrderController::class, 'index']);
 		}
 
     return view('Order.detail')->with('data', $results['data']);
@@ -137,6 +152,26 @@ class OrderController extends Controller
  
     $loginid = Auth::user()->getAuthIdentifier();
 		$results = OrderRepository::paid($respon, $id, $loginid, $inputs);
+		AuditTrailRepository::saveAuditTrail($request->path(), $results, "Transaksi", $loginid);
+
+		// if($results['status'] == "success"){
+		// 	event(new BoardEvent('ok'));
+		// 	event(new OrderProceed('ok'));
+		// }
+		self::orderReceiptkasir($id, $request);
+		$request->session()->flash($results['status'], $results['messages']);
+
+		return redirect('/');
+	}
+
+  public function completeById(Request $request, $id)
+	{
+		$respon = Helpers::$responses;
+
+    $inputs = $request->all();
+ 
+    $loginid = Auth::user()->getAuthIdentifier();
+		$results = OrderRepository::complete($respon, $id, $loginid);
 		AuditTrailRepository::saveAuditTrail($request->path(), $results, "Transaksi", $loginid);
 
 		// if($results['status'] == "success"){

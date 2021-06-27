@@ -31,6 +31,33 @@
         </ul>
     </div>
   @endif
+  @if($data->orderstatus == "COMPLETED")
+    <div class="alert alert-primary" role="alert">
+      <strong>Pesanan Selesai</strong>
+        <ul>
+          <li>Diselesaikan Oleh : <b>{{$data->ordercompletedname}}</b></li>
+          <li>Diselesaikan Pada : {{$data->ordercompleteddate}}</li>
+        </ul>
+    </div>
+  @endif
+  @if($data->orderstatus == "PAID")
+    <div class="alert alert-info" role="alert">
+      <strong>Pesanan Sudah Lunas</strong>
+        <ul>
+          <li>Nama Pelanggan : <b>{{$data->ordercustname}}</b></li>
+          <li>Tanggal Perkiraan Selesai : {{$data->orderestdate}}</li>
+        </ul>
+    </div>
+  @endif
+  @if($data->orderstatus == "DP")
+    <div class="alert alert-warning" role="alert">
+      <strong>Pesanan Dibayar dimuka</strong>
+        <ul>
+          <li>Nama Pelanggan : <b>{{$data->ordercustname}}</b></li>
+          <li>Tanggal Perkiraan Selesai : {{$data->orderestdate}}</li>
+        </ul>
+    </div>
+  @endif
   
   @if(($data->orderstatus == 'ADDITIONAL' || $data->orderstatus == 'PROCEED')  && $data->ordertype == 'DINEIN')
     <div class="alert alert-warning" role="warning">
@@ -87,22 +114,10 @@
                             <th style="width: 55% !important;" class="p-1 w-auto">Tgl. Pesanan</th>
                             <th class="col p-1 text-right">{{$data->orderdate }}</th>
                           </tr>
-                          @if(isset($data->orderestdate))
-                            <tr>
-                              <th style="width: 55% !important;" class="p-1 w-auto">Tgl. Perkiraan</th>
-                              <th class="col p-1 text-right">{{$data->orderestdate }}</th>
-                            </tr>
-                          @endif
                           @if(isset($data->orderpaiddate))
                             <tr>
                               <th style="width: 55% !important;" class="p-1 w-auto">Tgl. Pembayaran</th>
                               <th class="col p-1 text-right">{{$data->orderpaiddate }}</th>
-                            </tr>
-                          @endif
-                          @if($data->orderstatus != "DRAFT")
-                            <tr>
-                              <th style="width: 55% !important;" class="p-1 w-auto">Status Pembayaran</th>
-                              <th class="col p-1 text-right">{{$data->orderstatuscase }}</th>
                             </tr>
                           @endif
                           @if(isset($data->orderpaymentmethod))
@@ -170,7 +185,7 @@
                                 <h4><b class='float-right'><p class="my-0" id="lblSisa">{{ $lblSisa }}</p></b></h4>
                               </th>   
                             </tr>                             
-                            <tr class="border-top pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek'] || $data->orderstatus == 'PAID') ? 'd-none' : ''}}">
+                            <tr class="border-top pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek'] || $data->orderstatus == 'PAID' || $data->orderstatus == 'VOIDED' || $data->orderstatus == 'COMPLETED') ? 'd-none' : ''}}">
                                 <?php 
                                   $lblPaid = isset($data->orderpaid) 
                                     ? number_format($data->orderpaidprice,0)
@@ -181,7 +196,7 @@
                                 <h4><b class='float-right'><p class="my-0" id="lblBayar">{{ $lblPaid }}</p></b></h4>
                               </th>
                             </tr>
-                            <tr class="pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek'] || $data->orderstatus == 'PAID') ? 'd-none' : ''}}">
+                            <tr class="pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek'] || $data->orderstatus == 'PAID' || $data->orderstatus == 'VOIDED' || $data->orderstatus == 'COMPLETED') ? 'd-none' : ''}}">
                               <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0">Kembalian</th>
                               <th class="py-0 my-0 text-right">
                                 <?php 
@@ -206,19 +221,22 @@
                     <input type="hidden" name="username" id="name" value="{{ session('username') }}" />
                     @if($data->orderstatus == 'DRAFT' || $data->orderstatus == 'DP')
                       <div class="form-row mt-2">
-                        <div class='col-md-5 col-sm-6 xs-6 mt-2'>
-                          <h4>Nama Pelanggan</h4>
-                        </div>
-                        <div class='col-md-7 col-sm-6 xs-6 mt-1'>
-                          <input type="text" class="form-control" {{($data->orderstatus == 'DP') ? 'readonly' : ''}} required name="ordercustname" id="custs" value="{{ old('ordercustname', $data->ordercustname) }}" placeholder="Nama Pelanggan">
-                        </div>
+                        @if($data->orderstatus == 'DRAFT')
+                          <div class='col-md-5 col-sm-6 xs-6 mt-2'>
+                            <h4>Nama Pelanggan</h4>
+                          </div>
+                          <div class='col-md-7 col-sm-6 xs-6 mt-1'>
+                            <input type="text" class="form-control" required name="ordercustname" id="custs" value="{{ old('ordercustname', $data->ordercustname) }}" placeholder="Nama Pelanggan">
+                          </div>
+                        @endif
                         @if($data->orderstatus == 'DP')
+                          <input type="hidden" class="form-control" {{($data->orderstatus == 'DP') ? 'readonly' : ''}} required name="ordercustname" id="custs" value="{{ old('ordercustname', $data->ordercustname) }}" placeholder="Nama Pelanggan">
                         @elseif($data->odTypeCek['odcek'])
                           <div class='col-md-5 col-sm-6 xs-6 mt-2'>
                             <h4>Sistem Pembayaran</h4>
                           </div>
                           <div class='col-md-7 col-sm-6 xs-6 mt-1'>
-                            <select class="form-control mousetrap" id="type" name="orderstatus">
+                            <select class="form-control mousetrap" id="status" name="orderstatus">
                               <option value="DP" {{ old('orderstatus', $data->orderstatus) == 'DP' ? ' selected' : '' }}> DP</option>
                               <option value="PAID" {{ old('orderstatus', $data->orderstatus) == 'PAID' ? ' selected' : '' }}> Lunas</option>
                             </select>  
@@ -235,7 +253,7 @@
                         </div>
                         @if($data->orderstatus == 'DP')
                         <input type="hidden" value="{{$data->orderdp}}" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
-                        <input type="hidden" readonly name="orderstatus" class="form-control" required value="PAID">
+                        <input type="hidden" readonly name="orderstatus" class="form-control" required value="COMPLETED">
                         <input type="hidden" class="d-none" name="orderestdate" id='date' value='{{$data->orderestdate}}' placeholder="Tanggal">
                         @elseif($data->odTypeCek['odcek'])
                           <div class='col-md-5 col-sm-6 xs-6 mt-2'>
@@ -253,7 +271,7 @@
                           <input type="hidden" readonly id="odValid" class="form-control" required value="true">
                         @else
                           <input type="hidden" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
-                          <input type="hidden" readonly name="orderstatus" class="form-control" required value="PAID">
+                          <input type="hidden" readonly name="orderstatus" class="form-control" required value="COMPLETED">
                           <input type="hidden" class="d-none" id='date' value='1' placeholder="Tanggal">
                         @endif
                         <div class="col-md-5 col-sm-6 xs-6 mt-2 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
@@ -268,12 +286,27 @@
                         <div class="col-md-7 col-sm-6 xs-6 mt-1 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
                           <input autofocus type="number" class="form-control text-right mousetrap mb-2 pdInput" required name="orderpaidprice" id="bayar" placeholder="Jumlah Uang"> 
                         </div>
+                        @if($data->orderstatus == 'DP')
+                          <!-- <div class="n-chk">
+                          <br>
+                            <label class="new-control new-checkbox new-checkbox-text checkbox-info">
+                              <input type="checkbox" class="new-control-input">
+                              <span class="new-control-indicator"></span><span class="new-chk-content">Langsung Ambil</span>
+                            </label>
+                          </div> -->
+                        @endif                                    
+                    @elseif($data->orderstatus == 'PAID')
+                      <div class='float-right mt-4'>
+                          <button type="button" id="completeOrder" class="btn-lg btn btn-info">{{trans('fields.complete')}}</button>
                       </div>
-                    @else
-                      <input type="hidden" id="bayar" value="-1" />
                     @endif
-                  </form>
+                    </div>
+                  </form>  
                   <form id="miniform" method="post" novalidate action="{{url('/order/bayar/cetak')}}/{{$data->id}}">
+                    <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
+                    <input type="hidden" name="username" id="name" value="{{ session('username') }}" />
+                  </form>
+                  <form method="post" id="completeform" novalidate action="{{url('/order/selesai')}}/{{$data->id}}">
                     <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
                     <input type="hidden" name="username" id="name" value="{{ session('username') }}" />
                   </form>
@@ -291,7 +324,7 @@
       <div class="col-sm-12 ">
         <div class="widget-content widget-content-area" style="padding:10px">
           <div class="float-left">
-            @if(Perm::can(['order_batal']) && isset($data->id) && !($data->orderstatus == "VOIDED" || $data->orderstatus == "PAID" || $data->orderstatus == "DRAFT"))
+            @if(Perm::can(['order_batal']) && isset($data->id) && !($data->orderstatus == "VOIDED" || $data->orderstatus == "DRAFT" || $data->orderstatus == "COMPLETED"))
               <a id="void" type="button" class="btn btn-danger mt-2">Batalkan Pesanan</a>
             @elseif($data->orderstatus == "DRAFT")
               <a href="" id="deleteOrder" type="button" class="btn btn-danger mt-2">{{trans('fields.delete')}}</a>
@@ -299,10 +332,10 @@
           </div>
           <div class="float-right">
             <a href="{{url('/')}}" id="back" type="button" class="btn btn-warning mt-2">Kembali</a>
-            @if($data->orderstatus == 'PAID')
+            @if($data->orderstatus == 'COMPLETED')
               <button id="print" class="btn btn-success mt-2">Cetak</button>
             @endif
-            @if(!($data->orderstatus == 'VOIDED' || $data->orderstatus == 'PAID'))
+            @if(!($data->orderstatus == 'VOIDED' || $data->orderstatus == 'PAID' || $data->orderstatus == 'COMPLETED'))
               @if(Perm::can(['order_pelayan']))
               <a href="{{ url('/order').'/'.$data->id }}" type="button" id="headerOrder" class="btn btn-success mt-2">Ubah Pesanan</a>
               @endif
@@ -383,7 +416,12 @@
         $('#lblBayar').html(formatter.format(pay));
         $("#lblDP").html(formatter.format(dp));
         $('#drawer').removeAttr('disabled');
-      } else {
+      }else if(!tgl){
+        $("#lblKembalian").html(formatter.format(change));
+        $('#lblBayar').html(formatter.format(pay));
+        $("#lblDP").html(formatter.format(dp));
+        $("#date").css('border-color', '#FF0000')
+      }else{
         $("#lblDP").html(formatter.format(0));
         $('#lblKembalian').html(0);
         $('#lblBayar').html(0);
@@ -415,26 +453,29 @@
 
     let DPChange = function()
     {
-      let sPrice = $("#lblGranTotal").html();
-      let diskon = $("#dp").val();
+      let sPrice = $("#startPrice").val();
+      let diskon = $("#diskon").val();
+      let dp = $("#dp").val();
       let pay = $('#bayar').val();
       let valid = $('#odValid').val();
       let tgl = $("#date").val()
-      let discPrice = Number(sPrice) - Number(diskon)
+      let discPrice = Number(sPrice) - Number(diskon) - Number(dp)
 
-      if( Number(sPrice) <= Number(diskon) ){
-        $("#lblDP").html(formatter.format(diskon));
+
+      if( Number(sPrice) <= Number(dp) ){
+        $("#lblDP").html(formatter.format(dp));
         $("#lblSisa").html("Error");
         // $("#afterPrice").val(Number(sPrice));
         $('#drawer').attr('disabled', true);
-      } else if(Number(diskon) && !Number(pay) && valid == "true" && tgl){
+      } else if(Number(dp) && !Number(pay) && valid == "true" && tgl){
         $("#lblSisa").html(formatter.format(discPrice));
-        $("#lblDP").html(formatter.format(diskon));
+        $("#lblDP").html(formatter.format(dp));
         $('#drawer').removeAttr('disabled');
         // $("#afterPrice").val(Number(discPrice));
-      } else if(Number(diskon) && !Number(pay)){
+      } else if(Number(dp) && !Number(pay)){
+        $("#date").css('border-color', '#FF0000')
         $("#lblSisa").html(formatter.format(discPrice));
-        $("#lblDP").html(formatter.format(diskon));
+        $("#lblDP").html(formatter.format(dp));
       } else {
         $("#lblDP").html(0);
         $("#lblSisa").html(0);
@@ -549,6 +590,7 @@
       var pay = $('#bayar').val();
       let diskon = $("#diskon").val();
       let dp = $("#dp").val();
+      let valid = $('#odValid').val();
       var change = Number(pay) - (Number(price) - Number(diskon)) + Number(dp);
       Swal.fire('Sedang Diproses')
       Swal.showLoading()
@@ -559,7 +601,7 @@
         //console.log(result);
         var msg = result.messages[0];
         if(result.status == 'success'){
-          if(change == 0){
+          if(change == 0 || dp && valid){
             $('#orderMenuForm').submit();
           }else{
             $('#konfirm').modal('show');
@@ -582,6 +624,10 @@
     $('#print').on('click', function(){
       $('#miniform').submit();
     })
+    
+    $('#completeOrder').on('click', function(){
+      $('#completeform').submit();
+    })
 
     $('#buttOut').on('click', function(){
       $('#orderMenuForm').submit();
@@ -591,7 +637,7 @@
       $('#orderMenuForm').submit();
     })
 
-    $('#type').on('change', function(){
+    $('#status').on('change', function(){
       if(this.value == "DP"){
         var price = $("#startPrice").val();
         $('.dp').removeClass('d-none')
@@ -646,7 +692,9 @@
         defaultDate: "{{Carbon\Carbon::now()}}",
         position: "above",
         onChange: function(){
+          payAndchange();
           DPChange();
+          $("#date").css('border-color', '')
         }
       });
 

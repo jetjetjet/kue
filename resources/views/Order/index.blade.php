@@ -7,7 +7,6 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="javascript:void(0);">Transaksi</a></li>
     <li class="breadcrumb-item"><a href="javascript:void(0);">Daftar Pesanan</a></li>
-    <li class="breadcrumb-item active" aria-current="page"><a href="javascript:void(0);">Makan Ditempat</a></li>
   </ol>
 @endsection
 
