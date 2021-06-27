@@ -136,6 +136,7 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::get('/api/product/showcase-code/{id}', [ProductController::class, 'apiGetShowcaseCode'])->middleware('can:product_lihat');
   Route::get('/product/search-showcase', [ProductController::class, 'searchProductShowcase'])->middleware('can:product_lihat');
   Route::get('/product/detail/{id?}', [ProductController::class, 'getById'])->middleware('can:promo_lihat');
+  Route::get('/product/search', [ProductController::class, 'searchProducts']);
   Route::post('/product/simpan', [ProductController::class, 'save'])->middleware('can:promo_simpan');
   Route::post('/product/hapus/{id}', [ProductController::class, 'deleteById'])->middleware('can:promo_hapus');
   
@@ -161,6 +162,7 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::get('/showcase/detail/{id?}', [ShowcaseController::class, 'getById'])->middleware('can:showcase_lihat');
   Route::post('/showcase/simpan', [ShowcaseController::class, 'save'])->middleware('can:showcase_simpan');
   Route::post('/showcase/hapus/{id}', [ShowcaseController::class, 'deleteById'])->middleware('can:showcase_hapus');
+  Route::post('/showcase/expired/{id}', [ShowcaseController::class, 'expiredById'])->middleware('can:showcase_hapus');
   
   Route::get('/user', [UserController::class, 'index'])->middleware('can:user_lihat');
   Route::get('/user/grid', [UserController::class, 'getLists'])->middleware('can:user_lihat');

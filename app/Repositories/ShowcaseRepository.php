@@ -13,14 +13,14 @@ class ShowcaseRepository
   {
     return Showcase::where('showcaseactive', '1')
     ->join('products as p', 'showcases.showcaseproductid', 'p.id')
+    ->leftJoin('product_stock as ps', 'showcases.id', 'ps.stockshowcaseid')
     ->select('showcases.id',
       'productname',
       'productcode',
       'productprice',
-      'showcaseqty',
+      'ps.qty as showcaseqty',
       DB::raw("to_char(showcasedate, 'DD-MM-YYYY') as showcasedate"),
       DB::raw("to_char(showcaseexpdate, 'DD-MM-YYYY') as showcaseexpdate"), 
-      'showcasestatus',
       DB::raw($perms['save']),
       DB::raw($perms['delete']))
     ->get();
@@ -140,6 +140,32 @@ class ShowcaseRepository
     $data != null && $cekDelete
       ? array_push($respon['messages'], trans('fields.showcase'). ' Berhasil Dihapus.')
       : array_push($respon['messages'], trans('fields.showcase'). ' Tidak Ditemukan.');
+    
+    return $respon;
+  }
+
+  public static function expired($respon, $id, $loginid, $inputs)
+  {
+    $data = Showcase::where('showcaseactive', '1')
+    ->where('id', $id)
+    ->first();
+
+    $cekDelete = false;
+
+    if ($data != null){
+      $data->update([
+        'showcaseexpiredby' => $loginid,
+        'showcaseexpiredat' => now()->toDateTimeString(),
+        'showcaseexpiredqty' => $inputs["expiredqty"]
+      ]);
+      
+      $cekDelete = true;
+    }
+
+    $respon['status'] = $data != null && $cekDelete ? 'success': 'error';
+    $data != null && $cekDelete
+      ? array_push($respon['messages'], trans('fields.showcase'). ' Berhasil Diupdate.')
+      : array_push($respon['messages'], ' Error Kesalahan.');
     
     return $respon;
   }

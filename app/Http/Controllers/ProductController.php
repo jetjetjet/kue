@@ -103,4 +103,12 @@ class ProductController extends Controller
 		
 		return response()->json($data);
   }
+
+  public function searchProducts(Request $request)
+  {
+		$cari = $request->has('q') ? $request->q : null;
+		$data = ProductRepository::search($cari);
+		
+		return response()->json($data);
+  }
 }

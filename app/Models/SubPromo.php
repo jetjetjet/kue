@@ -13,7 +13,7 @@ class SubPromo extends Model
   public $timestamps = false;
 	protected $fillable = [
     'sppromoid',
-    'spmenuid',
+    'spproductid',
 		'spindex',
     'spactive',
     'spcreatedat',

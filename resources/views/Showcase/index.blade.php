@@ -17,10 +17,9 @@
         <thead>
           <tr>
             <th>{{ trans('fields.name')}} {{trans('fields.product')}}</th>
-            <th>{{ trans('fields.qty') }}</th>
+            <th>{{ trans('fields.stock') }}</th>
             <th>{{ trans('fields.date') }}</th>
             <th>{{ trans('fields.expDate') }}</th>
-            <th>{{ trans('fields.status') }}</th>
             <th class="no-content"></th>
           </tr>
         </thead>
@@ -84,17 +83,6 @@
           { 
             data: 'showcaseexpdate',
             searchText: true
-          },
-          { 
-            data:null,
-            searchText: true,
-            render: function(data, type, full, meta){
-              if(data.showcasestatus == 'AVAILABLE'){
-                return '<span class="badge badge-success"> Tersedia </span>';  
-              }else{
-                return '<span class="badge badge-danger"> Kosong </span>';
-              }
-            }
           },
           { 
             data:null,

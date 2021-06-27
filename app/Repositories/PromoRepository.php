@@ -3,6 +3,7 @@ namespace App\Repositories;
 
 use App\Models\Promo;
 use App\Models\SubPromo;
+use App\Models\Product;
 use Illuminate\Support\Facades\Log;
 
 use Exception;
@@ -50,21 +51,20 @@ class PromoRepository
       }
 
       $header->sub = DB::table('subpromo as sp')
-        ->join('menus as m', 'm.id', 'spmenuid')
-        ->join('menucategory as mc', 'mc.id', 'menumcid')
+        ->join('products as p', 'p.id', 'sp.spproductid')
+        ->join('productcategories as pc', 'pc.id', 'productpcid')
         ->where('sppromoid', $header->id)
         ->where('spactive', '1')
-        ->where('menuactive', '1')
+        ->where('productactive', '1')
         ->select(
           'sp.id',
-          'spmenuid',
+          'spproductid',
           'spindex',
-          'menuname',
-          'mcname as menucategory',
-          'menutype',
-          'menuavaible',
-          'menuprice',
-          DB::raw("menuprice - ". $header->promodiscount ." as menupromo "))
+          'productname',
+          'productcode',
+          'productprice',
+          'pcname as productcategory',
+          DB::raw("productprice - ". $header->promodiscount ." as productpromo "))
         ->get();
       $respon['data'] = $header;
 
@@ -101,8 +101,8 @@ class PromoRepository
       $eMsg = $e->getMessage() ?? "NOT_RECORDED";
       Log::channel('errorKape')->error("PromoSave_" .trim($eMsg));
       
-      $respon['messages'] = $e->getMessage() == "emptysubmenu" 
-        ? ["Gagal menyimpan Promo! Terdapat Sub Menu kosong"]
+      $respon['messages'] = $e->getMessage() == "emptysubproduct" 
+        ? ["Gagal menyimpan Promo! Terdapat Sub Produk kosong"]
         : ["Gagal menyimpan Promo!"];
       
       $respon['status'] = "error";
@@ -192,11 +192,11 @@ class PromoRepository
     $respon['success'] = false;
 
     foreach ($subs as $sub){
-      if(isset($sub->spmenuid)){
+      if(isset($sub->spproductid)){
         if (!isset($sub->id)){
           $detRow = SubPromo::create([
             'sppromoid' => $idHeader,
-            'spmenuid' => $sub->spmenuid,
+            'spproductid' => $sub->spproductid,
             'spindex' => $sub->index,
             'spactive' => '1',
             'spcreatedat' => now()->toDateTimeString(),
@@ -211,7 +211,7 @@ class PromoRepository
           $detRow = SubPromo::where('spactive', '1')
             ->where('id', $sub->id)
             ->update([
-              'spmenuid' => $sub->spmenuid,
+              'spproductid' => $sub->spproductid,
               'spindex' => $sub->index,
               'spmodifiedat' => now()->toDateTimeString(),
               'spmodifiedby' => $loginid]);
@@ -224,7 +224,7 @@ class PromoRepository
           }
         }
       } else {
-        throw new Exception('emptysubmenu');
+        throw new Exception('emptysubproduct');
       }
     }
     
@@ -294,13 +294,12 @@ class PromoRepository
   public static function getFields($db)
   {
     $db->id = null;
-    $db->menucategory = null;
-    $db->menuname = null;
-    $db->menutype = null;
-    $db->menuimg = null;
-    $db->menuprice = null;
+    $db->productcategory = null;
+    $db->productname = null;
+    $db->productimg = null;
+    $db->productprice = null;
     $db->promoprice = null;
-    $db->menuavaible = null;
+    $db->productcode = null;
     $db->promoname = null;
     $db->promodetail = null;
     $db->promostart = null;
@@ -311,5 +310,38 @@ class PromoRepository
     $db->sub = Array();
 
     return $db;
+  }
+
+  public static function search($cari)
+  {
+    $promo = self::searchPromo();
+    
+    return Product::join('productcategories as pc', 'pc.id', 'productpcid')
+      ->leftJoinSub($promo, 'promo', function ($join) {
+        $join->on('products.id', '=', 'promo.spproductid');
+      })
+      ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
+      ->where('spactive', '1')
+      ->whereNull('promoid')
+      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productprice', 'productcode')
+      ->orderby('productname', 'ASC')
+      ->limit(5)
+      ->get();
+  }
+
+  public static function searchPromo()
+  {
+    return DB::table('promo as p')
+      ->join('subpromo as sp', 'sppromoid', 'p.id')
+      ->where('promoactive', '1')
+      ->where('spactive', '1')
+      ->whereRaw("promoend::timestamp without time zone > now()::timestamp without time zone")
+      ->whereRaw("promostart::timestamp without time zone < now()::timestamp without time zone")
+      ->select(
+        'p.id as promoid',
+        'spproductid',
+        'promodiscount'
+      );
+
   }
 }

@@ -108,22 +108,18 @@ class OrderRepository
   {
     $data = new \StdClass();
     if($id){
-      $data = Order::leftJoin('boards', function($q){
-        $q->whereRaw('orderboardid = boards.id')
-          ->whereRaw("boardactive = '1'");})
-        ->leftJoin('users as uvoid', 'uvoid.id', 'ordervoidedby')
+      $data = Order::leftJoin('users as uvoid', 'uvoid.id', 'ordervoidedby')
         ->where('orderactive', '1')
         ->where('orders.id', $id)
         ->select(
           'orders.id',
           'orderinvoice',
-          DB::raw("concat('Meja No. ', boardnumber , ' - Lantai ', boardfloor) as orderboardtext"),
-          DB::raw("case when ordertype = 'DINEIN' then 'Makan Ditempat' else 'Bungkus' end as ordertypetext"),
-          'orderboardid',
-          'ordertype',
           DB::raw("to_char(orderdate, 'dd/mm/yyyy HH24:MI') as orderdate"),
           DB::raw("to_char(orderpaidat, 'dd/mm/yyyy HH24:MI') as orderpaiddate"),
           'orderprice',
+          'orderdp',
+          DB::raw("to_char(orderestdate, 'dd/mm/yyyy') as orderestdate"),
+          'ordercustname',
           'orderpaid',
           'orderpaidprice',
           'orderstatus',
@@ -134,17 +130,16 @@ class OrderRepository
           'ordervoidedby',
           'orderdiscountprice',
           'uvoid.username as ordervoidedusername',
-          DB::raw("CASE WHEN orders.orderstatus = 'PROCEED' THEN 'Diproses' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'ADDITIONAL' THEN 'Proses Tambah' END as orderstatuscase")
+          DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Diproses' WHEN orders.orderstatus = 'DP' THEN 'DP' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' END as orderstatuscase")
         )->first();
       if($data == null){
         $respon['status'] = 'error';
         array_push($respon['messages'],'Pesanan tidak ditemukan!');
       } else {
-        $data->subOrder = self::getSubOrder($id);
-        $cekDelivered = OrderDetail::where('oddelivered', '0')->where('odorderid', $id)->select(DB::raw("CASE WHEN oddelivered = false THEN '1' else '0' END as odstat"))->first();
-        $dId = $cekDelivered->odstat??null;
-        $data->getstat = $dId;
-      
+        $data->subs = self::getSubOrder($id);
+        
+        $data->odTypeCek= OrderDetail::where('odorderid', $id)->select(DB::raw("CASE WHEN odtype = 'PO' THEN true ELSE false END as odcek"))->orderBy('odtype', 'ASC')->first();
+
         $respon['status'] = 'success';
         $respon['data'] = $data;
       }
@@ -161,35 +156,36 @@ class OrderRepository
       ->where('spactive', '1')
       ->select(
         'p.id as promoid',
-        'spmenuid',
+        'spproductid',
         'promodiscount'
       );
 
-    return OrderDetail::join('menus',function($q){
-      $q->whereRaw("menuactive = '1'")
-        ->whereRaw("menus.id = odmenuid");})
+    return OrderDetail::join('products',function($q){
+      $q->whereRaw("productactive = '1'")
+        ->whereRaw("products.id = odproductid");})
+        ->leftJoin("showcases as s", "odshowcaseid", "s.id")
       ->leftJoinSub($promo, 'promo', function ($join) {
-        $join->on('menus.id', '=', 'promo.spmenuid');
+        $join->on('products.id', '=', 'promo.spproductid');
         $join->on('odpromoid', '=', 'promoid');
       })
       ->where('odactive', '1')
       ->where('odorderid', $idOrder)
       ->select(
         'orderdetail.id',
-        'odmenuid',
-        DB::raw("menuname as odmenutext"),
+        'odproductid',
+        DB::raw("productname as odmenutext"),
         'odqty',
+        'odtype',
         'odprice',
         'odtotalprice',
-        DB::raw("CASE WHEN oddelivered = true then 'Sudah Diantar' ELSE 'Sedang Diproses' END as oddelivertext"),
-        'oddelivered',
         'odremark',
         'odindex',
         'odispromo',
         'odpromoid',
         'odpriceraw',
         'odtotalpriceraw',
-        'promodiscount'
+        'promodiscount',
+        'showcasecode'
         )
       ->get();
   }
@@ -532,33 +528,35 @@ class OrderRepository
       ->where('id', $id)
       ->first();
 
-    $datasub = OrderDetail::where('odactive', '1')->where('odorderid', $id);
-
-    $otype = Order::where('orderactive', '1')->where('id', $id)->where('ordertype', 'TAKEAWAY')->first();
-
     $cekDelete = false;
     if ($data != null){
       $data->update([
         'orderpaymentmethod' => $inputs['orderpaymentmethod'],
-        'orderpaidprice' => $inputs['orderpaidprice'],
-        'orderdiscountprice' => $inputs['orderdiscountprice'],
-        'orderstatus' => 'PAID',
-        'orderpaid' => '1',
-        'orderpaidby' => $loginid,
-        'orderpaidat' => now()->toDateTimeString(),
+        'orderpaidprice' => $inputs['orderpaidprice']?? null,
+        'ordercustname' => $inputs['ordercustname'],
+        'orderdiscountprice' => $inputs['orderdiscountprice']??null,
+        'orderstatus' => $inputs['orderstatus']??null,
+        'orderestdate' => $inputs['orderestdate']??null,
+        'orderdp' => $inputs['orderdp']??null,
+        'orderestdate' => $inputs['orderestdate']??null,
         'ordermodifiedby' => $loginid,
         'ordermodifiedat' => now()->toDateTimeString()
       ]);
-      if ($otype != null){
-        $datasub->update([
-          'oddelivered' => '1',
-          'odmodifiedat' => now()->toDateTimeString(),
-          'odmodifiedby' => $loginid
+      if ($inputs['orderpaidprice']){
+        $data->update([
+          'orderstatus' => 'PAID',
+          'orderpaid' => '1',
+          'orderpaidby' => $loginid,
+          'orderpaidat' => now()->toDateTimeString(),
         ]);
+        $respon['status'] = 'success';
+        array_push($respon['messages'], 'Pesanan Dibayar Lunas');
+      }else{
+        $respon['status'] = 'success';
+        array_push($respon['messages'], 'Pesanan Dibayar Dimuka');
       }       
       $cekDelete = true;
-      $respon['status'] = 'success';
-      array_push($respon['messages'], 'Pesanan Dibayar');
+
     }else{
       $respon['status'] = 'error';
       array_push($respon['messages'], 'Kesalahan');

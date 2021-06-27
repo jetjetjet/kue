@@ -59,7 +59,9 @@
             </div>
             <div class="float-right">
               <a href="{{ url('/pengeluaran') }}" type="button" class="btn btn-danger mt-2" type="submit">Batal</a>
+              @if(empty($data->expenseexecutedat))
               <button class="btn btn-primary mt-2" id="sub" type="submit">Simpan</button>
+              @endif 
             </div>
           </form>
           @if($data->expenseexecutedby == '0' && Perm::can(['pengeluaran_proses']))
