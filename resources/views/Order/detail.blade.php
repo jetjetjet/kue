@@ -51,15 +51,13 @@
                   <h3 class="mt-2 mb-10" style="font-weight: 300; text-align: left; padding-left: 1.8rem;">Detail Pesanan</h3>
                   <table id=grid class="table table-bordered mb-20">
                     <thead>
-                      <th>Menu</th>
+                      <th>{{trans('fields.product')}}</th>
+                      <th>Tipe Pesanan</th>
                       <th>Qty</th>
                       <th>Harga</th>
                       <th>Promo</th>
                       <th>Total</th>
                       <th>Catatan</th>
-                      @if(!$data->orderpaid)
-                        <th>Status Pesanan</th>
-                      @endif
                     </thead>
                     <tbody>
                     </tbody>
@@ -77,13 +75,6 @@
             <div id="flStackForm" class="col-lg-12 layout-spacing layout-top-spacing pb-1">
               <div class="statbox">
                 <div class="widget-content">
-                  @if($data->ordertype == 'DINEIN')
-                    <div class="form-row">
-                      <div class='col-12'>
-                        <h3 style="color:#1b55e2"><b>{{$data->orderboardtext}}</b></h3>
-                      </div>
-                    </div>
-                  @endif
                   <div class="form-row">
                     <div class='col-12'>
                       <table class="table table-borderless">
@@ -93,17 +84,25 @@
                             <th class="col p-1 text-right dtl">{{$data->orderinvoice}}</th>
                           </tr>
                           <tr>
-                            <th style="width: 55% !important;" class="p-1 w-auto">Jenis Pesanan</th>
-                            <th class="col p-1 text-right">{{$data->ordertype == 'DINEIN' ? 'Makan Ditempat' : 'Bungkus' }}</th>
-                          </tr>
-                          <tr>
                             <th style="width: 55% !important;" class="p-1 w-auto">Tgl. Pesanan</th>
                             <th class="col p-1 text-right">{{$data->orderdate }}</th>
                           </tr>
+                          @if(isset($data->orderestdate))
+                            <tr>
+                              <th style="width: 55% !important;" class="p-1 w-auto">Tgl. Perkiraan</th>
+                              <th class="col p-1 text-right">{{$data->orderestdate }}</th>
+                            </tr>
+                          @endif
                           @if(isset($data->orderpaiddate))
                             <tr>
                               <th style="width: 55% !important;" class="p-1 w-auto">Tgl. Pembayaran</th>
                               <th class="col p-1 text-right">{{$data->orderpaiddate }}</th>
+                            </tr>
+                          @endif
+                          @if($data->orderstatus != "DRAFT")
+                            <tr>
+                              <th style="width: 55% !important;" class="p-1 w-auto">Status Pembayaran</th>
+                              <th class="col p-1 text-right">{{$data->orderstatuscase }}</th>
                             </tr>
                           @endif
                           @if(isset($data->orderpaymentmethod))
@@ -149,30 +148,53 @@
                               <h4><b class='float-right'><p id="lblGranTotal" class="my-0">{{ $lblGranTotal }}</p></b></h4>
                             </th>
                           </tr>
-                          <tr class="border-top">
-                              <?php 
-                                $lblPaid = isset($data->orderpaid) 
-                                  ? number_format($data->orderpaidprice,0)
-                                  : 0;
-                              ?>
-                            <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0">Bayar</th>
-                            <th class="py-0 my-0 text-right">
-                              <h4><b class='float-right'><p class="my-0" id="lblBayar">{{ $lblPaid }}</p></b></h4>
-                            </th>
-                          </tr>
-                          <tr>
-                            <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0">Kembalian</th>
-                            <th class="py-0 my-0 text-right">
-                              <?php 
-                                $lblKembalian = $data->orderpaid
-                                  ? isset($data->orderdiscountprice)
-                                    ? number_format($data->orderpaidprice - ($data->orderprice - $data->orderdiscountprice),0)
-                                    : number_format($data->orderpaidprice - $data->orderprice)
-                                  : 0;
-                              ?>
-                              <h4><b class='float-right'><p class="my-0" id="lblKembalian">{{ $lblKembalian }}</p></b></h4>
-                            </th>
-                          </tr>
+                            <tr class="border-top dp {{(isset($data->orderdp) && $data->odTypeCek['odcek'] || $data->orderstatus == 'DRAFT' && $data->odTypeCek['odcek'] ) ? '' : 'd-none'}}">                          
+                                <?php 
+                                  $lblDP = isset($data->orderdp) 
+                                    ? number_format($data->orderdp,0)
+                                    : 0;
+                                ?>
+                              <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0 dp">DP</th>
+                              <th class="py-0 my-0 text-right dp">
+                                <h4><b class='float-right'><p class="my-0" id="lblDP">{{ $lblDP }}</p></b></h4>
+                              </th>
+                            </tr>
+                            <tr class="dp {{(isset($data->orderdp) && $data->odTypeCek['odcek'] || $data->orderstatus == 'DRAFT' && $data->odTypeCek['odcek'] ) ? '' : 'd-none'}}">
+                              <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0 dp">Sisa Bayar</th>
+                              <th class="py-0 my-0 text-right dp">
+                                <?php 
+                                  $lblSisa = isset($data->orderdp)
+                                    ? number_format($data->orderprice - $data->orderdp - $data->orderdiscountprice)
+                                    : 0;
+                                ?>
+                                <h4><b class='float-right'><p class="my-0" id="lblSisa">{{ $lblSisa }}</p></b></h4>
+                              </th>   
+                            </tr>                             
+                            <tr class="border-top pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek'] || $data->orderstatus == 'PAID') ? 'd-none' : ''}}">
+                                <?php 
+                                  $lblPaid = isset($data->orderpaid) 
+                                    ? number_format($data->orderpaidprice,0)
+                                    : 0;
+                                ?>
+                              <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0">Bayar</th>
+                              <th class="py-0 my-0 text-right">
+                                <h4><b class='float-right'><p class="my-0" id="lblBayar">{{ $lblPaid }}</p></b></h4>
+                              </th>
+                            </tr>
+                            <tr class="pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek'] || $data->orderstatus == 'PAID') ? 'd-none' : ''}}">
+                              <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0">Kembalian</th>
+                              <th class="py-0 my-0 text-right">
+                                <?php 
+                                  $lblKembalian = $data->orderpaid
+                                    ? isset($data->orderdiscountprice)
+                                      ? number_format($data->orderpaidprice - ($data->orderprice - $data->orderdiscountprice) + $data->orderdp)
+                                      : number_format($data->orderpaidprice - $data->orderprice + $data->orderdp )
+                                    : 0;
+                                ?>
+                                <h4><b class='float-right'><p class="my-0" id="lblKembalian">{{ $lblKembalian }}</p></b></h4>
+                              </th>
+                            </tr>    
+
                         </thead>
                       </table>
                     </div>
@@ -182,28 +204,69 @@
                     <input type="hidden" id="startPrice" value="{{$data->orderprice}}">
                     <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
                     <input type="hidden" name="username" id="name" value="{{ session('username') }}" />
-                    @if($data->orderstatus == 'COMPLETED' || ($data->ordertype == 'TAKEAWAY' && !($data->orderstatus == 'PAID' || $data->orderstatus == 'VOIDED')))
+                    @if($data->orderstatus == 'DRAFT' || $data->orderstatus == 'DP')
                       <div class="form-row mt-2">
+                        <div class='col-md-5 col-sm-6 xs-6 mt-2'>
+                          <h4>Nama Pelanggan</h4>
+                        </div>
+                        <div class='col-md-7 col-sm-6 xs-6 mt-1'>
+                          <input type="text" class="form-control" {{($data->orderstatus == 'DP') ? 'readonly' : ''}} required name="ordercustname" id="custs" value="{{ old('ordercustname', $data->ordercustname) }}" placeholder="Nama Pelanggan">
+                        </div>
+                        @if($data->orderstatus == 'DP')
+                        @elseif($data->odTypeCek['odcek'])
+                          <div class='col-md-5 col-sm-6 xs-6 mt-2'>
+                            <h4>Sistem Pembayaran</h4>
+                          </div>
+                          <div class='col-md-7 col-sm-6 xs-6 mt-1'>
+                            <select class="form-control mousetrap" id="type" name="orderstatus">
+                              <option value="DP" {{ old('orderstatus', $data->orderstatus) == 'DP' ? ' selected' : '' }}> DP</option>
+                              <option value="PAID" {{ old('orderstatus', $data->orderstatus) == 'PAID' ? ' selected' : '' }}> Lunas</option>
+                            </select>  
+                          </div>
+                        @endif
                         <div class='col-md-5 col-sm-6 xs-6 mt-2'>
                           <h4>Jenis Pembayaran</h4>
                         </div>
-                        <div class='col-md-7 col-sm-6 xs-6'>
+                        <div class='col-md-7 col-sm-6 xs-6 mt-1'>
                           <select class="form-control mousetrap" id="type" name="orderpaymentmethod">
                             <option value="Tunai" {{ old('orderpaymentmethod', $data->orderpaymentmethod) == 'Tunai' ? ' selected' : '' }}> Tunai</option>
                             <option value="Non-Tunai" {{ old('orderpaymentmethod', $data->orderpaymentmethod) == 'Non-Tunai' ? ' selected' : '' }}> Non-Tunai</option>
                           </select>  
                         </div>
-                        <div class='col-md-5 col-sm-6 xs-6 mt-2'>
+                        @if($data->orderstatus == 'DP')
+                        <input type="hidden" value="{{$data->orderdp}}" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
+                        <input type="hidden" readonly name="orderstatus" class="form-control" required value="PAID">
+                        <input type="hidden" class="d-none" name="orderestdate" id='date' value='{{$data->orderestdate}}' placeholder="Tanggal">
+                        @elseif($data->odTypeCek['odcek'])
+                          <div class='col-md-5 col-sm-6 xs-6 mt-2'>
+                            <h4>Perkiraan Selesai</h4>
+                          </div>
+                          <div class='col-md-7 col-sm-6 xs-6 mt-1'>
+                            <input type="date" class="form-control mousetrap flatpickr text-right flatpickr-input date" id="date" required name="orderestdate" placeholder="Tanggal">
+                          </div>
+                          <div class='col-md-5 col-sm-6 xs-6 mt-2 dp'>
+                            <h4>Nominal DP</h4>
+                          </div>
+                          <div class='col-md-7 col-sm-6 xs-6 mt-1 dp'>
+                            <input autofocus type="number" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
+                          </div>
+                          <input type="hidden" readonly id="odValid" class="form-control" required value="true">
+                        @else
+                          <input type="hidden" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
+                          <input type="hidden" readonly name="orderstatus" class="form-control" required value="PAID">
+                          <input type="hidden" class="d-none" id='date' value='1' placeholder="Tanggal">
+                        @endif
+                        <div class="col-md-5 col-sm-6 xs-6 mt-2 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
                           <h4>Diskon</h4>
                         </div>
-                        <div class='col-md-7 col-sm-6 xs-6 mt-1'>
-                          <input type="number" class="form-control text-right mousetrap" required name="orderdiscountprice" id="diskon" placeholder="Diskon">
+                        <div class="col-md-7 col-sm-6 xs-6 mt-1 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
+                          <input type="number" class="form-control text-right mousetrap pdInput" required name="orderdiscountprice" id="diskon" placeholder="Diskon">
                         </div>
-                        <div class='col-md-5 col-sm-6 xs-6 mt-2'>
+                        <div class="col-md-5 col-sm-6 xs-6 mt-2 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
                           <h4>Nominal Bayar</h4>
                         </div>
-                        <div class='col-md-7 col-sm-6 xs-6 mt-1'>
-                          <input autofocus type="number" class="form-control text-right mousetrap mb-2" required name="orderpaidprice" id="bayar" placeholder="Jumlah Uang"> 
+                        <div class="col-md-7 col-sm-6 xs-6 mt-1 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
+                          <input autofocus type="number" class="form-control text-right mousetrap mb-2 pdInput" required name="orderpaidprice" id="bayar" placeholder="Jumlah Uang"> 
                         </div>
                       </div>
                     @else
@@ -227,13 +290,20 @@
     <div id="fixbot" class="row fixed-bottom">
       <div class="col-sm-12 ">
         <div class="widget-content widget-content-area" style="padding:10px">
+          <div class="float-left">
+            @if(Perm::can(['order_batal']) && isset($data->id) && !($data->orderstatus == "VOIDED" || $data->orderstatus == "PAID" || $data->orderstatus == "DRAFT"))
+              <a id="void" type="button" class="btn btn-danger mt-2">Batalkan Pesanan</a>
+            @elseif($data->orderstatus == "DRAFT")
+              <a href="" id="deleteOrder" type="button" class="btn btn-danger mt-2">{{trans('fields.delete')}}</a>
+            @endif
+          </div>
           <div class="float-right">
-            <a href="{{url('/order/meja/view')}}" id="back" type="button" class="btn btn-warning mt-2">Kembali</a>
+            <a href="{{url('/')}}" id="back" type="button" class="btn btn-warning mt-2">Kembali</a>
             @if($data->orderstatus == 'PAID')
               <button id="print" class="btn btn-success mt-2">Cetak</button>
             @endif
             @if(!($data->orderstatus == 'VOIDED' || $data->orderstatus == 'PAID'))
-              @if($data->ordertype == 'TAKEAWAY' || Perm::can(['order_pelayan']))
+              @if(Perm::can(['order_pelayan']))
               <a href="{{ url('/order').'/'.$data->id }}" type="button" id="headerOrder" class="btn btn-success mt-2">Ubah Pesanan</a>
               @endif
               <!-- <a href="" type="button" id="drawer" class="btn btn-success mt-2">Buka Laci</a> -->
@@ -299,17 +369,22 @@
       let price = $("#afterPrice").val();   
       let pay = $('#bayar').val();
       let diskon = $("#diskon").val();
-      let change = + Number(diskon) + (Number(pay) - Number(sPrice))
+      let dp = $("#dp").val();
+      let tgl = $("#date").val()
+      let change = + Number(diskon) + (Number(pay) - Number(sPrice)) + Number(dp);
       
-      if(Number(diskon) >= Number(sPrice) || Number(change) < 0){
+      if(Number(diskon) >= Number(sPrice) || Number(dp) >= Number(sPrice) || Number(change) < 0){
         $('#lblKembalian').html(0);
         $('#lblBayar').html(formatter.format(pay));
         $('#drawer').attr('disabled', true);
-      }else if(Number(change) >= 0){
+        $("#lblDP").html(formatter.format(dp));
+      }else if(Number(change) >= 0 && tgl){
         $("#lblKembalian").html(formatter.format(change));
         $('#lblBayar').html(formatter.format(pay));
+        $("#lblDP").html(formatter.format(dp));
         $('#drawer').removeAttr('disabled');
       } else {
+        $("#lblDP").html(formatter.format(0));
         $('#lblKembalian').html(0);
         $('#lblBayar').html(0);
         $('#drawer').attr('disabled', true);
@@ -338,21 +413,81 @@
       }  
     }
 
+    let DPChange = function()
+    {
+      let sPrice = $("#lblGranTotal").html();
+      let diskon = $("#dp").val();
+      let pay = $('#bayar').val();
+      let valid = $('#odValid').val();
+      let tgl = $("#date").val()
+      let discPrice = Number(sPrice) - Number(diskon)
+
+      if( Number(sPrice) <= Number(diskon) ){
+        $("#lblDP").html(formatter.format(diskon));
+        $("#lblSisa").html("Error");
+        // $("#afterPrice").val(Number(sPrice));
+        $('#drawer').attr('disabled', true);
+      } else if(Number(diskon) && !Number(pay) && valid == "true" && tgl){
+        $("#lblSisa").html(formatter.format(discPrice));
+        $("#lblDP").html(formatter.format(diskon));
+        $('#drawer').removeAttr('disabled');
+        // $("#afterPrice").val(Number(discPrice));
+      } else if(Number(diskon) && !Number(pay)){
+        $("#lblSisa").html(formatter.format(discPrice));
+        $("#lblDP").html(formatter.format(diskon));
+      } else {
+        $("#lblDP").html(0);
+        $("#lblSisa").html(0);
+        // $("#afterPrice").val(Number(sPrice));
+      }  
+    }
+
 
   $(document).ready(function (){
+
+    $('#deleteOrder').on('click', function (e) {
+      e.preventDefault();
+      
+      const url = "{{ url('order/hapus') . '/' }}" + '{{$data->id}}';
+      const title = 'Hapus Pesanan';
+      gridDeleteInput3(url, title, null, function(callb){
+        setTimeout(() => {
+          window.location = "{{ url('/') }}";
+        }, 2000);
+      });
+    });
+
+    $('#void').on('click', function (e) {
+      e.preventDefault();
+      
+      const url = "{{ url('order/batal') . '/' }}" + '{{$data->id}}';
+      const title = 'Batalkan Pesanan';
+      const pesan = 'Alasan batal?'
+      gridDeleteInput2(url, title, pesan, null);
+    });
+
     //hotkey
       Mousetrap.bind('enter', function() {
         let sPrice = $("#startPrice").val(); 
         let pay = $('#bayar').val();
         let diskon = $("#diskon").val();
-        let change = Number(sPrice) - Number(diskon)
-        if(Number(pay) == -1){
+        let dp = $("#dp").val();
+        let valid = $('#odValid').val();
+        let tgl = $("#date").val()
+        let change = Number(sPrice) - Number(diskon)- Number(dp);
+        if(dp && valid == "true" && Number(dp)<Number(sPrice) && tgl){
+          $('#drawer').trigger('click')       
+        }else if(!tgl){
+          alert('Tanggal tidak boleh kosong')
+        }else if(Number(dp) >= Number(sPrice)){
+          alert('Jumlah DP melebihi harga')
+        }else if(Number(pay) == -1){
           alert('Pesanan Belum selesai')
         }else if(Number(pay) == 0){
           alert('Masukkan jumlah uang')
         }else if(Number(pay) < Number(change)){
           alert('Jumlah Uang tidak mencukupi')
-        }else{
+        }else if(tgl){
           $('#drawer').trigger('click')
         }
       });
@@ -381,12 +516,22 @@
         $(window).on('hidden.bs.modal', function() { 
           Mousetrap.unbind('backspace')
             $('#bayar').focus()
+            $('#dp').focus()
             Mousetrap.bind('enter', function() {
               let sPrice = $("#startPrice").val(); 
               let pay = $('#bayar').val();
               let diskon = $("#diskon").val();
-              let change = Number(sPrice) - Number(diskon)
-              if(Number(pay) == 0){
+              let valid = $('#odValid').val();
+              let dp = $("#dp").val();
+              let tgl = $("#date").val()
+              let change = Number(sPrice) - Number(diskon) - Number(dp);
+              if(dp && valid == "true" && Number(dp)<Number(sPrice)){
+                $('#drawer').trigger('click')       
+              }else if(!tgl){
+                alert('Tanggal tidak boleh kosong')
+              }else if(Number(dp) >= Number(sPrice)){
+                alert('Jumlah DP melebihi harga')
+              }else if(Number(pay) == 0){
                 alert('Masukkan jumlah uang')
               }else if(Number(pay) < Number(change)){
                 alert('Jumlah Uang tidak mencukupi')
@@ -403,7 +548,8 @@
       var price = $("#startPrice").val();
       var pay = $('#bayar').val();
       let diskon = $("#diskon").val();
-      var change = Number(pay) - (Number(price) - Number(diskon));
+      let dp = $("#dp").val();
+      var change = Number(pay) - (Number(price) - Number(diskon)) + Number(dp);
       Swal.fire('Sedang Diproses')
       Swal.showLoading()
       $.ajax({
@@ -440,20 +586,47 @@
     $('#buttOut').on('click', function(){
       $('#orderMenuForm').submit();
     })
-    // $('#bayar').setupMask(0);
+
+    $('#prosesOrder').on('click', function(){
+      $('#orderMenuForm').submit();
+    })
+
+    $('#type').on('change', function(){
+      if(this.value == "DP"){
+        var price = $("#startPrice").val();
+        $('.dp').removeClass('d-none')
+        $('.pd').addClass('d-none')
+        $('.pdInput').val("")
+        $('#lblKembalian').html(0);
+        $('#lblBayar').html(0);
+        $('#lblDiskon').html("-");
+        $("#lblGranTotal").html(formatter.format(price));
+        $('#drawer').attr('disabled', true);
+      }else{
+        $('.pd').removeClass('d-none')
+        $('.dp').addClass('d-none')
+        $('.dpInput').val("")
+        $('#lblDP').html("0")
+        $('#lblSisa').html("0")
+        $('#drawer').attr('disabled', true);
+      }
+    })
 
     $('#bayar').on('keyup',function(){
       payAndchange();
       disChange();
     });
+
     $('#diskon').on('keyup',function(){
       payAndchange();
       disChange();
+      DPChange();
     });
 
-    $('#prosesOrder').on('click', function(){
-      $('#orderMenuForm').submit();
-    })
+    $('#dp').on('keyup',function(){
+      payAndchange();
+      DPChange();
+    });
 
     //disable enter form
     $('#orderMenuForm').on('keyup keypress', function(e) {
@@ -465,6 +638,17 @@
   });
     //e
 
+    flatpickr($('#date'), {
+        dateFormat: "d-m-Y",
+        altInput: false,
+        altFormat: "Y-m-d",
+        minDate: "today",
+        defaultDate: "{{Carbon\Carbon::now()}}",
+        position: "above",
+        onChange: function(){
+          DPChange();
+        }
+      });
 
     let grid = $('#grid').DataTable({
       ajax: {
@@ -484,6 +668,18 @@
              : '';
 
             return data.odmenutext + prm;
+          }
+        },
+        { 
+          data: null,
+          render: function(data, type, full, meta){
+            let odtype = data.odtype == "READYSTOCK"
+            ? data.showcasecode
+              ? "{{trans('fields.readyStock')}} - "+ data.showcasecode
+              : "{{trans('fields.readyStock')}}"
+            : "{{trans('fields.preOrder')}}"
+
+            return odtype;
           }
         },
         { 
@@ -513,17 +709,6 @@
         { 
           data: 'odremark',
         },
-        @if(!$data->orderpaid)
-        {
-          data: null,
-          render: function(data, type, full, meta){
-            let textDeliv = data.oddelivertext == "Sedang Diproses"
-              ? '<span class="badge badge-danger"> Sedang Diproses </span>'
-              : '<span class="badge badge-info"> Sudah Diantar </span>';
-            return textDeliv;
-          }
-        }
-        @endif
       ]
     });
 
