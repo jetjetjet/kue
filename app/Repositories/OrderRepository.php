@@ -685,4 +685,57 @@ class OrderRepository
 
     return $respon;
   }
+
+  public static function dashboardCount()
+  {
+    $qOrder = Order::where('orderactive', '1')
+      ->whereIn('orderstatus', Array('DRAFT', 'VOIDED'))
+      ->count();
+    
+    $qExpense = DB::table('expenses as e')
+      ->where('expenseactive', '1')
+      ->whereNotNull('expenseexecutedat')
+      ->count();
+    
+    $qPO = DB::table('orderdetail as od')
+      ->join('orders as o', 'o.id', 'od.odorderid')
+      ->where('orderactive', '1')
+      ->where('odactive', '1')
+      ->where('orderpaid', '0')
+      ->where('odtype', 'PO')
+      ->sum('odqty');
+    
+    $qRstock = DB::table('product_stock')
+      ->sum('qty');
+
+    return Array(
+      'orderCount' => $qOrder,
+      'expenseCount' => $qExpense,
+      'preOrderSum' => $qPO,
+      'stockSum' => $qRstock
+    );
+  }
+
+  public static function dashboardPO()
+  {
+    return DB::table('orderdetail as od')
+      ->join('orders as o', 'o.id', 'od.odorderid')
+      ->join('products as p', 'p.id', 'odproductid')
+      ->where('orderactive', '1')
+      ->where('odactive', '1')
+      ->where('orderpaid', '0')
+      ->where('odtype', 'PO')
+      ->where('orderpaid', '0')
+      // ->whereNotIn('orderstatus', Array('DRAFT'))
+      // BLM TAMBAH FILTER ORDERSETTLED
+      ->select(
+        'ordercustname',
+        'productname',
+        DB::raw("'01-06-2021' as estdate"),
+        'odqty',
+        'odremark'
+      )
+      // ->orderBy('') // ORDER BY ESTDATE ASC
+      ->limit(5)->get();
+  }
 }

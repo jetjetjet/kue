@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Repositories\OrderRepository;
-use App\Repositories\MenuRepository;
+use App\Repositories\ProductRepository;
 use Carbon\Carbon;
 use Auth;
 
@@ -14,6 +14,8 @@ class DashboardController extends Controller
   {
     $data = new \StdClass();
     $data->thn = Array();
+    $data->count = OrderRepository::dashboardCount();
+    $data->PO = OrderRepository::dashboardPO();
     $thn = Carbon::now()->format('Y');
     $crThn = 2021 - $thn;
     array_push($data->thn,$thn-0);
@@ -33,7 +35,7 @@ class DashboardController extends Controller
       $temp->skrg = $blnNow == $key + 1 ? true:false;
       array_push($data->bln, $temp);
     }
-
+    
     return view('Dashboard.index')->with('data', $data);
   }
 
@@ -57,7 +59,7 @@ class DashboardController extends Controller
     $filterMenu = Array( 
       1 => "odcreatedat::date between '". $awal . "'::date and '" . $akhir . "'::date"
     );
-    $data['topMenu'] = MenuRepository::topMenu($filterMenu);
+    $data['topMenu'] = ProductRepository::topProduct($filterMenu);
 
     return response()->json($data);
   }

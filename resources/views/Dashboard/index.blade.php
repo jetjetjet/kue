@@ -7,76 +7,7 @@
 
 	<link href="{{ url('/') }}/assets/css/components/custom-media_object.css" rel="stylesheet" type="text/css" />
 	<link href="{{ url('/') }}/assets/css/elements/infobox.css" rel="stylesheet" type="text/css" />
-	<style type="text/css">
-    /*
- * Off Canvas at medium breakpoint
- * --------------------------------------------------
- */
-
-    @media screen and (max-width: 48em) {
-      .row-offcanvas {
-        position: relative;
-        -webkit-transition: all 0.25s ease-out;
-        -moz-transition: all 0.25s ease-out;
-        transition: all 0.25s ease-out;
-      }
-      .row-offcanvas-left .sidebar-offcanvas {
-        left: -33%;
-      }
-      .row-offcanvas-left.active {
-        left: 33%;
-        margin-left: -6px;
-      }
-      .sidebar-offcanvas {
-        position: absolute;
-        top: 0;
-        width: 33%;
-        height: 100%;
-      }
-    }
-    /*
- * Off Canvas wider at sm breakpoint
- * --------------------------------------------------
- */
-
-    @media screen and (max-width: 34em) {
-      .row-offcanvas-left .sidebar-offcanvas {
-        left: -45%;
-      }
-      .row-offcanvas-left.active {
-        left: 45%;
-        margin-left: -6px;
-      }
-      .sidebar-offcanvas {
-        width: 45%;
-      }
-    }
-
-    .card {
-      overflow: hidden;
-    }
-
-    .card-block .rotate {
-      z-index: 8;
-      float: right;
-      height: 100%;
-    }
-
-    .card-block .rotate i {
-      color: rgba(20, 20, 20, 0.15);
-      position: absolute;
-      left: 0;
-      left: auto;
-      right: -10px;
-      bottom: 0;
-      display: block;
-      -webkit-transform: rotate(-44deg);
-      -moz-transform: rotate(-44deg);
-      -o-transform: rotate(-44deg);
-      -ms-transform: rotate(-44deg);
-      transform: rotate(-44deg);
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="{{ url('/') }}/css/dash.css">
 @endsection
 
 @section('content-breadcumb')
@@ -86,91 +17,101 @@
 @endsection
 
 @section('content-body')
+	<section class="hero is-info welcome is-small">
+		<div class="hero-body">
+			<div class="container">
+				<h1 class="title">
+					Halo, {{ session('username') }}.
+				</h1>
+				<!-- <h2 class="subtitle">
+					I hope you are having a great day!
+				</h2> -->
+				<a class="btn btn-success" href="{{ url('/') }}/order" onclick="myFunction()">{{ trans('fields.order') }}</a>
+			</div>
+		</div>
+	</section>
+	<section class="info-tiles mt-5">
+		<div class="tile is-ancestor has-text-centered">
+			<div class="tile is-parent">
+				<article class="tile is-child box">
+					<p class="title">{{ $data->count['orderCount'] }}</p>
+					<p class="subtitle">{{ trans('fields.totalTransaction') }}</p>
+				</article>
+			</div>
+			<div class="tile is-parent">
+				<article class="tile is-child box">
+					<p class="title">{{ $data->count['expenseCount'] }}</p>
+					<p class="subtitle">Total Pengeluaran</p>
+				</article>
+			</div>
+			<div class="tile is-parent">
+				<article class="tile is-child box">
+					<p class="title">{{ $data->count['preOrderSum'] }}</p>
+					<p class="subtitle">{{ trans('fields.preOrder') }}</p>
+				</article>
+			</div>
+			<div class="tile is-parent">
+				<article class="tile is-child box">
+					<p class="title">{{ $data->count['stockSum'] }}</p>
+					<p class="subtitle">{{ trans('fields.readyStock') }}</p>
+				</article>
+			</div>
+		</div>
+	</section>
   <div class="row layout-top-spacing">
-		<!-- <div class="form-row"> -->
-		<div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12 layout-spacing">
-			<a href="{{url('/order/meja/view')}}">
-				<div class="widget widget-card-four">
-					<div class="widget-content">
-						<div class="w-content">
-							<div class="w-info">
-								<h6 class="value">Meja Pesanan</h6>
-							</div>
-							<div class="">
-								<div class="w-icon">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-								</div>
-							</div>
-						</div>
-						<div class="progress">
-							<div class="progress-bar bg-gradient-secondary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-						</div>
-					</div>
-				</div>
-			</a>
-		</div>
-		<div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12 layout-spacing">
-			<a href="{{url('/order')}}">
-				<div class="widget widget-card-four">
-					<div class="widget-content">
-						<div class="w-content">
-							<div class="w-info">
-								<h6 class="value">Buat Baru</h6>
-								<p class="">Transaksi</p>
-							</div>
-							<div class="">
-								<div class="w-icon">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-								</div>
-							</div>
-						</div>
-						<div class="progress">
-							<div class="progress-bar bg-gradient-secondary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-						</div>
-					</div>
-				</div>
-			</a>
-		</div>
-		<div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12 layout-spacing">
-			<a href="{{url('/dapur')}}">
-				<div class="widget widget-card-four">
-					<div class="widget-content">
-						<div class="w-content">
-							<div class="w-info">
-								<h6 class="value">Dapur</h6>
-								<p class="">Daftar Pesanan</p>
-							</div>
-							<div class="">
-								<div class="w-icon">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-monitor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-								</div>
-							</div>
-						</div>
-						<div class="progress">
-							<div class="progress-bar bg-gradient-secondary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-						</div>
-					</div>
-				</div>
-			</a>
-		</div>
-		<!-- shift -->
-		<div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12 layout-spacing">
+		<div class="col-md-12 col-sm-12 col-12 layout-spacing">
 			<a href="{{url('order/index')}}">
 				<div class="widget widget-card-four">
 					<div class="widget-content">
-						<div class="w-content">
-							<div class="w-info">
-								<h6 class="value">Pesanan</h6>
-								<p class="">Tabel</p>
-							</div>
-							<div class="">
-								<div class="w-icon">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-list"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+						<div class="card-body">
+							<div class="d-md-flex align-items-center">
+								<div>
+									<h4 class="card-title">Top Selling Products</h4>
 								</div>
 							</div>
 						</div>
-						<div class="progress">
-							<div class="progress-bar bg-gradient-secondary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+						<div class="table-responsive">
+							<table class="table v-middle">
+								<thead>
+										<tr class="bg-light">
+											<th class="border-top-0">{{ trans('fields.customerName') }}</th>
+											<th class="border-top-0">{{ trans('fields.productName') }}</th>
+											<th class="border-top-0">{{ trans('fields.estDate') }}</th>
+											<th class="border-top-0">{{ trans('fields.qty') }}</th>
+											<th class="border-top-0">{{ trans('fields.remark') }}</th>
+										</tr>
+								</thead>
+								<tbody>
+										<!-- <td>
+											<div class="d-flex align-items-center">
+													<div class="m-r-10"><a class="btn btn-circle btn-info text-white">EA</a></div>
+													<div class="">
+															<h4 class="m-b-0 font-16">Elite Admin</h4>
+													</div>
+											</div>
+										</td> -->
+									@foreach($data->PO as $itemPO)
+										<tr>
+											<td>
+												<h4 class="m-b-0 font-16">{{ $itemPO->ordercustname }}</h4>
+											</td>
+											<td>
+												<label class="label label-danger">{{ $itemPO->productname }}</label>
+											</td>
+											<td>
+												<label class="label label-danger">{{ $itemPO->estdate }}</label>
+											</td>
+											<td>
+												<label class="label label-danger">{{ $itemPO->odqty }}</label>
+											</td>
+											<td> {{ $itemPO->odremark }} </td>
+										</tr>
+									@endforeach
+								</tbody>
+							</table>
+						</div>
+						<div class="text-right">
+							<a class="btn btn-info" href="#" onclick="myFunction()">{{ trans('fields.readMore') }}</a>
 						</div>
 					</div>
 				</div>
