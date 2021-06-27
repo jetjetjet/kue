@@ -22,6 +22,7 @@ class CreateOrdersTable extends Migration
             $table->dateTime('orderdate');
             $table->decimal('orderprice',16,0);
             $table->decimal('orderdp',16,0)->nullable();
+            $table->dateTime('orderestdate')->nullable();
             $table->string('orderstatus');
             $table->string('orderdetail')->nullable();
             $table->string('orderpaymentmethod')->nullable();

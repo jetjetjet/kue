@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 use App\Libs\Helpers;
 use App\Libs\Cetak;
-use App\Http\Controllers\ShiftController;
+// use App\Http\Controllers\ShiftController;
 use App\Repositories\OrderRepository;
 use App\Repositories\MenuRepository;
 use App\Repositories\ProductRepository;
@@ -58,15 +58,15 @@ class OrderController extends Controller
   {
     $url = $request->path();
     $kasir = Auth::user()->can(['order_pembayaran'],[]);
-    if($kasir){
-      $cekShift = ShiftRepository::cekShiftStatus();
-      if (!$cekShift){
-				$request->session()->put('urlintend', (string)$url);
-        $request->session()->flash('warning', ['Shift belum diisi. Mohon diisi terlebih dahulu']);
+    // if($kasir){
+    //   $cekShift = ShiftRepository::cekShiftStatus();
+    //   if (!$cekShift){
+		// 		$request->session()->put('urlintend', (string)$url);
+    //     $request->session()->flash('warning', ['Shift belum diisi. Mohon diisi terlebih dahulu']);
 				
-        return redirect()->action([ShiftController::class, 'getById']);
-      }
-    }
+    //     return redirect()->action([ShiftController::class, 'getById']);
+    //   }
+    // }
     $respon = Helpers::$responses;
     $results = OrderRepository::getOrder($respon, $id);
 
@@ -77,6 +77,13 @@ class OrderController extends Controller
 
     return view('Order.detail')->with('data', $results['data']);
   }
+
+  public function getDetail(Request $request, $idOrder)
+	{
+		$results = OrderRepository::GetSubOrder($idOrder);
+		
+		return response()->json($results);
+	}
 
   public function save(Request $request, $id = null)
   {
@@ -127,10 +134,10 @@ class OrderController extends Controller
 		$respon = Helpers::$responses;
 
     $inputs = $request->all();
-	
-		$loginid = Auth::user()->getAuthIdentifier();
+ 
+    $loginid = Auth::user()->getAuthIdentifier();
 		$results = OrderRepository::paid($respon, $id, $loginid, $inputs);
-		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Bayar Pesanan', $loginid);
+		AuditTrailRepository::saveAuditTrail($request->path(), $results, "Transaksi", $loginid);
 
 		// if($results['status'] == "success"){
 		// 	event(new BoardEvent('ok'));
@@ -139,7 +146,7 @@ class OrderController extends Controller
 		self::orderReceiptkasir($id, $request);
 		$request->session()->flash($results['status'], $results['messages']);
 
-		return redirect('/order/meja/view');
+		return redirect('/');
 	}
 
 	public function orderReceipt($idOrder)
