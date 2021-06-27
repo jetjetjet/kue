@@ -111,8 +111,9 @@
         const url = "{{ url('showcase/hapus') . '/' }}" + rowData.id;
         const title = 'Hapus Menu';
         const pesan = 'Apakah anda yakin ingin menghapus data ini?'
+        const batal = 'Data Showcase batal dihapus'
         //console.log(rowData, url)
-        gridDeleteRow(url, title, pesan, grid);
+        gridDeleteRow(url, title, pesan, batal, grid);
       });
     });
 

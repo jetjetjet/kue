@@ -309,7 +309,7 @@ function gridDeleteInput3(url, title, message, callbackfn){
   });
 }
 
-function gridDeleteRow(url, title, message, grid){
+function gridDeleteRow(url, title, message, batal, grid){
   const swalWithBootstrapButtons = swal.mixin({
     confirmButtonClass: 'btn btn-success btn-rounded',
     cancelButtonClass: 'btn btn-danger btn-rounded mr-3',
@@ -338,7 +338,7 @@ function gridDeleteRow(url, title, message, grid){
     } else if (
       result.dismiss === swal.DismissReason.cancel
     ) {
-      sweetAlert('Batal','Data meja batal hapus','error')
+      sweetAlert('Batal',batal,'error')
     }
   });
 }

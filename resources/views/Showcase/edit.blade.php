@@ -137,9 +137,6 @@
                   </div>
                   <div class="float-left mt-2">
                     @if(isset($data->id) && empty($data->showcaseexpiredat) && Perm::can(['order_pelayan']))
-                      <a href="" type="button" id="oosBtn" class="btn btn-success mt-2">{{ trans('fields.outOfStock') }}</a>
-                    @endif
-                    @if(isset($data->id) && empty($data->showcaseexpiredat) && Perm::can(['order_pelayan']))
                       <a type="button" id="expBtn" class="btn btn-danger mt-2">{{ trans('fields.expired') }}</a>
                     @endif
                   </div>
@@ -229,6 +226,7 @@
               type: 'success',
               title: msg
             })
+            location.reload()
           } else{
             toast({
               type: 'error',
