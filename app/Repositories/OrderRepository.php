@@ -83,7 +83,8 @@ class OrderRepository
   public static function orderChart($filter, $range, $month)
   {
     $transaction = Order::select(DB::raw('ordercreatedat::date as date,sum(orderprice) as total'))
-      ->where('orderstatus', 'PAID')
+      ->whereNotNull('orderpaidat')
+      // ->where('orderstatus', 'PAID')
       ->where('orderactive', '1')
       ->whereRaw("orderdate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
       ->groupBy(DB::raw('ordercreatedat::date'))->get();
@@ -741,8 +742,8 @@ class OrderRepository
       ->where('odactive', '1')
       ->whereNull('ordervoid')
       ->where('odtype', 'PO')
-      ->where('orderpaid', '0')
-      ->whereNotIn('orderstatus', Array('DRAFT', 'COMPLETED', 'VOID'));
+      ->whereNull('ordercompleteddate')
+      ->whereNotIn('orderstatus', Array('DRAFT', 'COMPLETED', 'VOIDED'));
   }
 
   public static function notifCount($respon)
@@ -785,7 +786,7 @@ class OrderRepository
       ->whereNotIn('orderstatus', Array('DRAFT', 'VOIDED'))
       ->where('orderactive', '1')
       ->where('odactive', '1')
-      ->where('orderpaid', '0')
+      ->whereNull('ordercompleteddate')
       ->where('odtype', 'PO')
       ->sum('odqty');
     
