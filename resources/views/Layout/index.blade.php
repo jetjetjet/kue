@@ -70,7 +70,7 @@
 			<div class="overlay"></div>
       <input type='hidden' id='bukalaci' value="{{url('/open/drawerauth')}}">
       <input type='hidden' id='ping' value="{{url('/cek/printer')}}">
-      <input type='hidden' id='board' value="{{url('/order/meja/view')}}">
+      <input type='hidden' id='board' value="{{url('/')}}">
 			<div class="search-overlay"></div>
 			<!--  BEGIN CONTENT PART  -->
 			<div id="content" class="main-content">

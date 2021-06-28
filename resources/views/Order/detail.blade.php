@@ -50,7 +50,7 @@
     </div>
   @endif
   @if($data->orderstatus == "DP")
-    <div class="alert alert-warning" role="alert">
+    <div class="alert custom-alert-1" role="alert">
       <strong>Pesanan Dibayar dimuka</strong>
         <ul>
           <li>Nama Pelanggan : <b>{{$data->ordercustname}}</b></li>
@@ -255,6 +255,7 @@
                         <input type="hidden" value="{{$data->orderdp}}" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
                         <input type="hidden" readonly name="orderstatus" class="form-control" required value="COMPLETED">
                         <input type="hidden" class="d-none" name="orderestdate" id='date' value='{{$data->orderestdate}}' placeholder="Tanggal">
+                        <input type="hidden" readonly name="orderremainingpaid" value='{{$data->orderremainingpaid}}' class="form-control dpInput" required>
                         @elseif($data->odTypeCek['odcek'])
                           <div class='col-md-5 col-sm-6 xs-6 mt-2'>
                             <h4>Perkiraan Selesai</h4>
@@ -269,10 +270,11 @@
                             <input autofocus type="number" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
                           </div>
                           <input type="hidden" readonly id="odValid" class="form-control" required value="true">
+                          <input type="hidden" readonly id="sisa" name="orderremainingpaid" class="form-control dpInput" required>
                         @else
-                          <input type="hidden" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
                           <input type="hidden" readonly name="orderstatus" class="form-control" required value="COMPLETED">
                           <input type="hidden" class="d-none" id='date' value='1' placeholder="Tanggal">
+                          <input type="hidden" class="d-none" id='dp'>
                         @endif
                         <div class="col-md-5 col-sm-6 xs-6 mt-2 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
                           <h4>Diskon</h4>
@@ -302,10 +304,6 @@
                     @endif
                     </div>
                   </form>  
-                  <form id="miniform" method="post" novalidate action="{{url('/order/bayar/cetak')}}/{{$data->id}}">
-                    <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
-                    <input type="hidden" name="username" id="name" value="{{ session('username') }}" />
-                  </form>
                   <form method="post" id="completeform" novalidate action="{{url('/order/selesai')}}/{{$data->id}}">
                     <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
                     <input type="hidden" name="username" id="name" value="{{ session('username') }}" />
@@ -329,11 +327,11 @@
             @elseif($data->orderstatus == "DRAFT")
               <a href="" id="deleteOrder" type="button" class="btn btn-danger mt-2">{{trans('fields.delete')}}</a>
             @endif
+            <a href="{{url('/')}}" id="back" type="button" class="btn btn-warning mt-2">Kembali</a>
           </div>
           <div class="float-right">
-            <a href="{{url('/')}}" id="back" type="button" class="btn btn-warning mt-2">Kembali</a>
-            @if($data->orderstatus == 'COMPLETED')
-              <button id="print" class="btn btn-success mt-2">Cetak</button>
+            @if($data->orderstatus != 'DRAFT' && $data->orderstatus != 'VOIDED')
+              <button id="print" class="btn btn-secondary mt-2">Cetak</button>
             @endif
             @if(!($data->orderstatus == 'VOIDED' || $data->orderstatus == 'PAID' || $data->orderstatus == 'COMPLETED'))
               @if(Perm::can(['order_pelayan']))
@@ -404,6 +402,7 @@
       let diskon = $("#diskon").val();
       let dp = $("#dp").val();
       let tgl = $("#date").val()
+      let cust = $("#custs").val()
       let change = + Number(diskon) + (Number(pay) - Number(sPrice)) + Number(dp);
       
       if(Number(diskon) >= Number(sPrice) || Number(dp) >= Number(sPrice) || Number(change) < 0){
@@ -411,16 +410,19 @@
         $('#lblBayar').html(formatter.format(pay));
         $('#drawer').attr('disabled', true);
         $("#lblDP").html(formatter.format(dp));
-      }else if(Number(change) >= 0 && tgl){
+      }else if(Number(change) >= 0 && tgl && cust){
         $("#lblKembalian").html(formatter.format(change));
         $('#lblBayar').html(formatter.format(pay));
         $("#lblDP").html(formatter.format(dp));
         $('#drawer').removeAttr('disabled');
-      }else if(!tgl){
+      }else if(!tgl || !cust){
         $("#lblKembalian").html(formatter.format(change));
         $('#lblBayar').html(formatter.format(pay));
         $("#lblDP").html(formatter.format(dp));
-        $("#date").css('border-color', '#FF0000')
+        if(!tgl)
+          $("#date").css('border-color', '#FF0000');
+        if(!cust)
+          $("#custs").css('border-color', '#FF0000');
       }else{
         $("#lblDP").html(formatter.format(0));
         $('#lblKembalian').html(0);
@@ -458,6 +460,7 @@
       let dp = $("#dp").val();
       let pay = $('#bayar').val();
       let valid = $('#odValid').val();
+      let cust = $("#custs").val()
       let tgl = $("#date").val()
       let discPrice = Number(sPrice) - Number(diskon) - Number(dp)
 
@@ -465,20 +468,27 @@
       if( Number(sPrice) <= Number(dp) ){
         $("#lblDP").html(formatter.format(dp));
         $("#lblSisa").html("Error");
+        $("#sisa").val(null)
         // $("#afterPrice").val(Number(sPrice));
         $('#drawer').attr('disabled', true);
-      } else if(Number(dp) && !Number(pay) && valid == "true" && tgl){
+      } else if(Number(dp) && !Number(pay) && valid == "true" && tgl && cust){
         $("#lblSisa").html(formatter.format(discPrice));
         $("#lblDP").html(formatter.format(dp));
         $('#drawer').removeAttr('disabled');
+        $("#sisa").val(discPrice)
         // $("#afterPrice").val(Number(discPrice));
       } else if(Number(dp) && !Number(pay)){
-        $("#date").css('border-color', '#FF0000')
+        if(!tgl)
+          $("#date").css('border-color', '#FF0000');
+        if(!cust)
+          $("#custs").css('border-color', '#FF0000');
         $("#lblSisa").html(formatter.format(discPrice));
         $("#lblDP").html(formatter.format(dp));
+        $("#sisa").val(discPrice)
       } else {
         $("#lblDP").html(0);
         $("#lblSisa").html(0);
+        $("#sisa").val(null)
         // $("#afterPrice").val(Number(sPrice));
       }  
     }
@@ -522,13 +532,13 @@
           alert('Tanggal tidak boleh kosong')
         }else if(Number(dp) >= Number(sPrice)){
           alert('Jumlah DP melebihi harga')
-        }else if(Number(pay) == -1){
-          alert('Pesanan Belum selesai')
         }else if(Number(pay) == 0){
           alert('Masukkan jumlah uang')
         }else if(Number(pay) < Number(change)){
           alert('Jumlah Uang tidak mencukupi')
         }else if(tgl){
+          $('#drawer').trigger('click')
+        }else{
           $('#drawer').trigger('click')
         }
       });
@@ -562,11 +572,11 @@
               let sPrice = $("#startPrice").val(); 
               let pay = $('#bayar').val();
               let diskon = $("#diskon").val();
-              let valid = $('#odValid').val();
               let dp = $("#dp").val();
+              let valid = $('#odValid').val();
               let tgl = $("#date").val()
-              let change = Number(sPrice) - Number(diskon) - Number(dp);
-              if(dp && valid == "true" && Number(dp)<Number(sPrice)){
+              let change = Number(sPrice) - Number(diskon)- Number(dp);
+              if(dp && valid == "true" && Number(dp)<Number(sPrice) && tgl){
                 $('#drawer').trigger('click')       
               }else if(!tgl){
                 alert('Tanggal tidak boleh kosong')
@@ -576,6 +586,8 @@
                 alert('Masukkan jumlah uang')
               }else if(Number(pay) < Number(change)){
                 alert('Jumlah Uang tidak mencukupi')
+              }else if(tgl){
+                $('#drawer').trigger('click')
               }else{
                 $('#drawer').trigger('click')
               }
@@ -584,7 +596,48 @@
     //endmodalkey
 
     //Cetak
-
+    $('#print').on('click', function () {
+      var user = $("#name").val();
+      Swal.fire('Sedang Diproses')
+      Swal.showLoading()
+      $.ajax({
+      url: "{{url('/order/bayar/cetak')}}/"+"{{$data->id}}",
+      type: "post",
+      data: {username: user},
+      success: function(result){
+        //console.log(result);
+        var msg = result.messages[0];
+        if(result.status == 'success'){
+          Swal.fire({
+            type: result.status,
+            title: msg,
+            showConfirmButton: false,
+            timer: 1500
+          })
+        }else{
+          Swal.fire({
+            type: result.status,
+            title: msg,
+            showConfirmButton: false,
+            timer: 1500
+          })
+        }      
+        
+      },
+      error:function(error){
+        var msg = result.messages[0]
+        Swal.fire({
+            type: result.status,
+            title: msg,
+            showConfirmButton: false,
+            timer: 1500
+        })
+      }
+      })
+     
+      
+    });
+    //Bayar
     $('#drawer').on('click', function () {
       var price = $("#startPrice").val();
       var pay = $('#bayar').val();
@@ -621,9 +674,6 @@
       
     });
 
-    $('#print').on('click', function(){
-      $('#miniform').submit();
-    })
     
     $('#completeOrder').on('click', function(){
       $('#completeform').submit();
@@ -635,6 +685,24 @@
 
     $('#prosesOrder').on('click', function(){
       $('#orderMenuForm').submit();
+    })
+
+    $('#custs').on('keyup', function(){
+      let valid = $('#odValid').val();
+      if(this.value){
+        $("#custs").css('border-color', '')
+      }else{
+        $("#custs").css('border-color', '#FF0000')
+      }
+      payAndchange();
+      DPChange();
+    })
+    $('#custs').on('change', function(){
+      let str = this.value
+      str = str.toLowerCase().replace(/\b[a-z]/g, function(letter) {
+        return letter.toUpperCase();
+      });
+      $("#custs").val(str)
     })
 
     $('#status').on('change', function(){

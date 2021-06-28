@@ -38,6 +38,7 @@ class Order extends Model
 		'orderdiscountprice',
     'orderestdate',
     'ordercompleteddate',
-    'ordercompletedby'
+    'ordercompletedby',
+    'orderremainingpaid'
   ];
 }
