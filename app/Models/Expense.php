@@ -10,6 +10,7 @@ class Expense extends Model
     use hasFactory;
     public $timestamps = false;
       protected $fillable = [
+      'expensecode',
       'expensename',
       'expensedetail',
       'expenseprice',

@@ -10,7 +10,7 @@ class ExpenseRepository
 {
     public static function grid($perms)
     {
-      return Expense::where('expenseactive', '1')->select('id','expensename', 'expenseprice', DB::raw("to_char(expensedate, 'DD-MM-YYYY')as expensedateraw"), 'expensedetail', 'expenseexecutedat', DB::raw($perms['save']), DB::raw($perms['delete']))->get();
+      return Expense::where('expenseactive', '1')->select('id','expensecode','expensename', 'expenseprice', DB::raw("to_char(expensedate, 'DD-MM-YYYY')as expensedateraw"), 'expensedetail', 'expenseexecutedat', DB::raw($perms['save']), DB::raw($perms['delete']))->get();
     }
   
     public static function get($respon, $id)
@@ -20,7 +20,7 @@ class ExpenseRepository
       if($id){
         $respon['data'] = Expense::where('expenseactive', '1')
         ->where('id', $id)
-        ->select('id', 'expensename', 'expenseprice', DB::raw("to_char(expensedate, 'DD-MM-YYYY')as expensedateraw"), 'expensedetail', 'expenseactive', 'expenseexecutedat', 'expenseexecutedby','expensedate')
+        ->select('id','expensecode', 'expensename', 'expenseprice', DB::raw("to_char(expensedate, 'DD-MM-YYYY')as expensedateraw"), 'expensedetail', 'expenseactive', 'expenseexecutedat', 'expenseexecutedby','expensedate')
         ->first();
   
         if($respon['data'] == null){
@@ -54,6 +54,7 @@ class ExpenseRepository
           
         } else {
           $data = Expense::create([
+            'expensecode' => "EXES".time(),
             'expensename' => $inputs['expensename'],
             'expenseprice' => $inputs['expenseprice'],
             'expensedate' => $inputs['expensedate'],

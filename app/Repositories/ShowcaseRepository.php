@@ -21,7 +21,7 @@ class ShowcaseRepository
       'ps.qty as showcaseqty',
       DB::raw("to_char(showcasedate, 'DD-MM-YYYY') as showcasedate"),
       DB::raw("to_char(showcaseexpdate, 'DD-MM-YYYY') as showcaseexpdate"),
-      DB::raw("case when showcaseexpiredat is not null then 'Kadaluarsa' when showcaseexpiredat is null and ps.qty > 1  then 'Readystock' when showcaseexpiredat is null and ps.qty is null then 'Habis' end as status"),
+      DB::raw("case when showcaseexpiredat is not null then '<span class=". '"' ."badge badge-danger". '"' .">Kadaluarsa</span>' when showcaseexpiredat is null and ps.qty > 1  then '<span class=". '"' ."badge badge-success". '"' .">ReadyStock</span>' when showcaseexpiredat is null and ps.qty is null then '<span class=". '"' ."badge badge-warning". '"' .">Habis</span>' end as status"),
       DB::raw($perms['save']),
       DB::raw($perms['delete']))
     ->get();

@@ -28,22 +28,28 @@
             <div class="form-row">
               <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
               <input type="hidden" id="id" name="id" value="{{ old('id', $data->id) }}" />
-              <div class="col-md-4 mb-3">
+              @if($data->id)
+              <div class="col-md-6 mb-3">
+                <label for="numbe">Code</label>
+                <input type="text" name="expensecode" value="{{ old('expensecode', $data->expensecode) }}" class="form-control"  placeholder="Code" required readonly>
+              </div>
+              @endif
+              <div class="{{$data->id ? 'col-md-6': 'col-md-12'}} mb-3">
                 <label for="numbe">Nama</label>
                 <input type="text" name="expensename" value="{{ old('expensename', $data->expensename) }}" class="form-control"  placeholder="Nama" required {{ isset($data->expenseexecutedat) ? 'readonly' : '' }}>
               </div>
               @if(empty($data->expenseexecutedat))
-              <div class="col-md-4 mb-3">
+              <div class="col-md-6 mb-3">
                   <label for="floo">Tanggal</label>
                   <input id="date" name="expensedate" value="{{ old('expensedate', $data->expensedate) }}" class="form-control flatpickr flatpickr-input">
               </div>
               @else
-              <div class="col-md-4 mb-3">
+              <div class="col-md-6 mb-3">
                   <label for="floo">Tanggal</label>
                   <input id="text" name="expensedate" value="{{ $data->expensedateraw }}" class="form-control" readonly>
               </div>
               @endif
-              <div class="col-md-4 mb-3">
+              <div class="col-md-6 mb-3">
                   <label for="floo">Jumlah Pengeluaran</label>
                   <div class="input-group">
                   <div class="input-group-prepend">
