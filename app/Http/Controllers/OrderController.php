@@ -192,11 +192,12 @@ class OrderController extends Controller
 
 	public function orderReceiptkasir($id, Request $request)
 	{
+    $respon = Helpers::$responses;
 		$data = OrderRepository::getOrderReceiptkasir($id);
 		$inputs = $request->all();
 		
-		$cetak = Cetak::printkasir($data, $inputs);
-		return redirect('/order/meja/view');
+		$cetak = Cetak::printkasir($data, $inputs, $respon);
+		return response()->json($cetak);
 	}
 
 	public function opendrawer(Request $request)

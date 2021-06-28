@@ -119,14 +119,20 @@ class OrderRepository
   public static function preOrderGrid($perms)
   {
     return Order::where('orderactive', '1')
+    ->join('orderdetail as od', 'odorderid', 'orders.id')
     ->whereIn('orderstatus', ['DP', 'PAID'])
-    ->select('id',
+    ->where('od.odtype', 'PO')
+    ->select('orders.id',
       'orderinvoice', 
       'ordercustname', 
       DB::raw("to_char(orderdate, 'dd-mm-yyyy HH24:MI:SS') as orderdate"), 
       DB::raw("to_char(orderestdate, 'dd-mm-yyyy') as orderestdate"),
       'orderprice',
-      DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Diproses' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' END as orderstatuscase"),
+      DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN '<span class=". '"' ."badge badge-warning". '"' .">Draf</span>' 
+      WHEN orders.orderstatus = 'DP' THEN '<span class=". '"' ."badge badge-secondary". '"' .">Bayar Dimuka</span>'
+      WHEN orders.orderstatus = 'PAID' THEN '<span class=". '"' ."badge badge-info". '"' .">Lunas</span>'
+      WHEN orders.orderstatus = 'COMPLETED' THEN '<span class=". '"' ."badge badge-primary". '"' .">Selesai</span>'
+      WHEN orders.orderstatus = 'VOIDED' THEN '<span class=". '"' ."badge badge-danger". '"' .">Batal</span>' END as orderstatuscase"),
       DB::raw($perms['save']))
     ->orderBy('orderestdate', 'asc')
     ->get();
@@ -161,6 +167,7 @@ class OrderRepository
           'orderdiscountprice',
           'ordercompleteddate',
           'ordercompletedby',
+          'orderremainingpaid',
           'ucom.username as ordercompletedname',
           'uvoid.username as ordervoidedusername',
           DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Diproses' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' END as orderstatuscase")
@@ -566,13 +573,13 @@ class OrderRepository
     if ($data != null){
       $data->update([
         'orderpaymentmethod' => $inputs['orderpaymentmethod'],
-        'orderpaidprice' => $inputs['orderpaidprice']?? null,
+        'orderpaidprice' => $inputs['orderpaidprice'],
         'ordercustname' => $inputs['ordercustname'],
-        'orderdiscountprice' => $inputs['orderdiscountprice']??null,
-        'orderstatus' => $inputs['orderstatus']??null,
+        'orderdiscountprice' => $inputs['orderdiscountprice'],
+        'orderstatus' => $inputs['orderstatus'],
         'orderestdate' => $inputs['orderestdate']??null,
         'orderdp' => $inputs['orderdp']??null,
-        'orderestdate' => $inputs['orderestdate']??null,
+        'orderremainingpaid' => $inputs['orderremainingpaid']??null,
         'ordermodifiedby' => $loginid,
         'ordermodifiedat' => now()->toDateTimeString()
       ]);
@@ -676,42 +683,37 @@ class OrderRepository
   {
     $dataOrder = new \StdClass();
     $data = Order::where('orderactive', '1')->where('orders.id', $id)->first();
-      if($data->orderboardid == null){
         $order = $data->where('orders.id', $id)
         ->select(
           'orderinvoice',
+          'ordercustname',
           'orderprice',
           'orderdate',   
           'orderpaidprice', 
           'orderpaymentmethod',
-          'orderdiscountprice' 
+          'orderdiscountprice',
+          'orderdp',
+          'orderestdate',
+          'ordercompleteddate',
+          'orderremainingpaid',
+          DB::raw("CASE WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'COMPLETED' THEN 'komplit' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' END as orderstatuscase"), 
         )->first();
-        $order->boardnumber = null;
-        $order->ordertype = 'Bungkus';
-      }else{
-        $order = $data->join('boards', 'boards.id', 'orderboardid')  
-        ->where('orders.id', $id)    
-        ->select(
-          'orderinvoice',
-          'orderprice',
-          'orderdate',
-          'orderpaidprice', 
-          'orderpaymentmethod', 
-          DB::raw("case when ordertype = 'DINEIN' then 'Makan Ditempat' else 'Bungkus' end as ordertype"),
-          DB::raw("'No.' ||boardnumber || ' - Lantai ' || boardfloor as boardnumber"),
-          'orderdiscountprice' 
-        )->first();
-      }
+      
       // dd($order);
     if($order != null){
       $dataOrder->invoice = $order->orderinvoice;
       $dataOrder->price = $order->orderprice;
+      $dataOrder->customer = $order->ordercustname;
+      $dataOrder->dp = $order->orderdp;
       $dataOrder->paidprice = $order->orderpaidprice;
       $dataOrder->discountprice = $order->orderdiscountprice;
       $dataOrder->payment = $order->orderpaymentmethod;
+      $dataOrder->status = $order->orderstatuscase;
+      $dataOrder->repaid = $order->orderremainingpaid;
       $dataOrder->date = Carbon::parse($order->orderdate)->format('d/m/Y H:i') ?? null;
-      $dataOrder->orderType = $order->ordertype;
-      $dataOrder->noTable = $order->boardnumber;
+      $dataOrder->estdate = $order->orderestdate ? Carbon::parse($order->orderestdate)->format('d/m/Y') : null;
+      $dataOrder->comdate = $order->ordercompleteddate ? Carbon::parse($order->ordercompleteddate)->format('d/m/Y H:i') : null;
+
       $dataOrder->detail = Array();
 
       $subs = self::getSubOrder($id);
@@ -725,6 +727,7 @@ class OrderRepository
         $temp->totalPriceraw = $sub->odtotalpriceraw;
         $temp->promodiscount = $sub->promodiscount;
         $temp->promo = $sub->odispromo;
+        $temp->code = $sub->showcasecode;
   
         array_push($dataOrder->detail, $temp);
       }

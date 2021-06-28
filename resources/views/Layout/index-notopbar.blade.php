@@ -74,7 +74,7 @@
   <div class="main-container" id="container">
     <input type='hidden' id='bukalaci' value="{{url('/open/drawerauth')}}">
     <input type='hidden' id='ping' value="{{url('/cek/printer')}}">
-    <input type='hidden' id='board' value="{{url('/order/meja/view')}}">
+    <input type='hidden' id='board' value="{{url('/')}}">
     <div id="content" class="main-content">
       <div class="layout-px-spacing">
         @yield('content-breadcumb')
