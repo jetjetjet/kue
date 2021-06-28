@@ -9,33 +9,33 @@ use DB;
 
 class ReportRepository
 {
-  public static function grid($inputs)
-  {
-    $od = Order::where('orderactive', '1')
-      ->whereRaw("orderdate::date between '" . $inputs['startdate'] . "' and '" . $inputs['enddate'] . "'")
-      ->join('users', 'ordercreatedby', '=', 'users.id');
-    if($inputs['user'] != 'Semua'){
-      $od->where('users.id', $inputs['user']);
+  public static function grid($filter)
+  { 
+    $result = array();
+    if (!empty($filter['startdate']) && !empty($filter['enddate'])){
+      $params = array(
+        $filter['startdate'] ?? null,
+        $filter['enddate'] ?? null,
+        $filter['status'] ?? null);
+      $paramsQuery = implode(',', array_map(function ($val){ return '?'; }, $params));
+      $rows = DB::select('select * from report_transaction(' . $paramsQuery . ')', $params);
+
+      foreach ($rows as $row){
+        $model = new \stdClass();
+        $model->id = $row->id;
+        $model->trxtype = $row->trxtype;
+        $model->trxcode = $row->trxcode;
+        $model->customername = $row->customername;
+        $model->trxname = $row->trxname;
+        $model->trxdate = $row->trxdate;
+        $model->debit = $row->debit;
+        $model->kredit = $row->kredit;
+        $model->trxstatus = $row->trxstatus;
+        
+        array_push($result, $model);
+      }
     }
-    if($inputs['status'] == 'Diproses'){
-      $od->whereNotIn('orderstatus', ['PAID', 'VOIDED']);
-    }elseif($inputs['status'] != 'Semua'){
-      $od->where('orderstatus', $inputs['status']);
-    }elseif($inputs['status'] == 'Semua'){
-      $od->whereNotIn('orderstatus', ['VOIDED']);
-    }
-    $data = $od->select(
-      'orders.id',
-      DB::raw("to_char(orderdate, 'DD-MM-YYYY') as tanggal"),       
-      DB::raw("CASE WHEN orders.ordertype = 'DINEIN' THEN 'Makan ditempat' ELSE 'Bungkus' END as ordertypetext"), 
-      'orderinvoice',
-      'orderdiscountprice',
-      DB::raw("orderprice - coalesce(orderdiscountprice,0) as price"),
-      DB::raw("CASE WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Dibatalkan' ELSE 'Diproses' END as orderstatuscase"),
-      'username',
-      )
-    ->get();
-    return $data;
+    return $result;
   }
   
   public static function get($inputs)

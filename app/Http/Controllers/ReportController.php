@@ -18,45 +18,19 @@ class ReportController extends Controller
 		$data = new \stdClass;
 		$user = ReportRepository::getName();
 
-		if($inputs){
+		if(isset($inputs['startdate'])){
+			$explode = explode(" to ", $inputs['startdate']);
+			$inputs['startdate'] = $explode[0];
+			$inputs['enddate'] = $explode[1];
 			$data = ReportRepository::grid($inputs);
-			$data->sub = ReportRepository::get($inputs);
+			// $data->sub = ReportRepository::get($inputs);
+			// $data->sub = [];
 			
 		}else{
 			$data->sub['total'] = '0';
 		}
 		// dd($data);
 		return view('Report.index')->with('data', $data)->with('user', $user);
-	}
-
-	public function exIndex(Request $request)
-	{
-		$inputs = $request->all();
-		$data = new \stdClass;
-
-		if($inputs){
-			$data = ReportRepository::gridEx($inputs);
-			$data->sub = ReportRepository::getEx($inputs);
-			
-		}else{
-			$data->sub['total'] = '0';
-		}
-		// dd($data);
-		return view('Report.exRep')->with('data', $data);
-	}
-
-	public function shiftReport(Request $request)
-	{
-		$inputs = $request->all();
-		$data = new \stdClass;
-		$user = ReportRepository::getName();
-		if($inputs){
-			$data = ReportRepository::getShiftReport($inputs);
-		}else{
-			$data->sub['total'] = '0';
-		}
-		// dd($data);
-		return view('Report.shiftReport')->with('data', $data)->with('user', $user);
 	}
 
 	public function menuReport(Request $request)
