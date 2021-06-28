@@ -16,21 +16,19 @@ class ReportController extends Controller
 	{
 		$inputs = $request->all();
 		$data = new \stdClass;
-		$user = ReportRepository::getName();
 
 		if(isset($inputs['startdate'])){
 			$explode = explode(" to ", $inputs['startdate']);
 			$inputs['startdate'] = $explode[0];
 			$inputs['enddate'] = $explode[1];
-			$data = ReportRepository::grid($inputs);
-			// $data->sub = ReportRepository::get($inputs);
-			// $data->sub = [];
-			
+			$inputs['expense'] = $inputs['expense'] ?? 1;
+
+			$data->grid = ReportRepository::grid($inputs);
+			$data->sum = ReportRepository::sumTrx($inputs)[0];
 		}else{
-			$data->sub['total'] = '0';
+			$data = [];
 		}
-		// dd($data);
-		return view('Report.index')->with('data', $data)->with('user', $user);
+		return view('Report.index')->with('data', $data);
 	}
 
 	public function menuReport(Request $request)

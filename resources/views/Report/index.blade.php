@@ -12,14 +12,15 @@
 
 @section('content-form')
   <div class="widget-content widget-content-area br-6">
+    <div>
     <form id="formsub" class="needs-validation" method="get" novalidate action="{{ url('/laporan/') }}">
       <div class="form-row">     
         <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
-        <div class="col-md-6 mb-1">
+        <div class="col-md-4 mb-1">
           <h4>Periode</h4>
           <input id="start" value="{{request('startdate')}}" name="startdate" class="form-control flatpickr flatpickr-input date" required>
         </div>
-        <div class="col-md-6 mb-1">
+        <div class="col-md-4 mb-1">
           <h4>Status Pemasukan</h4>
           <select id='status' class="form-control" name="status">
             <option value="">Semua</option>
@@ -29,6 +30,13 @@
             <option value="COMPLETED" {{ request('status') == 'COMPLETED' ? 'selected' : ''}}>Selesai</option>
             <option value="VOIDED" {{ request('status') == 'VOIDED' ? 'selected' : ''}}>Dibatalkan</option>
           </select>
+        </div>
+        <div class="col-md-4 mb-1">
+          <h4>Tampilkan Pengeluaran</h4>
+          <select id='status' class="form-control" name="expense">
+            <option value="1">Ya</option>
+            <option value="0" {{ request('expense') == '0' ? 'selected' : ''}}>Tidak</option>
+          </select>
         </div> 
       </div>
       <div class="float-right mb-3">
@@ -36,7 +44,8 @@
         <button class="btn btn-primary mt-2" id="sub" type="submit">Cari</button>
       </div>
     </form>
-  @if(count($data) > 0)
+  </div>
+  @if(isset($data->grid))
     <div class="table-responsive mb-4 mt-4">
       <hr>
       <!-- <h3 style="color:#1b55e2">Hasil Pencarian</h3> -->
@@ -55,7 +64,7 @@
           </tr>
         </thead>
         <tbody>
-          @foreach($data as $key=>$row)
+          @foreach($data->grid as $key=>$row)
           <?php
             $link = $row->trxtype == 'Pemasukan' 
               ? '/order/detail'
@@ -68,21 +77,40 @@
             <td>{{ $row->trxname }}</td>
             <td>{{ $row->customername }}</td>
             <td>{{ $row->trxdate }}</td>
-            <td>{{ $row->debit == null ? '-' : number_format($row->debit) }}</td>
-            <td>{{ $row->kredit == null ? '-' : number_format($row->kredit) }}</td>
+            <td class="text-right">{{ $row->debit == null ? '-' : number_format($row->debit) }}</td>
+            <td class="text-right">{{ $row->kredit == null ? '-' : number_format($row->kredit) }}</td>
             <td><b>{{ $row->trxstatus }}</b></td>
           </tr>
           @endforeach
         </tbody>
+        @if(isset($data->sum))
+        <?php $sum = $data->sum ?>
+        <tfoot>
+          <tr class="text-right">
+            <td style="border: 10px solid transparent;" colspan="6"></td>
+            <td><h4> <strong>Total Debit</strong> </h4></td>
+            <td colspan="2"><h4><strong>{{ number_format($sum->total_debit) }}</strong></h4></td>
+          </tr>
+          <tr class="text-right">
+            <td style="border: 10px solid transparent;" colspan="6"></td>
+            <td><h4> <strong>Total Kredit</strong> </h4></td>
+            <td colspan="2"><h4><strong>{{ number_format($sum->total_kredit) }}</strong></h4></td>
+          </tr>
+          @if($sum->total_debit > 0 && $sum->total_kredit > 1)
+            <tr class="text-right">
+              <td style="border: 10px solid transparent;" colspan="6"></td>
+              <td><h4> <strong>Sub Total</strong> </h4></td>
+              <td colspan="2"><h4><strong>{{ number_format($sum->sub_total) }}</strong></h4></td>
+            </tr>
+          @endif
+        </tfoot>
+        @endif
       </table>
       </div>      
     </div>
     @else
     <div class="table-responsive mb-4 mt-4">
-    <div style="text-align:center;">
-      <h3>Data Kosong</h3>
     </div>
-  </div>
     @endif
   </div>
 @endsection
