@@ -13,6 +13,7 @@ returns table(
   trxname varchar,
   trxdate timestamp, 
   debit numeric,
+  discount numeric,
   kredit numeric, 
   trxstatus varchar
 ) as $$
@@ -25,7 +26,8 @@ begin
         ordercustname, 
         'DP'::varchar ,
         orderdate::timestamp as orderdate, 
-        orderdp, 
+        orderdp,
+        null,
         null::numeric,
         'DP'::varchar 
       from orders o 
@@ -45,7 +47,8 @@ begin
         	select string_agg(odtype, ' & ') from  ( select odtype from orderdetail o3 where o3.odorderid = o2.id and odactive = '1' group by odtype)sb 
         )::varchar,
         coalesce(ordercompleteddate, orderdate)::timestamp,
-        coalesce(orderremainingpaid, orderprice), 
+        coalesce(orderremainingpaid, orderprice),
+        orderdiscountprice,
         null,
         (case when orderstatus = 'DRAFT' then 'Draf'
           when orderstatus = 'DP' then 'Bayar Dimuka'
@@ -66,6 +69,7 @@ begin
         '-'::varchar,
         e.expensename,
         e.expensedate::timestamp,
+        null,
         null,
         expenseprice,
         'Selesai'::varchar

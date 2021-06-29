@@ -59,6 +59,7 @@
             <th>Nama Pelanggan</th>
             <th>Tgl. Transaksi</th>
             <th>Debit</th>
+            <th>Discount</th>
             <th>Kredit</th>
             <th>Status</th>
           </tr>
@@ -78,6 +79,7 @@
             <td>{{ $row->customername }}</td>
             <td>{{ $row->trxdate }}</td>
             <td class="text-right">{{ $row->debit == null ? '-' : number_format($row->debit) }}</td>
+            <td class="text-right">{{ $row->discount == null ? '-' : number_format($row->discount) }}</td>
             <td class="text-right">{{ $row->kredit == null ? '-' : number_format($row->kredit) }}</td>
             <td><b>{{ $row->trxstatus }}</b></td>
           </tr>
@@ -87,19 +89,26 @@
         <?php $sum = $data->sum ?>
         <tfoot>
           <tr class="text-right">
-            <td style="border: 10px solid transparent;" colspan="6"></td>
+            <td style="border: 10px solid transparent;" colspan="7"></td>
             <td><h4> <strong>Total Debit</strong> </h4></td>
             <td colspan="2"><h4><strong>{{ number_format($sum->total_debit) }}</strong></h4></td>
           </tr>
+          @if($sum->total_discount > 0)
+            <tr class="text-right">
+              <td style="border: 10px solid transparent;" colspan="7"></td>
+              <td><h4> <strong>Total Diskon</strong> </h4></td>
+              <td colspan="2"><h4><strong>{{ number_format($sum->total_discount) }}</strong></h4></td>
+            </tr>
+          @endif
           <tr class="text-right">
-            <td style="border: 10px solid transparent;" colspan="6"></td>
+            <td style="border: 10px solid transparent;" colspan="7"></td>
             <td><h4> <strong>Total Kredit</strong> </h4></td>
             <td colspan="2"><h4><strong>{{ number_format($sum->total_kredit) }}</strong></h4></td>
           </tr>
           @if($sum->total_debit > 0 && $sum->total_kredit > 1)
             <tr class="text-right">
-              <td style="border: 10px solid transparent;" colspan="6"></td>
-              <td><h4> <strong>Sub Total</strong> </h4></td>
+              <td style="border: 10px solid transparent;" colspan="7"></td>
+              <td><h4> <strong>Selisih</strong> </h4></td>
               <td colspan="2"><h4><strong>{{ number_format($sum->sub_total) }}</strong></h4></td>
             </tr>
           @endif

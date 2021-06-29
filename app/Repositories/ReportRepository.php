@@ -8,7 +8,7 @@ class ReportRepository
 {
   public static function grid($filter)
   { 
-    $result = array();
+    $temp = array();
     if (!empty($filter['startdate']) && !empty($filter['enddate'])){
       $params = array(
         $filter['startdate'] ?? null,
@@ -17,7 +17,9 @@ class ReportRepository
         intval($filter['expense']) ?? null);
       $paramsQuery = implode(',', array_map(function ($val){ return '?'; }, $params));
       $rows = DB::select('select * from report_transaction(' . $paramsQuery . ')', $params);
-
+      $sumDisc = 0;
+      $sumKred = 0;
+      $sumDeb = 0;
       foreach ($rows as $row){
         $model = new \stdClass();
         $model->id = $row->id;
@@ -28,11 +30,26 @@ class ReportRepository
         $model->trxdate = $row->trxdate;
         $model->debit = $row->debit;
         $model->kredit = $row->kredit;
+        $model->discount = $row->discount;
         $model->trxstatus = $row->trxstatus;
         
-        array_push($result, $model);
+        array_push($temp, $model);
+
+        $sumDisc += $row->discount;
+        $sumKred += $row->kredit;
+        $sumDeb += $row->debit;
       }
     }
+    
+    $result = new \stdClass();
+    $sum = new \stdClass();
+    $sum->total_debit = $sumDeb;
+    $sum->total_kredit = $sumKred;
+    $sum->total_discount = $sumDisc;
+    $sum->sub_total = ($sumDeb - $sumDisc) - $sumKred;
+    $result->sum = $sum;
+    $result->grid = $temp;
+    
     return $result;
   }
   

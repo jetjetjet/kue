@@ -13,6 +13,7 @@ return [
   'customerName' => 'Nama Pelanggan',
   'date' => 'Tanggal',
   'dateOrder' => 'Tgl. Pemesanan',
+  'delete' => 'Hapus',
   'draft' => 'Draf',
   'dp' => 'DP',
   'estDate' => 'Tgl. Estimasi',

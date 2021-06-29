@@ -28,9 +28,9 @@ class ReportController extends Controller
 			$inputs['enddate'] = ($explode[1] ?? $explode[0]) . ' 23:59:59';
 			$inputs['expense'] = $inputs['expense'] ?? 1;
 			
+			$data = ReportRepository::grid($inputs);
 			$data->label = \sprintf('Laporan Transaksi Periode %s - %s', $explode[0], $request['enddate']);
-			$data->grid = ReportRepository::grid($inputs);
-			$data->sum = ReportRepository::sumTrx($inputs)[0];
+			// $data->sum = ReportRepository::sumTrx($inputs)[0];
 			if(!empty($print)){
 				$pdf = \App::make('dompdf.wrapper');
 				/* Careful: use "enable_php" option only with local html & script tags you control.
