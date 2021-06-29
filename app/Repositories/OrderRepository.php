@@ -3,6 +3,7 @@ namespace App\Repositories;
 
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Expense;
 use Illuminate\Support\Facades\Log;
 use DB;
 use Carbon\Carbon;
@@ -578,6 +579,7 @@ class OrderRepository
     $data = Order::where('orderactive', '1')
       ->where('id', $id)
       ->first();
+    // dd($data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"));
 
     $cekDelete = false;
     if ($data != null){
@@ -593,6 +595,20 @@ class OrderRepository
       $cekDelete = true;
       $respon['status'] = 'success';
       array_push($respon['messages'], 'Pesanan Dibatalkan');
+      if($inputs['cek']){
+        Expense::create([
+          'expensecode' => "EXES".time(),
+          'expensename' => "Pembatalan Order ".$data->orderinvoice,
+          'expenseprice' => $data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"),
+          'expensedate' => now()->toDateString(),
+          'expensedetail' => $inputs['ordervoidreason'],
+          'expenseexecutedby' => $loginid,
+          'expenseexecutedat' => now()->toDateTimeString(),
+          'expenseactive' => '1',
+          'expensecreatedat' => now()->toDateTimeString(),
+          'expensecreatedby' => $loginid
+        ]);
+      }
     }else{
       $respon['status'] = 'error';
       array_push($respon['messages'], 'Kesalahan');

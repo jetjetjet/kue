@@ -239,7 +239,8 @@ function gridDeleteInput(url, title, message, grid){
 
 function gridDeleteInput2(url, title, message){
   const swalWithBootstrapButtons = swal.mixin({
-    input: 'textarea',
+    html: '<textarea id="voidreason" class="swal2-textarea"></textarea>'+
+    "<div class='n-chk'><label class='new-control new-checkbox checkbox-warning'><input type='checkbox' value='1' id='cek' class='new-control-input'><span class='new-control-indicator'></span>Dengan Pengeluaran</label></div>",
     confirmButtonClass: 'btn btn-success btn-rounded',
     cancelButtonClass: 'btn btn-danger btn-rounded mr-3',
     buttonsStyling: false,
@@ -255,11 +256,12 @@ function gridDeleteInput2(url, title, message){
     reverseButtons: true,
     padding: '2em'
   }).then(function(result) {
-    if (result.value) {
-      $.post(url,{'ordervoidreason':result.value}, function (data){
+    if ($('#voidreason').val()) {
+      $.post(url,{'ordervoidreason':$('#voidreason').val(), 'cek':$('#cek:checked').val()??0}, function (data){
         if (data.status == 'success'){
           sweetAlert('Pesanan dibatalkan', data.messages[0], 'success')
-          location.reload();
+          const url = $('#board').val()
+          window.location = url;
         } else {
           sweetAlert('Kesalahan!', data.messages[0], 'error')
         }
