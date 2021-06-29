@@ -84,6 +84,18 @@
 @section('js-table')
   <script>
     $(document).ready(function (){
+
+      const query = window.location.search.substring(1);
+      const urlParams = new URLSearchParams(query);
+      const status = urlParams.get('status');
+
+      if(status){
+        // setTimeout(() => {
+          $('#filterStatus').val(status).change();
+          $('#apply').trigger('click');
+        // }, 0);
+      }
+
       let fDate = flatpickr($('#periodeLog'), {
         mode: "range",
         altinput: true,

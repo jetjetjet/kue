@@ -32,36 +32,36 @@
 	</section>
 	<section class="info-tiles mt-5">
 		<div class="tile is-ancestor has-text-centered">
-			<div class="tile is-parent">
+			<a href="{{ url('/') }}/order/index?status=" class="tile is-parent">
 				<article class="tile is-child box">
 					<p class="title">{{ $data->count['orderCount'] }}</p>
 					<p class="subtitle">{{ trans('fields.totalTransaction') }}</p>
 				</article>
-			</div>
-			<div class="tile is-parent">
+			</a>
+			<a href="{{ url('/') }}/order/index?status=DRAFT" class="tile is-parent">
 				<article class="tile is-child box">
 					<p class="title">{{ $data->count['orderDraft'] }}</p>
 					<p class="subtitle">{{ trans('fields.totalDraft') }}</p>
 				</article>
-			</div>
-			<div class="tile is-parent">
+			</a>
+			<a href="{{ url('/') }}/pengeluaran" class="tile is-parent">
 				<article class="tile is-child box">
 					<p class="title">{{ $data->count['expenseCount'] }}</p>
 					<p class="subtitle">Total Pengeluaran</p>
 				</article>
-			</div>
-			<div class="tile is-parent">
+			</a>
+			<a href="{{ url('/') }}/order/preorder" class="tile is-parent">
 				<article class="tile is-child box">
 					<p class="title">{{ $data->count['preOrderSum'] }}</p>
 					<p class="subtitle">{{ trans('fields.preOrder') }}</p>
 				</article>
-			</div>
-			<div class="tile is-parent">
+			</a>
+			<a href="{{ url('/') }}/showcase" class="tile is-parent">
 				<article class="tile is-child box">
 					<p class="title">{{ $data->count['stockSum'] }}</p>
 					<p class="subtitle">{{ trans('fields.readyStock') }}</p>
 				</article>
-			</div>
+			</a>
 		</div>
 	</section>
   <div class="row layout-top-spacing">
