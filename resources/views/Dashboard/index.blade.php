@@ -65,6 +65,7 @@
 		</div>
 	</section>
   <div class="row layout-top-spacing">
+		@if(count($data->PO) > 0)
 		<div class="col-md-12 col-sm-12 col-12 layout-spacing">
 			<div class="widget widget-card-four">
 				<div class="widget-content">
@@ -119,6 +120,7 @@
 				</div>
 			</div>
 		</div>
+		@endif
 		<!-- </div> -->
 		@if(Perm::can(['laporan_lihat']))
 		<hr />

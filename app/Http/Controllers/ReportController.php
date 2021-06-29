@@ -45,13 +45,13 @@ class ReportController extends Controller
 		return view('Report.index')->with('data', $data);
 	}
 
-	public function menuReport(Request $request)
+	public function productReport(Request $request)
 	{
 		$inputs = $request->all();
 		// dd($inputs);
 		$data = new \stdClass;
 		if($inputs){
-			$data = ReportRepository::getMenuReport($inputs);
+			$data = ReportRepository::getProductReport($inputs);
 		}
 		// dd($data);
 		return view('Report.menuRep')->with('data', $data);
