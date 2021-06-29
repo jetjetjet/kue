@@ -17,7 +17,7 @@
 
 <div class="header-container">
 	<header class="header navbar navbar-expand-sm">
-		<a href="javascript:void(0);" class="sidebarCollapse" data-placement="bottom"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></a>
+	<a href="javascript:void(0);" class="sidebarCollapse" data-placement="bottom"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></a>
 		<div class="nav-logo align-self-center">
 			<a class="navbar-brand" href="{{url('/')}}"><span class="navbar-brand-name">{{ session('cafeName') }}</span></a>
 		</div>
@@ -165,9 +165,6 @@
 									@endif
 									@if(Perm::can(['pengaturan_lihat']))
 										<li><a href="{{ url('/setting') }}">Pengaturan</a></li>
-									@endif
-									@if(Perm::can(['pengaturan_notif']))
-										<li><a href="{{ url('/setting/notif') }}">Notifikasi</a></li>
 									@endif
 									<li><a href="{{ url('/setting/aboutus') }}">Tentang kami</a></li>
 									<li><a href="{{ url('/setting/hotkey') }}">Tombol Pintas</a></li>

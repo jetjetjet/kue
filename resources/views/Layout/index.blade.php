@@ -196,6 +196,11 @@
         }
       });
     </script>
+    <script>
+      $(document).ready(function() {
+        App.init();
+      });
+    </script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
     <script src="{{ url('/') }}/plugins/table/datatable/datatables.js"></script>
     <script src="{{ url('/') }}/plugins/rowgroup/dataTables.rowGroup.min.js"></script>
