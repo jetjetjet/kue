@@ -82,12 +82,29 @@ class OrderRepository
   }
   public static function orderChart($filter, $range, $month)
   {
-    $transaction = Order::select(DB::raw('ordercreatedat::date as date,sum(orderprice) as total'))
-      ->whereNotNull('orderpaidat')
+    $compTransaction = Order::select(DB::raw('orderdate::date as date,sum(orderprice) - sum(coalesce(orderdiscountprice,0)) as total'))
+      ->whereNull('orderdp')
+      ->whereNull('orderremainingpaid')
+      ->whereIn('orderstatus', ['COMPLETED', 'PAID'])
       // ->where('orderstatus', 'PAID')
       ->where('orderactive', '1')
       ->whereRaw("orderdate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
-      ->groupBy(DB::raw('ordercreatedat::date'))->get();
+      ->groupBy(DB::raw('orderdate::date'))->get();
+
+    $dpTransaction = Order::select(DB::raw('orderdate::date as date,sum(orderdp) as total'))
+    ->whereNotIn('orderstatus', ['VOIDED', 'DRAFT'])
+    // ->where('orderstatus', 'PAID')
+    ->where('orderactive', '1')
+    ->whereRaw("orderdate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
+    ->groupBy(DB::raw('orderdate::date'))->get();
+
+    $remainTransaction = Order::select(DB::raw('ordercompleteddate::date as date,sum(orderremainingpaid) - sum(coalesce(orderdiscountprice,0)) as total'))
+    ->where('orderstatus', 'COMPLETED')
+    ->whereNotNull('orderdp')
+    // ->where('orderstatus', 'PAID')
+    ->where('orderactive', '1')
+    ->whereRaw("ordercompleteddate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
+    ->groupBy(DB::raw('ordercompleteddate::date'))->get();
     
     $expenses = DB::table('expenses')
       ->where('expenseactive', '1')
@@ -99,12 +116,31 @@ class OrderRepository
       )->get();
       
     $data = new \StdClass();
+    $totalInc = new \StdClass();
     $inc = [];
     $exp = [];
     foreach ($range as $row) {
       $f_date = strlen($row) == 1 ? 0 . $row:$row;
       $date = $month . "-".  $f_date;
-      $totalInc = $transaction->firstWhere('date', $date);
+      $totalInc->total = 0;
+      
+
+      $totalComp = $compTransaction->firstWhere('date', $date);
+      $totalRemain = $remainTransaction->firstWhere('date', $date);
+      $totalDP = $dpTransaction->firstWhere('date', $date);
+      if($totalComp){
+        $totalInc->total += $totalComp->total;
+      }
+      if($totalDP){
+        $totalInc->total += $totalDP->total;
+      }      
+      if($totalRemain){
+        $totalInc->total += $totalRemain->total;
+      }       
+      if($totalComp || $totalDP || $totalRemain){
+        $totalInc->date = $date;
+      }
+      
       $totalExp = $expenses->firstWhere('date', $date);
       
       array_push($inc,$totalInc ? $totalInc->total:0);
