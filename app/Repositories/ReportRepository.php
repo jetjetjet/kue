@@ -1,10 +1,7 @@
 <?php
 namespace App\Repositories;
 
-use App\Models\Order;
-use App\Models\Menu;
-use App\Models\User;
-use App\Models\Expense;
+use App\Models\Product;
 use DB;
 
 class ReportRepository
@@ -54,23 +51,23 @@ class ReportRepository
     return $result;
   }
 
-  public static function getMenuReport($inputs)
+  public static function getProductReport($inputs)
   {
     $detailOrder = DB::table('orderdetail')
       ->where('odactive', '1')
       ->whereRaw("odcreatedat::date between '" . $inputs['startdate'] . "' and '" . $inputs['enddate'] . "'")
-      ->groupBy('odmenuid')
+      ->groupBy('odproductid')
       ->select(
         DB::raw(" sum(odqty) as totalorder"),
-        'odmenuid');
+        'odproductid');
       
-    $data = Menu::joinSub($detailOrder, 'od', function ($join) {
-        $join->on('menus.id', '=', 'od.odmenuid');})
+    $data = Product::joinSub($detailOrder, 'od', function ($join) {
+        $join->on('products.id', '=', 'od.odproductid');})
       ->select(
-        'menuname',
-        'menuprice',
+        'productname',
+        'productprice',
         'od.totalorder',
-        DB::raw('od.totalorder*menuprice as grantotal'))
+        DB::raw('od.totalorder*productprice as grantotal'))
       ->orderBy('od.totalorder', 'DESC')->get();
 
     return $data;

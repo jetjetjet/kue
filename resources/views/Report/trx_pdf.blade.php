@@ -10,7 +10,14 @@
 		table tr td,
 		table tr th{
 			font-size: 7pt;
+      -webkit-box-sizing: content-box;
+      box-sizing: content-box;
+      padding: 8px 6px;
 		}
+    .table td, .table th {
+      padding: 0.2rem !important;
+      border-top: 1px solid #dee2e6;
+    }
     
     #header,
     #footer {
@@ -37,16 +44,16 @@
     <div class="page-number"></div>
   </div>
 	<center>
-		<h5>Laporan Transaksi</h5>
+    <h4 style="color:#1b55e2">{{ $data->label }}</h4>
 	</center>
 
 	<table class='table table-bordered'>
 		<thead>
       <tr>
         <th>No</th>
-        <th>Tipe Transaksi</th>
+        <th>Jenis Transaksi</th>
+        <th></th>
         <th>Kode Transaksi</th>
-        <th>Nama Transaksi</th>
         <th>Nama Pelanggan</th>
         <th>Tgl. Transaksi</th>
         <th>Debit</th>
@@ -60,8 +67,8 @@
       <tr>
         <td>{{ $i++ }}</td>
         <td>{{ $row->trxtype }}</td>
-        <td>{{ $row->trxcode }}</td>
         <td>{{ $row->trxname }}</td>
+        <td>{{ $row->trxcode }}</td>
         <td>{{ $row->customername }}</td>
         <td>{{ $row->trxdate }}</td>
         <td class="text-right">{{ $row->debit == null ? '-' : number_format($row->debit) }}</td>

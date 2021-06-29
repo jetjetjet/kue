@@ -81,7 +81,7 @@
 						@endif
 						@if(Perm::can(['order_lihat']) || Perm::can(['pengeluaran_lihat']))
 							<?php
-								$segm = (Request::segment(1) == 'order' || Request::segment(1) == 'pengeluaran');
+								$segm = (Request::segment(2) == 'order' || Request::segment(1) == 'pengeluaran' || Request::segment(1) == 'showcase');
 							?>
 							<li class="menu single-menu {{ $segm ? 'active' : ''}}">
 								<a href="#transaction" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
@@ -96,22 +96,25 @@
 									@if(Perm::can(['order_lihat']))
 										<li><a href="{{ url('/order/index') }}">Daftar Pesanan</a></li>
 									@endif
+									@if(Perm::can(['order_lihat']))
+										<li><a href="{{ url('/order/preorder') }}">{{ trans('fields.preOrder') }}</a></li>
+									@endif
 									@if(Perm::can(['pengeluaran_lihat']))
-										<li><a href="{{ url('/pengeluaran') }}">Pengeluaran</a></li>
+										<li><a href="{{ url('/pengeluaran') }}">{{ trans('fields.expense') }}</a></li>
+									@endif
+									@if(Perm::can(['showcase_lihat']))
+										<li><a href="{{ url('/showcase') }}">{{ trans('fields.showcase') }}</a></li>
 									@endif
 								</ul>
 							</li>
 						@endif
 						@if(Perm::can(['showcase_lihat']))
-						<?php
-							$segm = Request::segment(1) == 'showcase';
-						?>
 						<li class="menu {{ $segm ? 'active' : ''}}">
-							<a href="{{url('/showcase')}}" class="dropdown-toggle">
+							<a href="{{url('/order')}}" class="dropdown-toggle">
 								<div class="">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-inbox"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-inbox shadow-icons"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
-									<span>{{trans('fields.showcase')}}</span>
+									<span>{{ trans('fields.sales') }}</span>
 								</div>
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 							</a>
@@ -132,17 +135,11 @@
 									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 								</a>
 								<ul class="collapse submenu list-unstyled animated fadeInUp" id="report" data-parent="#topAccordion">
-								@if(Perm::can(['laporan_lihat']))
-										<li><a href="{{ url('/laporan-pengeluaran') }}">Laporan Pengeluaran</a></li>
-									@endif
 									@if(Perm::can(['laporan_lihat']))
 										<li><a href="{{ url('/laporan') }}">Laporan Transaksi</a></li>
 									@endif
 									@if(Perm::can(['laporan_lihat']))
-										<li><a href="{{ url('/laporan-shift') }}">Laporan Shift</a></li>
-									@endif
-									@if(Perm::can(['laporan_lihat']))
-										<li><a href="{{ url('/laporan-menu') }}">Laporan Menu</a></li>
+										<li><a href="{{ url('/laporan-product') }}">Laporan Menu</a></li>
 									@endif
 									@if(Perm::can(['log_lihat']))
 										<li><a href="{{ url('/log') }}">Log</a></li>

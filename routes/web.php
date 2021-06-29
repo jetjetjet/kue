@@ -72,17 +72,17 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::post('/meja/simpan', [BoardController::class, 'save'])->middleware('can:meja_simpan');
   Route::post('/meja/hapus/{id}', [BoardController::class, 'deleteById'])->middleware('can:meja_hapus');
 
-  Route::get('/menu', [MenuController::class, 'index'])->middleware('can:menu_lihat');
-  Route::get('/menu/grid', [MenuController::class, 'getLists'])->middleware('can:menu_lihat');
-  Route::get('/menu/detail/{id?}', [MenuController::class, 'getById'])->middleware('can:menu_lihat,menu_simpan');
+  Route::get('/menu', [MenuController::class, 'index'])->middleware('can:product_lihat');
+  Route::get('/menu/grid', [MenuController::class, 'getLists'])->middleware('can:product_lihat');
+  Route::get('/menu/detail/{id?}', [MenuController::class, 'getById'])->middleware('can:product_lihat,product_simpan');
   Route::get('/menu/menuorder', [ MenuController::class, 'menuOrder']);
   Route::get('/menu/search', [MenuController::class, 'searchMenu']);
-  Route::post('/menu/simpan', [MenuController::class, 'save'])->middleware('can:menu_simpan');
-  Route::post('/menu/hapus/{id}', [MenuController::class, 'deleteById'])->middleware('can:menu_hapus');
+  Route::post('/menu/simpan', [MenuController::class, 'save'])->middleware('can:product_simpan');
+  Route::post('/menu/hapus/{id}', [MenuController::class, 'deleteById'])->middleware('can:product_hapus');
   
   Route::get('/menu-category/search', [MenuCategoryController::class, 'search']);
-  Route::post('/menu-category/save', [MenuCategoryController::class, 'save'])->middleware('can:menu_simpan');
-  Route::post('/menu-category/delete/{id?}', [MenuCategoryController::class, 'delete'])->middleware('can:menu_simpan');
+  Route::post('/menu-category/save', [MenuCategoryController::class, 'save'])->middleware('can:product_simpan');
+  Route::post('/menu-category/delete/{id?}', [MenuCategoryController::class, 'delete'])->middleware('can:product_simpan');
   
   Route::get('/notif/icon', [NotifController::class, 'notifIcon']);
   Route::get('/notif/get', [NotifController::class, 'getNotif']);
@@ -110,12 +110,10 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::post('/cek/printer', [OrderController::class, 'ping']);
   Route::post('/open/drawerauth', [OrderController::class, 'opendraweraudit'])->middleware('can:tambahan_bukalaci');
   Route::post('/order/save/{id?}', [OrderController::class, 'save'])->middleware('can:order_simpan');
-  Route::post('/order/api-save/{id?}', [OrderController::class, 'apiSave'])->middleware('can:order_pelayan');
   Route::post('/order/hapus/{id}', [OrderController::class, 'deleteById'])->middleware('can:order_hapus');
   Route::post('/order/batal/{id}', [OrderController::class, 'voidById'])->middleware('can:order_batal');
   Route::post('/order/bayar/{id}', [OrderController::class, 'paidById'])->middleware('can:order_pembayaran');
   Route::post('/order/selesai/{id}', [OrderController::class, 'completeById'])->middleware('can:order_pembayaran');
-  Route::post('/order/delivered/{id}/{idSub}', [OrderController::class, 'deliver'])->middleware('can:order_simpan');
 
   Route::get('/pengeluaran', [ExpenseController::class, 'index'])->middleware('can:pengeluaran_lihat,pengeluaran_simpan');
   Route::get('/pengeluaran/grid', [ExpenseController::class, 'getLists'])->middleware('can:pengeluaran_lihat');
@@ -150,19 +148,9 @@ Route::group(array('middleware' => 'auth'), function ()
 
   Route::get('/purchase', [ProductCategoryController::class, 'index']);
   Route::get('/purchase/edit/{id?}', [PurchaseController::class, 'edit'])->middleware('can:purchase_simpan');
-
-  Route::get('/shift', [ShiftController::class, 'index'])->middleware('can:shift_lihat');
-  Route::get('/shift/grid', [ShiftController::class, 'getLists'])->middleware('can:shift_lihat');
-  Route::get('/shift/detail/{id?}', [ShiftController::class, 'getById'])->middleware('can:shift_lihat');
-  Route::get('/shift/close/{id}', [ShiftController::class, 'getClose'])->middleware('can:shift_tutup');
-  Route::get('/shift/edit/{id}', [ShiftController::class, 'getEdit'])->middleware('can:shift_simpan');
-  Route::post('/shift/simpan', [ShiftController::class, 'save'])->middleware('can:shift_simpan');
-  Route::post('/shift/edit', [ShiftController::class, 'edit'])->middleware('can:shift_simpan');
-  Route::post('/shift/close', [ShiftController::class, 'close'])->middleware('can:shift_tutup');
-  Route::post('/shift/hapus/{id}', [ShiftController::class, 'deleteById'])->middleware('can:shift_hapus');
   
   Route::get('/showcase', [ShowcaseController::class, 'index'])->middleware('can:showcase_lihat');
-  Route::get('/showcase/grid', [ShowcaseController::class, 'getLists'])->middleware('can:shift_lihat');
+  Route::get('/showcase/grid', [ShowcaseController::class, 'getLists'])->middleware('can:showcase_lihat');
   Route::get('/showcase/detail/{id?}', [ShowcaseController::class, 'getById'])->middleware('can:showcase_lihat');
   Route::post('/showcase/simpan', [ShowcaseController::class, 'save'])->middleware('can:showcase_simpan');
   Route::post('/showcase/hapus/{id}', [ShowcaseController::class, 'deleteById'])->middleware('can:showcase_hapus');

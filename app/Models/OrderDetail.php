@@ -20,7 +20,6 @@ class OrderDetail extends Model
     'odtotalprice',
     'odremark',
     'odindex',
-    'oddelivered',
     'odactive',
     'odcreatedat',
     'odcreatedby',

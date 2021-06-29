@@ -176,7 +176,6 @@ class OrderRepository
     ->get();
   }
 
-
   public static function getOrder($respon, $id)
   {
     $data = new \StdClass();
@@ -215,7 +214,6 @@ class OrderRepository
         array_push($respon['messages'],'Pesanan tidak ditemukan!');
       } else {
         $data->subs = self::getSubOrder($id);
-        
         $data->odTypeCek= OrderDetail::where('odorderid', $id)->select(DB::raw("CASE WHEN odtype = 'PO' THEN true ELSE false END as odcek"))->orderBy('odtype', 'ASC')->first();
 
         $respon['status'] = 'success';
@@ -241,31 +239,34 @@ class OrderRepository
     return OrderDetail::join('products',function($q){
       $q->whereRaw("productactive = '1'")
         ->whereRaw("products.id = odproductid");})
-        ->leftJoin("showcases as s", "odshowcaseid", "s.id")
-      ->leftJoinSub($promo, 'promo', function ($join) {
-        $join->on('products.id', '=', 'promo.spproductid');
-        $join->on('odpromoid', '=', 'promoid');
-      })
-      ->where('odactive', '1')
-      ->where('odorderid', $idOrder)
-      ->select(
-        'orderdetail.id',
-        'odproductid',
-        DB::raw("productname as odmenutext"),
-        'odqty',
-        'odtype',
-        'odprice',
-        'odtotalprice',
-        'odremark',
-        'odindex',
-        'odispromo',
-        'odpromoid',
-        'odpriceraw',
-        'odtotalpriceraw',
-        'promodiscount',
-        'showcasecode'
-        )
-      ->get();
+        ->leftJoinSub($promo, 'promo', function ($join) {
+          $join->on('products.id', '=', 'promo.spproductid');
+          $join->on('odpromoid', '=', 'promoid');
+        })
+        ->leftJoin('showcases as sc', function($join){
+          $join->on('sc.id', 'odshowcaseid');
+        })
+        ->where('odactive', '1')
+        ->where('odorderid', $idOrder)
+        ->select(
+          'orderdetail.id',
+          'showcasecode as odshowcasecode',
+          'odproductid',
+          DB::raw("productname as odproducttext"),
+          'odqty',
+          'odtype',
+          'odprice',
+          'odtotalprice',
+          'odremark',
+          'odindex',
+          'odispromo',
+          'odpromoid',
+          'odpriceraw',
+          'odtotalpriceraw',
+          'promodiscount',
+          'showcasecode'
+          )
+        ->get();
   }
 
   public static function save($respon, $id, $inputs, $loginid)

@@ -136,7 +136,7 @@
                     @endif
                   </div>
                   <div class="float-left mt-2">
-                    @if(isset($data->id) && empty($data->showcaseexpiredat) && Perm::can(['order_pelayan']))
+                    @if(isset($data->id) && empty($data->showcaseexpiredat) && Perm::can(['showcase_kadaluarsa']))
                       <a type="button" id="expBtn" class="btn btn-danger mt-2">{{ trans('fields.expired') }}</a>
                     @endif
                   </div>

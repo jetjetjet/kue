@@ -308,7 +308,7 @@
             @if(isset($data->id))
               <div class="form-group row divMeja">
                 <div class="col-sm-12">
-                  <p><h4>{{ trans('fields.invoiceNumber') }}: <b>{{ old('orderinvoice', $data->orderinvoice) }}</b></h4></p>
+                  <p><h4>{{ trans('fields.invoiceNo') }}: <b>{{ old('orderinvoice', $data->orderinvoice) }}</b></h4></p>
                 </div>
               </div>
             @endif
@@ -359,19 +359,16 @@
             @if(Perm::can(['order_hapus']) && $data->orderstatus == 'DRAFT')
               <a href="" id="deleteOrder" type="button" class="btn btn-danger mt-2">{{trans('fields.delete')}}</a>
             @endif
-            @if(Perm::can(['order_batal']) && isset($data->id))
-              <a href="" id="void" type="button" class="btn btn-danger mt-2">Batalkan Pesanan</a>
-            @endif
             <a href="{{url('/')}}" type="button" id='back' class="btn btn-warning mt-2">{{trans('fields.back')}}</a>
           </div>
           <div class="float-right">
             <?php 
               $canSaveBtn = isset($data->id)
-              ? $data->orderstatus == 'DRAFT' && $data->orderpaid == null ? true : false
-              : true 
+              ? $data->orderpaid == null ? true : false
+              : true ;
             ?>
             @if(Perm::can(['order_simpan']) && $canSaveBtn)
-              <a type="button" class="btn btn-primary mt-2 prosesOrder">{{trans('fields.proceed')}}</a>
+              <a type="button" class="btn btn-primary mt-2 prosesOrder">{{ isset($data->id) ? trans('fields.update') : trans('fields.proceed') }}</a>
             @endif
           </div>
         @else
