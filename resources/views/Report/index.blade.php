@@ -118,6 +118,14 @@
 @section('js-form')
   <script>
     $(document).ready(function (){
+      $('#print').click(function (e){
+        $('[name=print]').remove();
+        $('form')
+          .append('<input type="hidden" name="print" value="1" />')
+          .attr('target', '_blank')
+          .submit();
+      });
+      
       let fDate = flatpickr($('#start'), {
         mode: "range",
         altinput: true,
