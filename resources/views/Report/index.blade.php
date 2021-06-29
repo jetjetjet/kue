@@ -40,7 +40,7 @@
         </div> 
       </div>
       <div class="float-right mb-3">
-        <button class="btn btn-primary mt-2" id="print">Cetak</button>
+        <button class="btn btn-success mt-2" id="print">Cetak</button>
         <button class="btn btn-primary mt-2" id="sub" type="submit">Cari</button>
       </div>
     </form>
@@ -48,14 +48,14 @@
   @if(isset($data->grid))
     <div class="table-responsive mb-4 mt-4">
       <hr>
-      <!-- <h3 style="color:#1b55e2">Hasil Pencarian</h3> -->
+      <h4 style="color:#1b55e2">{{ $data->label }}</h4>
       <table id="grid" class="table table-hover" style="width:100%">
         <thead>
           <tr>
             <th>No</th>
-            <th>Tipe Transaksi</th>
+            <th>Jenis Transaksi</th>
+            <th>#</th>
             <th>Kode Transaksi</th>
-            <th>Nama Transaksi</th>
             <th>Nama Pelanggan</th>
             <th>Tgl. Transaksi</th>
             <th>Debit</th>
@@ -73,8 +73,8 @@
           <tr>
             <td>{{$key + 1}}</td>
             <td>{{ $row->trxtype }}</td>
-            <td><a href="{{ url($link)}}/{{$row->id }}">{{ $row->trxcode }}</a></td>
             <td>{{ $row->trxname }}</td>
+            <td><a href="{{ url($link)}}/{{$row->id }}">{{ $row->trxcode }}</a></td>
             <td>{{ $row->customername }}</td>
             <td>{{ $row->trxdate }}</td>
             <td class="text-right">{{ $row->debit == null ? '-' : number_format($row->debit) }}</td>

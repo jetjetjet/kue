@@ -1,7 +1,7 @@
 create or replace function report_transaction
 (
-	p_startdate date,
-  p_enddate date,
+	p_startdate timestamp,
+  p_enddate timestamp,
   p_in varchar,
   p_out int
 )
@@ -11,7 +11,7 @@ returns table(
   trxcode varchar, 
   customername varchar, 
   trxname varchar,
-  trxdate date, 
+  trxdate timestamp, 
   debit numeric,
   kredit numeric, 
   trxstatus varchar
@@ -24,7 +24,7 @@ begin
         orderinvoice, 
         ordercustname, 
         'DP'::varchar ,
-        ordercreatedat::date as orderdate, 
+        orderdate::timestamp as orderdate, 
         orderdp, 
         null::numeric,
         'DP'::varchar 
@@ -32,7 +32,7 @@ begin
       where orderactive = '1'
       and orderdp is not null
       --and ordervoidedat is null
-      and ordercreatedat between p_startdate::date and p_enddate::date
+      and orderdate between p_startdate and p_enddate
       and case when p_in is not null then orderstatus = upper(p_in) 
       else orderstatus not in ('DRAFT', 'VOIDED') end
       union all
@@ -44,13 +44,17 @@ begin
         (
         	select string_agg(odtype, ' & ') from  ( select odtype from orderdetail o3 where o3.odorderid = o2.id and odactive = '1' group by odtype)sb 
         )::varchar,
-        coalesce(ordercompleteddate, ordercreatedat)::date,
+        coalesce(ordercompleteddate, orderdate)::timestamp,
         coalesce(orderremainingpaid, orderprice), 
         null,
-        orderstatus::varchar
+        (case when orderstatus = 'DRAFT' then 'Draf'
+          when orderstatus = 'DP' then 'Bayar Dimuka'
+          when orderstatus = 'PAID' then 'Lunas'
+          when orderstatus = 'COMPLETED' then 'Selesai'
+          when orderstatus = 'VOIDED' then 'Batal' end)::varchar as orderstatus
       from orders o2
       where orderactive = '1'
-      and ordercreatedat between p_startdate::date and p_enddate::date
+      and orderdate between p_startdate and p_enddate
       and case when p_in is not null then orderstatus = upper(p_in) 
         else orderstatus not in ('DRAFT', 'VOIDED', 'DP') end
       and case when upper(p_in) = 'DP' then false else true end
@@ -61,13 +65,13 @@ begin
         e.expensecode,
         '-'::varchar,
         e.expensename,
-        e.expensedate::date,
+        e.expensedate::timestamp,
         null,
         expenseprice,
         'Selesai'::varchar
       from expenses e 
       where expenseactive = '1'
-      and expenseexecutedat between p_startdate::date and p_enddate::date
+      and expenseexecutedat between p_startdate and p_enddate
       and 1 = p_out
     ) a
     order by a.orderdate;
@@ -76,8 +80,8 @@ $$ language plpgsql;
 
 create or replace function report_sumtransaction
 (
-	p_startdate date,
-  p_enddate date,
+	p_startdate timestamp,
+  p_enddate timestamp,
   p_in varchar,
   p_out int
 )
@@ -95,7 +99,7 @@ begin
     from orders o2
     where orderactive = '1'
     --and ordervoidedat is null
-    and ordercreatedat between p_startdate::date and p_enddate::date
+    and orderdate between p_startdate and p_enddate
     and case when p_in is not null then orderstatus = upper(p_in) else orderstatus not in ('DRAFT', 'VOIDED') end
     into	v_debit;
   else
@@ -103,7 +107,7 @@ begin
     from orders o2
     where orderactive = '1'
     --and ordervoidedat is null
-    and ordercreatedat between p_startdate::date and p_enddate::date
+    and orderdate between p_startdate and p_enddate
     and case when p_in is not null then orderstatus = upper(p_in) else orderstatus not in ('DRAFT', 'VOIDED') end
     into	v_debit;
   end if;
@@ -111,7 +115,7 @@ begin
   select sum(expenseprice)
   from expenses e 
   where expenseactive = '1'
-  and expenseexecutedat between p_startdate::date and p_enddate::date
+  and expenseexecutedat between p_startdate and p_enddate
   and 1 = p_out
   into	v_kredit;
     
