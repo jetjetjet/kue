@@ -14,6 +14,10 @@
       box-sizing: content-box;
       padding: 8px 6px;
 		}
+    .table td, .table th {
+      padding: 0.2rem !important;
+      border-top: 1px solid #dee2e6;
+    }
     
     #header,
     #footer {
