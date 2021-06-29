@@ -773,7 +773,7 @@ class OrderRepository
       $subs = self::getSubOrder($id);
       foreach($subs as $sub){
         $temp = new \StdClass();
-        $temp->text = $sub->odmenutext;
+        $temp->text = $sub->odproducttext;
         $temp->qty = $sub->odqty;
         $temp->price = $sub->odprice;
         $temp->totalPrice = $sub->odtotalprice;
