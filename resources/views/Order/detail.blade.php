@@ -783,7 +783,7 @@
              ? '&nbsp;<span class="badge outline-badge-info"> Promo </span>'
              : '';
 
-            return data.odmenutext + prm;
+            return data.odproducttext + prm;
           }
         },
         { 
