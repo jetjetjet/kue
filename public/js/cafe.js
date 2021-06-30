@@ -239,8 +239,8 @@ function gridDeleteInput(url, title, message, grid){
 
 function gridDeleteInput2(url, title, message){
   const swalWithBootstrapButtons = swal.mixin({
-    html: '<textarea id="voidreason" class="swal2-textarea"></textarea>'+
-    "<div class='n-chk'><label class='new-control new-checkbox checkbox-warning'><input type='checkbox' value='1' id='cek' class='new-control-input'><span class='new-control-indicator'></span>Dengan Pengeluaran</label></div>",
+    html: "<div class='n-chk'><label class='new-control new-checkbox checkbox-warning'><input type='checkbox' value='1' id='cek' class='new-control-input'><span class='new-control-indicator'></span>Dengan Pengeluaran</label></div>"
+    + '<textarea id="voidreason" class="swal2-textarea"></textarea>',
     confirmButtonClass: 'btn btn-success btn-rounded',
     cancelButtonClass: 'btn btn-danger btn-rounded mr-3',
     buttonsStyling: false,

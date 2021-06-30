@@ -59,14 +59,6 @@
     </div>
   @endif
   
-  @if(($data->orderstatus == 'ADDITIONAL' || $data->orderstatus == 'PROCEED')  && $data->ordertype == 'DINEIN')
-    <div class="alert alert-warning" role="warning">
-      <strong>Pesanan Masih Diproses!</strong>
-        <ul>
-          <li>Pembayaran tidak bisa dilanjutkan jika masih ada pesanan yang masih diproses.</li>
-        </ul>
-    </div>
-  @endif
   <div class="row">
     <div class="col-lg-8 col-sm-12">
       <div class="widget-content widget-content-area br-6">
@@ -171,7 +163,7 @@
                                 ?>
                               <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0 dp">DP</th>
                               <th class="py-0 my-0 text-right dp">
-                                <h4><b class='float-right'><p class="my-0" id="lblDP">{{ $lblDP }}</p></b></h4>
+                                <h4><b class='float-right'><p class="my-0 lbl" id="lblDP">{{ $lblDP }}</p></b></h4>
                               </th>
                             </tr>
                             <tr class="dp {{(isset($data->orderdp) && $data->odTypeCek['odcek'] || $data->orderstatus == 'DRAFT' && $data->odTypeCek['odcek'] ) ? '' : 'd-none'}}">
@@ -181,8 +173,11 @@
                                   $lblSisa = isset($data->orderdp)
                                     ? number_format($data->orderprice - $data->orderdp - $data->orderdiscountprice)
                                     : 0;
+                                  $sisa = isset($data->orderdp)
+                                    ? $data->orderprice - $data->orderdp - $data->orderdiscountprice
+                                    : 0;
                                 ?>
-                                <h4><b class='float-right'><p class="my-0" id="lblSisa">{{ $lblSisa }}</p></b></h4>
+                                <h4><b class='float-right'><p class="my-0 lbl" id="lblSisa">{{ $lblSisa }}</p></b></h4>
                               </th>   
                             </tr>                             
                             <tr class="border-top pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek'] || $data->orderstatus == 'PAID' || $data->orderstatus == 'VOIDED' || $data->orderstatus == 'COMPLETED') ? 'd-none' : ''}}">
@@ -193,7 +188,7 @@
                                 ?>
                               <th style="padding-left: 0.3rem; width: 55% !important;" class="py-0 my-0">Bayar</th>
                               <th class="py-0 my-0 text-right">
-                                <h4><b class='float-right'><p class="my-0" id="lblBayar">{{ $lblPaid }}</p></b></h4>
+                                <h4><b class='float-right'><p class="my-0 lbl" id="lblBayar">{{ $lblPaid }}</p></b></h4>
                               </th>
                             </tr>
                             <tr class="pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek'] || $data->orderstatus == 'PAID' || $data->orderstatus == 'VOIDED' || $data->orderstatus == 'COMPLETED') ? 'd-none' : ''}}">
@@ -206,7 +201,7 @@
                                       : number_format($data->orderpaidprice - $data->orderprice + $data->orderdp )
                                     : 0;
                                 ?>
-                                <h4><b class='float-right'><p class="my-0" id="lblKembalian">{{ $lblKembalian }}</p></b></h4>
+                                <h4><b class='float-right'><p class="my-0 lbl" id="lblKembalian">{{ $lblKembalian }}</p></b></h4>
                               </th>
                             </tr>    
 
@@ -215,8 +210,7 @@
                     </div>
                   </div>
                   <form id="orderMenuForm" method="post" novalidate action="{{url('/order/bayar')}}/{{$data->id}}">
-                    <input type="hidden" id="afterPrice" value="{{$data->orderprice}}">
-                    <input type="hidden" id="startPrice" value="{{$data->orderprice}}">
+                    <input type="hidden" id="orderprice" value="{{$data->orderprice}}">
                     <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
                     <input type="hidden" name="username" id="name" value="{{ session('username') }}" />
                     @if($data->orderstatus == 'DRAFT' || $data->orderstatus == 'DP')
@@ -252,10 +246,10 @@
                           </select>  
                         </div>
                         @if($data->orderstatus == 'DP')
-                        <input type="hidden" value="{{$data->orderdp}}" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
+                        <input type="hidden" value="{{$data->orderdp}}" class="form-control text-right mousetrap input" required name="orderdp" id="dp" placeholder="DP">
                         <input type="hidden" readonly name="orderstatus" class="form-control" required value="COMPLETED">
-                        <input type="hidden" class="d-none" name="orderestdate" id='date' value='{{$data->orderestdate}}' placeholder="Tanggal">
-                        <input type="hidden" readonly name="orderremainingpaid" value='{{$data->orderremainingpaid}}' class="form-control dpInput" required>
+                        <input type="hidden" class="d-none" name="orderestdate" id='date' value='{{$data->orderestdate}}' placeholder="Tanggal">  
+                        <input type="hidden" readonly id="sisa" value="{{$sisa}}" name="orderremainingpaid" class="form-control input" required>               
                         @elseif($data->odTypeCek['odcek'])
                           <div class='col-md-5 col-sm-6 xs-6 mt-2'>
                             <h4>Perkiraan Selesai</h4>
@@ -267,10 +261,10 @@
                             <h4>Nominal DP</h4>
                           </div>
                           <div class='col-md-7 col-sm-6 xs-6 mt-1 dp'>
-                            <input autofocus type="number" class="form-control text-right mousetrap dpInput" required name="orderdp" id="dp" placeholder="DP">
+                            <input autofocus type="number" class="form-control text-right mousetrap input" required name="orderdp" id="dp" placeholder="DP">
                           </div>
                           <input type="hidden" readonly id="odValid" class="form-control" required value="true">
-                          <input type="hidden" readonly id="sisa" name="orderremainingpaid" class="form-control dpInput" required>
+                          <input type="hidden" readonly name="orderremainingpaid" class="form-control input" required>
                         @else
                           <input type="hidden" readonly name="orderstatus" class="form-control" required value="COMPLETED">
                           <input type="hidden" class="d-none" id='date' value='1' placeholder="Tanggal">
@@ -280,24 +274,16 @@
                           <h4>Diskon</h4>
                         </div>
                         <div class="col-md-7 col-sm-6 xs-6 mt-1 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
-                          <input type="number" class="form-control text-right mousetrap pdInput" required name="orderdiscountprice" id="diskon" placeholder="Diskon">
+                          <input type="number" class="form-control text-right mousetrap input" required name="orderdiscountprice" id="diskon" placeholder="Diskon">
                         </div>
                         <div class="col-md-5 col-sm-6 xs-6 mt-2 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
                           <h4>Nominal Bayar</h4>
                         </div>
                         <div class="col-md-7 col-sm-6 xs-6 mt-1 pd {{!($data->orderstatus == 'DP' || !$data->odTypeCek['odcek']) ? 'd-none' : ''}}">
-                          <input autofocus type="number" class="form-control text-right mousetrap mb-2 pdInput" required name="orderpaidprice" id="bayar" placeholder="Jumlah Uang"> 
-                        </div>
-                        @if($data->orderstatus == 'DP')
-                          <!-- <div class="n-chk">
-                          <br>
-                            <label class="new-control new-checkbox new-checkbox-text checkbox-info">
-                              <input type="checkbox" class="new-control-input">
-                              <span class="new-control-indicator"></span><span class="new-chk-content">Langsung Ambil</span>
-                            </label>
-                          </div> -->
-                        @endif                                    
+                          <input autofocus type="number" class="form-control text-right mousetrap mb-2 input" required name="orderpaidprice" id="bayar" placeholder="Jumlah Uang"> 
+                        </div>                                 
                     @elseif($data->orderstatus == 'PAID')
+                    <input type="hidden" readonly id="sisa" value="{{$sisa}}" name="orderremainingpaid" class="form-control input" required>
                       <div class='float-right mt-4'>
                           <button type="button" id="completeOrder" class="btn-lg btn btn-info">{{trans('fields.complete')}}</button>
                       </div>
@@ -396,29 +382,37 @@
 <script>
   let payAndchange = function()
     {
-      let sPrice = $("#startPrice").val();
-      let price = $("#afterPrice").val();   
+      let price = $("#orderprice").val();
       let pay = $('#bayar').val();
       let diskon = $("#diskon").val();
       let dp = $("#dp").val();
       let tgl = $("#date").val()
       let cust = $("#custs").val()
-      let change = + Number(diskon) + (Number(pay) - Number(sPrice)) + Number(dp);
+      let valid = $('#odValid').val();   
+      let change = Number(diskon) + (Number(pay) - Number(price)) + Number(dp); 
+      let dPrice = Number(price) - Number(dp) - Number(diskon)  
+      let discPrice = Number(price) - Number(diskon)
+      let lbl = function(){
+        $('#lblBayar').html(formatter.format(pay));
+        $("#lblSisa").html(formatter.format(dPrice));
+        $("#lblDP").html(formatter.format(dp));
+        $("#sisa").val(dPrice)
+      }
       
-      if(Number(diskon) >= Number(sPrice) || Number(dp) >= Number(sPrice) || Number(change) < 0){
-        $('#lblKembalian').html(0);
-        $('#lblBayar').html(formatter.format(pay));
+      if(Number(pay)<0){
+        $('#lblKembalian').html("error");
         $('#drawer').attr('disabled', true);
-        $("#lblDP").html(formatter.format(dp));
+      }else if(Number(diskon) >= Number(price) || Number(dp) >= Number(price) || Number(change) < 0){
+        lbl()
+        $('#lblKembalian').html(0);
+        $('#drawer').attr('disabled', true);
       }else if(Number(change) >= 0 && tgl && cust){
+        lbl()
         $("#lblKembalian").html(formatter.format(change));
-        $('#lblBayar').html(formatter.format(pay));
-        $("#lblDP").html(formatter.format(dp));
         $('#drawer').removeAttr('disabled');
       }else if(!tgl || !cust){
+        lbl()
         $("#lblKembalian").html(formatter.format(change));
-        $('#lblBayar').html(formatter.format(pay));
-        $("#lblDP").html(formatter.format(dp));
         if(!tgl)
           $("#date").css('border-color', '#FF0000');
         if(!cust)
@@ -429,72 +423,53 @@
         $('#lblBayar').html(0);
         $('#drawer').attr('disabled', true);
       }
-    }
 
-    let disChange = function()
-    {
-      let sPrice = $("#startPrice").val();
-      let diskon = $("#diskon").val();
-      let discPrice = Number(sPrice) - Number(diskon)
-
-      if( Number(sPrice) < Number(diskon) ){
-        $("#lblGranTotal").html("Error");
+      
+      if(Number(diskon)<0){
+        $("#lblDiskon").html("error");
+        $('#drawer').attr('disabled', true);
+      } else if( (Number(price) - Number(dp)) <= Number(diskon) ){
+        lbl()
         $("#lblDiskon").html(formatter.format(diskon));
-        // $("#afterPrice").val(Number(sPrice));
+        $("#lblGranTotal").html("Error");
         $('#drawer').attr('disabled', true);
       } else if(Number(diskon)){
-        $("#lblGranTotal").html(formatter.format(discPrice));
         $("#lblDiskon").html(formatter.format(diskon));
-        // $("#afterPrice").val(Number(discPrice));
+        $("#lblGranTotal").html(formatter.format(discPrice))
+        lbl()
       } else {
-        $("#lblGranTotal").html(formatter.format(sPrice));
+        $("#lblGranTotal").html(formatter.format(price));
         $("#lblDiskon").html("-");
-        // $("#afterPrice").val(Number(sPrice));
       }  
-    }
 
-    let DPChange = function()
-    {
-      let sPrice = $("#startPrice").val();
-      let diskon = $("#diskon").val();
-      let dp = $("#dp").val();
-      let pay = $('#bayar').val();
-      let valid = $('#odValid').val();
-      let cust = $("#custs").val()
-      let tgl = $("#date").val()
-      let discPrice = Number(sPrice) - Number(diskon) - Number(dp)
-
-
-      if( Number(sPrice) <= Number(dp) ){
-        $("#lblDP").html(formatter.format(dp));
+      
+      if(Number(dp)<0){
+        $("#lblSisa").html("Error");
+        $('#drawer').attr('disabled', true);
+      } else if( Number(price) <= Number(dp) ){
+        lbl()
         $("#lblSisa").html("Error");
         $("#sisa").val(null)
-        // $("#afterPrice").val(Number(sPrice));
         $('#drawer').attr('disabled', true);
       } else if(Number(dp) && !Number(pay) && valid == "true" && tgl && cust){
-        $("#lblSisa").html(formatter.format(discPrice));
-        $("#lblDP").html(formatter.format(dp));
+        lbl()
         $('#drawer').removeAttr('disabled');
-        $("#sisa").val(discPrice)
-        // $("#afterPrice").val(Number(discPrice));
       } else if(Number(dp) && !Number(pay)){
         if(!tgl)
           $("#date").css('border-color', '#FF0000');
         if(!cust)
           $("#custs").css('border-color', '#FF0000');
-        $("#lblSisa").html(formatter.format(discPrice));
-        $("#lblDP").html(formatter.format(dp));
-        $("#sisa").val(discPrice)
-      } else {
+        lbl()
+      } else if (!dp) {
         $("#lblDP").html(0);
         $("#lblSisa").html(0);
         $("#sisa").val(null)
-        // $("#afterPrice").val(Number(sPrice));
       }  
     }
 
 
   $(document).ready(function (){
+
 
     $('#deleteOrder').on('click', function (e) {
       e.preventDefault();
@@ -518,29 +493,21 @@
     });
 
     //hotkey
+    let hotkey = function(){
+      let draw = $('#drawer').attr('disabled')
+      if(!draw){
+        $('#drawer').trigger('click') 
+      }else{
+        Swal.fire({
+            type: 'error',
+            title: "Kolom kosong/Nominal tidak sesuai",
+            showConfirmButton: false,
+            timer: 1000
+          })
+      }
+    }
       Mousetrap.bind('enter', function() {
-        let sPrice = $("#startPrice").val(); 
-        let pay = $('#bayar').val();
-        let diskon = $("#diskon").val();
-        let dp = $("#dp").val();
-        let valid = $('#odValid').val();
-        let tgl = $("#date").val()
-        let change = Number(sPrice) - Number(diskon)- Number(dp);
-        if(dp && valid == "true" && Number(dp)<Number(sPrice) && tgl){
-          $('#drawer').trigger('click')       
-        }else if(!tgl){
-          alert('Tanggal tidak boleh kosong')
-        }else if(Number(dp) >= Number(sPrice)){
-          alert('Jumlah DP melebihi harga')
-        }else if(Number(pay) == 0){
-          alert('Masukkan jumlah uang')
-        }else if(Number(pay) < Number(change)){
-          alert('Jumlah Uang tidak mencukupi')
-        }else if(tgl){
-          $('#drawer').trigger('click')
-        }else{
-          $('#drawer').trigger('click')
-        }
+        hotkey();
       });
     //endhotkey
     //hotkeymodal
@@ -569,28 +536,7 @@
             $('#bayar').focus()
             $('#dp').focus()
             Mousetrap.bind('enter', function() {
-              let sPrice = $("#startPrice").val(); 
-              let pay = $('#bayar').val();
-              let diskon = $("#diskon").val();
-              let dp = $("#dp").val();
-              let valid = $('#odValid').val();
-              let tgl = $("#date").val()
-              let change = Number(sPrice) - Number(diskon)- Number(dp);
-              if(dp && valid == "true" && Number(dp)<Number(sPrice) && tgl){
-                $('#drawer').trigger('click')       
-              }else if(!tgl){
-                alert('Tanggal tidak boleh kosong')
-              }else if(Number(dp) >= Number(sPrice)){
-                alert('Jumlah DP melebihi harga')
-              }else if(Number(pay) == 0){
-                alert('Masukkan jumlah uang')
-              }else if(Number(pay) < Number(change)){
-                alert('Jumlah Uang tidak mencukupi')
-              }else if(tgl){
-                $('#drawer').trigger('click')
-              }else{
-                $('#drawer').trigger('click')
-              }
+              hotkey();
             });
         });
     //endmodalkey
@@ -639,7 +585,7 @@
     });
     //Bayar
     $('#drawer').on('click', function () {
-      var price = $("#startPrice").val();
+      var price = $("#orderprice").val();
       var pay = $('#bayar').val();
       let diskon = $("#diskon").val();
       let dp = $("#dp").val();
@@ -688,14 +634,12 @@
     })
 
     $('#custs').on('keyup', function(){
-      let valid = $('#odValid').val();
       if(this.value){
         $("#custs").css('border-color', '')
       }else{
         $("#custs").css('border-color', '#FF0000')
       }
       payAndchange();
-      DPChange();
     })
     $('#custs').on('change', function(){
       let str = this.value
@@ -706,50 +650,41 @@
     })
 
     $('#status').on('change', function(){
+      let price = $("#orderprice").val();
       if(this.value == "DP"){
-        var price = $("#startPrice").val();
         $('.dp').removeClass('d-none')
-        $('.pd').addClass('d-none')
-        $('.pdInput').val("")
-        $('#lblKembalian').html(0);
-        $('#lblBayar').html(0);
-        $('#lblDiskon').html("-");
-        $("#lblGranTotal").html(formatter.format(price));
-        $('#drawer').attr('disabled', true);
+        $('.pd').addClass('d-none')            
       }else{
         $('.pd').removeClass('d-none')
-        $('.dp').addClass('d-none')
-        $('.dpInput').val("")
-        $('#lblDP').html("0")
-        $('#lblSisa').html("0")
-        $('#drawer').attr('disabled', true);
+        $('.dp').addClass('d-none')        
       }
+      $('#lblDiskon').html("-"); 
+      $('.lbl').html("0");
+      $('.input').val("")
+      $('#drawer').attr('disabled', true);
+      $("#lblGranTotal").html(formatter.format(price));
     })
 
     $('#bayar').on('keyup',function(){
       payAndchange();
-      disChange();
     });
 
     $('#diskon').on('keyup',function(){
       payAndchange();
-      disChange();
-      DPChange();
     });
 
     $('#dp').on('keyup',function(){
       payAndchange();
-      DPChange();
     });
 
     //disable enter form
     $('#orderMenuForm').on('keyup keypress', function(e) {
-  var keyCode = e.keyCode || e.which;
-  if (keyCode === 13) { 
-    e.preventDefault();
-    return false;
-  }
-  });
+      var keyCode = e.keyCode || e.which;
+      if (keyCode === 13) { 
+        e.preventDefault();
+        return false;
+      }
+    });
     //e
 
     flatpickr($('#date'), {
@@ -761,7 +696,6 @@
         position: "above",
         onChange: function(){
           payAndchange();
-          DPChange();
           $("#date").css('border-color', '')
         }
       });
@@ -826,49 +760,7 @@
           data: 'odremark',
         },
       ]
-    });
-
-    
-    const toast = swal.mixin({
-      toast: true,
-      position: 'center',
-      showConfirmButton: false,
-      timer: 2000,
-      padding: '2em'
-    });
-  
-
-    inputSearch('#cariMeja', "{{ Url('/meja/cariTersedia') }}", 'resolve', function(item) {
-      return {
-        text: item.text,
-        id: item.id
-      }
-    });
-
-    $('#cariMeja').on('select2:select', function (e) {
-      $('#cariMeja').attr('data-has-changed', '1');
-    });
-
-    $('#orderType').on('change',function(){
-      let val = $(this).val();
-      if(val == "TAKEAWAY"){
-        $('#divMeja').addClass('d-none')
-      } else {
-        $('#divMeja').removeClass('d-none')
-      }
-    });
-
-    // Loop over them and prevent submission
-    let validation = Array.prototype.filter.call(forms, function(form) {
-      form.addEventListener('submit', function(event) {
-        
-        if (form.checkValidity() === false) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-      }, false);
-    });
+    }); 
   })
 </script>
 @endsection
