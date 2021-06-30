@@ -93,19 +93,19 @@ class OrderRepository
       ->groupBy(DB::raw('orderdate::date'))->get();
 
     $dpTransaction = Order::select(DB::raw('orderdate::date as date,sum(orderdp) as total'))
-    ->whereNotIn('orderstatus', ['VOIDED', 'DRAFT'])
-    // ->where('orderstatus', 'PAID')
-    ->where('orderactive', '1')
-    ->whereRaw("orderdate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
-    ->groupBy(DB::raw('orderdate::date'))->get();
+      ->whereNotIn('orderstatus', ['VOIDED', 'DRAFT'])
+      // ->where('orderstatus', 'PAID')
+      ->where('orderactive', '1')
+      ->whereRaw("orderdate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
+      ->groupBy(DB::raw('orderdate::date'))->get();
 
-    $remainTransaction = Order::select(DB::raw('ordercompleteddate::date as date,sum(orderremainingpaid) - sum(coalesce(orderdiscountprice,0)) as total'))
-    ->where('orderstatus', 'COMPLETED')
-    ->whereNotNull('orderdp')
-    // ->where('orderstatus', 'PAID')
-    ->where('orderactive', '1')
-    ->whereRaw("ordercompleteddate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
-    ->groupBy(DB::raw('ordercompleteddate::date'))->get();
+    $remainTransaction = Order::select(DB::raw('ordercompleteddate::date as date,sum(orderremainingpaid) as total'))
+      ->where('orderstatus', 'COMPLETED')
+      ->whereNotNull('orderdp')
+      // ->where('orderstatus', 'PAID')
+      ->where('orderactive', '1')
+      ->whereRaw("ordercompleteddate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
+      ->groupBy(DB::raw('ordercompleteddate::date'))->get();
     
     $expenses = DB::table('expenses')
       ->where('expenseactive', '1')
@@ -632,8 +632,7 @@ class OrderRepository
         'orderdiscountprice' => $inputs['orderdiscountprice'],
         'orderstatus' => $inputs['orderstatus'],
         'orderestdate' => $inputs['orderestdate']??null,
-        'orderdp' => $inputs['orderdp']??null,
-        'orderremainingpaid' => $inputs['orderremainingpaid']??null,
+        'orderdp' => $inputs['orderdp']??null,     
         'ordermodifiedby' => $loginid,
         'ordermodifiedat' => now()->toDateTimeString()
       ]);
@@ -652,6 +651,7 @@ class OrderRepository
       }
       if ($inputs['orderstatus'] == "COMPLETED"){
         $data->update([
+          'orderremainingpaid' => $inputs['orderremainingpaid']??null,
           'orderstatus' => 'COMPLETED',
           'ordercompletedby' => $loginid,
           'ordercompleteddate' => now()->toDateTimeString()
@@ -750,7 +750,7 @@ class OrderRepository
           'orderestdate',
           'ordercompleteddate',
           'orderremainingpaid',
-          DB::raw("CASE WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'COMPLETED' THEN 'komplit' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' END as orderstatuscase"), 
+          DB::raw("CASE WHEN orders.orderstatus = 'DP' THEN 'DP' WHEN orders.orderstatus = 'COMPLETED' THEN 'komplit' WHEN orders.orderstatus = 'PAID' THEN 'LUNAS' END as orderstatuscase"), 
         )->first();
       
       // dd($order);

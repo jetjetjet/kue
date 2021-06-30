@@ -107,9 +107,8 @@ class Cetak
       // $printer->text("Cafe&Resto\n");
       // $printer->text("Hayyyysss\n");
       // // // gambar
-      // $tux = EscposImage::load(public_path(self::getSetting()['logoApp']),true);     
-      // $printer -> graphics($tux);
-      $printer -> feed();
+      $tux = EscposImage::load(public_path(self::getSetting()['logoApp']),true);     
+      $printer -> graphics($tux);
       $printer->selectPrintMode();
       $printer->text(self::getSetting()['Alamat']."\n");
       $printer->text('Telp. '.self::getSetting()['Telp']."\n");
@@ -120,7 +119,7 @@ class Cetak
       $printer->setJustification(Printer::JUSTIFY_LEFT);
 
       if($data->status != 'komplit'){
-        $status = "PROSES";
+        $status = $data->status;
       }elseif($data->status == 'komplit' && $data->estdate){
         $status = "SELESAI";
       }

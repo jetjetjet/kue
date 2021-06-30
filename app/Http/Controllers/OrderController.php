@@ -140,7 +140,8 @@ class OrderController extends Controller
 		$loginid = Auth::user()->getAuthIdentifier();
 		$results = OrderRepository::void($respon, $id, $loginid, $inputs);
 		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Batalkan Pesanan', $loginid);
-
+    if($inputs['cek'])
+      self::opendrawer($request);
 		return response()->json($results);
 	}
   
