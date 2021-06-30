@@ -69,7 +69,7 @@
             @endif
             
             <div class="float-right">
-              <a href="{{ url('/user') }}" type="button" class="btn btn-danger mt-2" type="submit">Batal</a>
+              <a href="{{ url('/user') }}" type="button" class="btn btn-danger mt-2" type="submit">{{ isset($data->id) ? trans('fields.back') : trans('fields.cancel') }}</a>
               <button class="btn btn-primary mt-2" id="sub" type="submit">Simpan</button>
             </div>
           </form>

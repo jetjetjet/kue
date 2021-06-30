@@ -64,7 +64,7 @@
               </div>
             </div>
             <div class="float-right">
-              <a href="{{ url('/pengeluaran') }}" type="button" class="btn btn-danger mt-2" type="submit">Batal</a>
+              <a href="{{ url('/pengeluaran') }}" type="button" class="btn btn-danger mt-2" type="submit">{{ isset($data->id) ? trans('fields.back') : trans('fields.cancel') }}</a>
               @if(empty($data->expenseexecutedat))
               <button class="btn btn-primary mt-2" id="sub" type="submit">Simpan</button>
               @endif 

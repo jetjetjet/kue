@@ -67,7 +67,7 @@ class ProductController extends Controller
 		);
 		
 		$inputs = $request->all();
-    $file = Helpers::prepareFile($inputs, '/doc/images/');
+    $file = Helpers::prepareFile($inputs, '/images/products/');
 		$validator = validator::make($inputs, $rules);
 
 		if ($validator->fails()){

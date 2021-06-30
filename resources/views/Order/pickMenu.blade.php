@@ -272,8 +272,7 @@
                     <div class="product_card_slider_container">
                       <div class=" product_card_item">
                         <div class="product_card_image">
-                          {{-- <img src="{{ isset($shc->productimg) ? asset($shc->productimg) : asset('/public/images/fnb.jpg') }}" onerror="this.onerror=null;this.src='{{asset('/images/fnb.jpg')}}';" alt=""> --}}
-                          <img src="{{'/kincaycake' . $shc->productimg}}" alt="">
+                          <img src="{{ isset($shc->productimg) ? asset('storage/' . $shc->productimg) : asset('/public/images/fnb.jpg') }}" onerror="this.onerror=null;this.src='{{asset('/images/fnb.jpg')}}';" alt="">
                         </div>
                         <div class="product_card_content">
                           @if($shc->promodiscount)
@@ -516,6 +515,18 @@
     @endif
 
     caclculatedOrder()
+    
+
+    $( ".subQty" ).change(function() {
+        var value = $(this).val();
+        alert(value)
+        
+        if ((value !== '') && (value.indexOf('.') === -1)) {
+            
+            $(this).val(Math.max(Math.min(value, 90), -90));
+        }
+        
+        })
   });
 
   function setupTableGrid($targetContainer)
@@ -566,7 +577,6 @@
       let rQty = $row.find('[name^=dtl][name$="[odqty]"]'),
           productType = $row.find('[name^=dtl][name$="[odtype]"]');
       let max = rQty.attr('max') || false;
-
       let oldVal = Number(rQty.val());
       if(productType.val() == 'READYSTOCK'){
         if (!max || oldVal >= max) {
@@ -597,9 +607,17 @@
       rQty.trigger("change");
     })
     .on('row-updating', function (e, $row){
-      let newQty = $row.find('[name^=dtl][name$="[odqty]"]').val(),
-        price = $row.find('[name^=dtl][name$="[odprice]"]').val();
-      const newTotalPrice = Number(newQty) * Number(price);
+      let newQty = $row.find('[name^=dtl][name$="[odqty]"]'),
+        price = $row.find('[name^=dtl][name$="[odprice]"]').val(),
+        productType = $row.find('[name^=dtl][name$="[odtype]"]');
+
+      if(productType.val() == 'READYSTOCK'){
+        let rQty = $row.find('[name^=dtl][name$="[odqty]"]').attr('max');
+        if ((newQty.val() !== '') && (newQty.val().indexOf('.') === -1)) {
+          newQty = newQty.val(Math.max(Math.min(Number(newQty.val()), Number(rQty)), -Number(rQty)));
+        }
+      }
+      const newTotalPrice = Number(newQty.val()) * Number(price);
       $row.find('[id^=dtl][id$="[odtotalprice]"]').html(formatter.format(newTotalPrice));
       $row.find('[name^=dtl][name$="[odtotalprice]"]').val(newTotalPrice);
 
@@ -610,6 +628,7 @@
           productType = $row.find('[name^=dtl][name$="[odtype]"]');
 
         if(productType.val() == 'READYSTOCK'){
+          $row.find('[name^=dtl][name$="[odqty]"]').val(1);
           // $('.modal-add-row').attr('disabled', 'disabled');
           $(".showcasePopup").empty();
           $.ajax({
@@ -651,6 +670,7 @@
             }
           });
         } else {
+          $row.find('[name^=dtl][name$="[odqty]"]').val(1);
           $row.find('[name^=dtl][name$="[odshowcaseid]"]').val(null);
           $row.find('[id^=dtl][id$="[odshowcase]"]').html('');
         }

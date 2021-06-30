@@ -15,7 +15,7 @@ class Helpers
     try {
       $file = isset($inputs['file']) ? $inputs['file'] : null;
       if($file != null){
-        $file->path = base_path() . $subFolder;
+        $file->path = storage_path('app/public/') . $subFolder;
         $file->newName = time()."_".$file->getClientOriginalName();
         $file->originalName = explode('.',$file->getClientOriginalName())[0];
         $file->move($file->path ,$file->newName);
