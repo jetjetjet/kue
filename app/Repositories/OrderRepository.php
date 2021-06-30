@@ -582,44 +582,51 @@ class OrderRepository
 
   public static function void($respon, $id, $loginid, $inputs)
   {
-    $data = Order::where('orderactive', '1')
+    try{
+      DB::beginTransaction();
+      $data = Order::where('orderactive', '1')
       ->where('id', $id)
       ->first();
-    // dd($data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"));
 
-    $cekDelete = false;
-    if ($data != null){
-      if($inputs['cek']){
-        $idEx = Expense::create([
-          'expensecode' => "EXES".time(),
-          'expensename' => "Pembatalan Order ".$data->orderinvoice,
-          'expenseprice' => $data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"),
-          'expensedate' => now()->toDateString(),
-          'expensedetail' => $inputs['ordervoidreason'],
-          'expenseexecutedby' => $loginid,
-          'expenseexecutedat' => now()->toDateTimeString(),
-          'expenseactive' => '1',
-          'expensecreatedat' => now()->toDateTimeString(),
-          'expensecreatedby' => $loginid
-        ])->id;
-      }
-      $data->update([
-        'ordervoidreason' => $inputs['ordervoidreason'] ,
-        'orderstatus' => 'VOIDED',
-        'orderrefundid' => $idEx??null,
-        'ordervoid' => '1',
-        'ordermodifiedby' => $loginid,
-        'ordermodifiedat' => now()->toDateTimeString(),
-        'ordervoidedby' => $loginid,
-        'ordervoidedat' => now()->toDateTimeString()
-      ]);       
-      $cekDelete = true;
+      if ($data != null){
+        if($inputs['cek']){
+          $idEx = Expense::create([
+            'expensecode' => "EXES".time(),
+            'expensename' => "Pembatalan Order ".$data->orderinvoice,
+            'expenseprice' => $data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"),
+            'expensedate' => now()->toDateString(),
+            'expensedetail' => $inputs['ordervoidreason'],
+            'expenseexecutedby' => $loginid,
+            'expenseexecutedat' => now()->toDateTimeString(),
+            'expenseactive' => '1',
+            'expensecreatedat' => now()->toDateTimeString(),
+            'expensecreatedby' => $loginid
+          ])->id;
+        }
+        $data->update([
+          'ordervoidreason' => $inputs['ordervoidreason'] ,
+          'orderstatus' => 'VOIDED',
+          'orderrefundid' => $idEx??null,
+          'ordervoid' => '1',
+          'ordermodifiedby' => $loginid,
+          'ordermodifiedat' => now()->toDateTimeString(),
+          'ordervoidedby' => $loginid,
+          'ordervoidedat' => now()->toDateTimeString()
+        ]);
+      }       
+
+      DB::commit();
       $respon['status'] = 'success';
       array_push($respon['messages'], 'Pesanan Dibatalkan');
-    }else{
+    }catch(\Exception $e){
+      $eMsg = $e->getMessage() ?? "NOT_RECORDED";
+      Log::channel('errorKape')->error("OrderDelete_" . trim($eMsg));
+      DB::rollback();
       $respon['status'] = 'error';
       array_push($respon['messages'], 'Kesalahan');
     }
+   
+
     
     return $respon;
   }
