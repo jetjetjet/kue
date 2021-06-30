@@ -164,8 +164,9 @@ begin
           union all
           select ov.id, 
             ordervoidedat, 
-            case when orderremainingpaid is not null then orderremainingpaid + coalesce(orderdiscountprice, 0)
-                else orderprice end,
+            case when orderdp is not null and orderremainingpaid is null then orderdp
+              when orderremainingpaid is not null then orderremainingpaid + coalesce(orderdiscountprice, 0)
+              else orderprice end,
             'VOIDED', 'Batal'
           from orders ov
           where ordervoid is not null 
@@ -174,7 +175,7 @@ begin
         on a.id = o2.id
       where 1=1
       and case when p_in is null then substatus not in ('DRAFT', 'VOIDED')
-       else substatus = upper(p_in) end
+        else substatus = upper(p_in) end
 
       union all
 
