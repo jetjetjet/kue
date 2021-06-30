@@ -112,14 +112,14 @@ box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
               <div class="col-md-6 imgView">
                 <div class="text-center">
                 <input type="hidden" id="productimg" name="productimg" value="{{ $data->productimg }}" /> 
-                  <img src="{{ '/kincaycake' . $data->productimg }}" style="height:420px; width:420px" class="p-3 rounded" alt="Produk">
+                  <img src="{{ asset('storage/' . $data->productimg) }}" style="height:420px; width:420px" class="p-3 rounded" alt="Produk">
                   <button id="delCurImg" class="remove-image" title="Hapus Gambar" style="display: inline;">&#215;</button>
                 </div>
               </div>
               @endif
             </div>
             <div class="float-right">
-              <a href="{{ url('/product') }}" type="button" class="btn btn-danger mt-2" type="submit">Batal</a>
+              <a href="{{ url('/product') }}" type="button" class="btn btn-danger mt-2" type="submit">{{ isset($data->id) ? trans('fields.back') : trans('fields.cancel') }}</a>
               <button class="btn btn-primary mt-2" id="sub" type="submit">Simpan</button>
             </div>
           </form>

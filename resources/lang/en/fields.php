@@ -4,6 +4,7 @@ return [
   'all' => 'Semua',
   'back' => 'Kembali',
   'add' => 'Tambah',
+  'cancel' => 'Batal',
   'category' => 'Kategori',
   'checkAll' => 'Lihat Semua',
   'code' => 'Kode',

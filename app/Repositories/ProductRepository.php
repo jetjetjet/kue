@@ -220,7 +220,7 @@ class ProductRepository
   public static function save($respon, $inputs, $file, $loginid)
   {
     $oldPath = isset($inputs['productimg']) ? $inputs['productimg'] : null ;
-    $filePath = isset($file) ? '/doc/images/' . $file->newName : $oldPath; 
+    $filePath = isset($file) ? 'images/products/' . $file->newName : $oldPath; 
     $id = $inputs['id'] ?? 0;
     $data = Product::where('productactive', '1')
       ->where('id',$id)
