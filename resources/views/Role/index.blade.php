@@ -107,7 +107,8 @@
         const url = "{{ url('/jabatan/hapus') . '/' }}" + rowData.id;
         const title = 'Hapus Jabatan';
         const pesan = 'Apakah anda yakin ingin menghapus jabatan ini?'
-        gridDeleteRow(url, title, pesan, grid);
+        const batal = 'Data Jabatan batal dihapus'
+        gridDeleteRow(url, title, pesan, batal, grid);
       });
     });
   </script>

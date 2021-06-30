@@ -152,7 +152,8 @@
     }
 
     .product_card_image img {
-      width: 100%
+      width: 160px;
+      height: 160px
     }
 
     .product_card_content {
@@ -271,7 +272,7 @@
                     <div class="product_card_slider_container">
                       <div class=" product_card_item">
                         <div class="product_card_image">
-                          <img src="{{ isset($shc->productimg) ? asset($shc->productimg) : asset('/public/images/fnb.jpg') }}" onerror="this.onerror=null;this.src='{{asset('/images/fnb.jpg')}}';" alt="">
+                          <img src="{{ isset($shc->productimg) ? asset('storage/' . $shc->productimg) : asset('/public/images/fnb.jpg') }}" onerror="this.onerror=null;this.src='{{asset('/images/fnb.jpg')}}';" alt="">
                         </div>
                         <div class="product_card_content">
                           @if($shc->promodiscount)
@@ -306,7 +307,7 @@
             @if(isset($data->id))
               <div class="form-group row divMeja">
                 <div class="col-sm-12">
-                  <p><h4>{{ trans('fields.invoiceNumber') }}: <b>{{ old('orderinvoice', $data->orderinvoice) }}</b></h4></p>
+                  <p><h4>{{ trans('fields.invoiceNo') }}: <b>{{ old('orderinvoice', $data->orderinvoice) }}</b></h4></p>
                 </div>
               </div>
             @endif
@@ -354,27 +355,24 @@
       <div class="widget-content widget-content-area" style="padding:10px">
       @if(!isset($data->ordervoidedat))
           <div class="float-left">
-            @if(Perm::can(['order_hapus']) && ($data->orderstatus == 'PROCEED' || $data->orderstatus == 'ADDITIONAL'))
+            @if(Perm::can(['order_hapus']) && $data->orderstatus == 'DRAFT')
               <a href="" id="deleteOrder" type="button" class="btn btn-danger mt-2">{{trans('fields.delete')}}</a>
             @endif
-            @if(Perm::can(['order_batal']) && ($data->ordertype == 'DINEIN') && ($data->orderstatus == 'ADDITIONAL' || $data->orderstatus == 'COMPLETED' || $data->orderstatus == 'PAID'))
-              <a href="" id="void" type="button" class="btn btn-danger mt-2">Batalkan Pesanan</a>
-            @endif
-            <a href="{{url('/order/meja/view')}}" type="button" id='back' class="btn btn-warning mt-2">{{trans('fields.back')}}</a>
+            <a href="{{url('/')}}" type="button" id='back' class="btn btn-warning mt-2">{{trans('fields.back')}}</a>
           </div>
           <div class="float-right">
             <?php 
               $canSaveBtn = isset($data->id)
-              ? ($data->orderstatus == 'ADDITIONAL' || $data->orderstatus == 'PROCEED' || $data->orderstatus == 'COMPLETED') && $data->orderpaid == null ? true : false
-              : true 
+              ? $data->orderpaid == null ? true : false
+              : true ;
             ?>
             @if(Perm::can(['order_simpan']) && $canSaveBtn)
-              <a type="button" class="btn btn-primary mt-2 prosesOrder">{{trans('fields.proceed')}}</a>
+              <a type="button" class="btn btn-primary mt-2 prosesOrder">{{ isset($data->id) ? trans('fields.update') : trans('fields.proceed') }}</a>
             @endif
           </div>
         @else
           <div class="float-right">
-            <a href="{{url('/order/meja/view')}}" type="button" id='back' class="btn btn-warning mt-2">{{trans('fields.back')}}</a>
+            <a href="{{url('/')}}" type="button" id='back' class="btn btn-warning mt-2">{{trans('fields.back')}}</a>
           </div>
         @endif
       </div>
@@ -382,19 +380,23 @@
   </div>
 </div>
 
-<div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<div class="modal fade" id="productModal" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="modalTitle">{{ trans('fields.add') }} {{trans('fields.product')}}</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+        <h5 class="modal-title" id="modalTitle">{{ trans('fields.select') }} {{trans('fields.productionCode')}}</h5>
       </div>
       <div class="modal-body">
         <div class="form-row">
           <table class="table mb-4">
             <tbody>
+              <tr>
+                <td class="text-left">{{ trans('fields.stock') }}</td>
+                <td class="text-primary">
+                  <input type="hidden" class="form-control text-right" id="popupShowcaseCode" readonly>
+                  <input type="number" min="0" class="form-control text-right" id="popupStock" readonly>
+                </td>
+              </tr>
               <tr>
                 <td class="text-left">{{ trans('fields.prodCode') }}</td>
                 <td class="text-primary">
@@ -407,7 +409,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" id="popDismiss" class="btn btn-default btn-sm" data-dismiss="modal"><i class="flaticon-cancel-12"></i>Batal</button>
+        <button type="button" id="popDismiss" class="btn btn-default btn-sm modal-close-row"><i class="flaticon-cancel-12"></i>Batal</button>
         <button type="button" id="popSubmit" style="min-width: 75px;" class="btn btn-info btn-sm font-bold modal-add-row">Ubah</button>
       </div>
     </div>
@@ -421,6 +423,7 @@
 
 @section('js-body')
 <script>
+  let pStock = 0;
   let totalPrice = 0;
   $(document).ready(function (){
     //modal-tambah
@@ -508,48 +511,22 @@
 
           $('#addToTableProduct').trigger('click');
         }, 0);
-
-
-
-
-
-        $.ajax({
-            type: "GET",
-            url: "{{ url('api/product/detail') }}" + "/" + productId,
-            success: function(data){
-              if(data.status == 'success'){ 
-                let item = data.data;
-                let bodyPopup = {
-                  'text' : item.productname,
-                  'price' : item.productprice,
-                  'priceRaw': item.productpriceraw,
-                  'promo': item.promodiscount,
-                  'promoText': item.promoname,
-                  'promoEnd': item.promoend,
-                };
-
-                
-
-              } else {
-                toast({
-                  type: data.status,
-                  title: data.messages[0],
-                  padding: '2em',
-                });
-              }
-            },
-            error: function(data){
-              toast({
-                type: 'error',
-                title: 'Kesalahan. Tidak dapat memproses.',
-                padding: '2em',
-              });
-            }
-         });
       });
     @endif
 
     caclculatedOrder()
+    
+
+    $( ".subQty" ).change(function() {
+        var value = $(this).val();
+        alert(value)
+        
+        if ((value !== '') && (value.indexOf('.') === -1)) {
+            
+            $(this).val(Math.max(Math.min(value, 90), -90));
+        }
+        
+        })
   });
 
   function setupTableGrid($targetContainer)
@@ -597,11 +574,19 @@
       caclculatedOrder();
     })
     .on('row-counterup', function(e, $row){
-      let rQty = $row.find('[name^=dtl][name$="[odqty]"]');
-      let min = rQty.attr('min') || false;
-      
+      let rQty = $row.find('[name^=dtl][name$="[odqty]"]'),
+          productType = $row.find('[name^=dtl][name$="[odtype]"]');
+      let max = rQty.attr('max') || false;
       let oldVal = Number(rQty.val());
-      let newVal = oldVal + 1;
+      if(productType.val() == 'READYSTOCK'){
+        if (!max || oldVal >= max) {
+          let newVal = oldVal;
+        } else {
+          newVal = oldVal + 1;
+        }
+      } else {
+        newVal = oldVal + 1;
+      }
       
       rQty.val(newVal);
       rQty.trigger("change");
@@ -622,9 +607,17 @@
       rQty.trigger("change");
     })
     .on('row-updating', function (e, $row){
-      let newQty = $row.find('[name^=dtl][name$="[odqty]"]').val(),
-        price = $row.find('[name^=dtl][name$="[odprice]"]').val();
-      const newTotalPrice = Number(newQty) * Number(price);
+      let newQty = $row.find('[name^=dtl][name$="[odqty]"]'),
+        price = $row.find('[name^=dtl][name$="[odprice]"]').val(),
+        productType = $row.find('[name^=dtl][name$="[odtype]"]');
+
+      if(productType.val() == 'READYSTOCK'){
+        let rQty = $row.find('[name^=dtl][name$="[odqty]"]').attr('max');
+        if ((newQty.val() !== '') && (newQty.val().indexOf('.') === -1)) {
+          newQty = newQty.val(Math.max(Math.min(Number(newQty.val()), Number(rQty)), -Number(rQty)));
+        }
+      }
+      const newTotalPrice = Number(newQty.val()) * Number(price);
       $row.find('[id^=dtl][id$="[odtotalprice]"]').html(formatter.format(newTotalPrice));
       $row.find('[name^=dtl][name$="[odtotalprice]"]').val(newTotalPrice);
 
@@ -635,7 +628,9 @@
           productType = $row.find('[name^=dtl][name$="[odtype]"]');
 
         if(productType.val() == 'READYSTOCK'){
+          $row.find('[name^=dtl][name$="[odqty]"]').val(1);
           // $('.modal-add-row').attr('disabled', 'disabled');
+          $(".showcasePopup").empty();
           $.ajax({
             type: "GET",
             url: "{{ url('api/product/showcase-code') }}" + "/" + productId,
@@ -647,13 +642,22 @@
                 $.each( sData.data, function( key, value ) {
                   productCodeChild += "<option value='"+ value.id +"'>" + value.showcasecode + "</option>";
                 });
-
+                $('#popupShowcaseCode').val(sData.data[0]['showcasecode']);
+                $('#popupStock').val(sData.data[0]['qty']);
                 $('.showcasePopup').append(productCodeChild);
                 
-                showPopupOrder({}, function(){
+                showPopupOrder(sData.data, function(){
                   let selected = $('#uiModalInstance').find('#showcasePopup').val();
+                  let code = $('#uiModalInstance').find('#popupShowcaseCode').val();
+                  let stock = $('#uiModalInstance').find('#popupStock').val();
+                  
+                  let rqt = $row.find('[name^=dtl][name$="[odqty]"]');
+                  rqt.attr('max', stock) 
+
                   $row.find('[name^=dtl][name$="[odshowcaseid]"]').val(selected);
-                  $row.find('[id^=dtl][id$="[odshowcase]"]').html('Kd. Produksi:' + selected);
+                  $row.find('[id^=dtl][id$="[odshowcase]"]').html('Kd. Produksi:' + code);
+                }, function(){
+                  productType.val("PO").change();
                 });
               } else {
                 productType.val("PO").change();
@@ -666,9 +670,11 @@
             }
           });
         } else {
+          $row.find('[name^=dtl][name$="[odqty]"]').val(1);
           $row.find('[name^=dtl][name$="[odshowcaseid]"]').val(null);
           $row.find('[id^=dtl][id$="[odshowcase]"]').html('');
         }
+
       // caclculatedOrder();
     });
   }

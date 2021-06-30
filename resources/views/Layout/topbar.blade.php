@@ -1,6 +1,23 @@
+<style>
+.navbar .navbar-item .nav-item.dropdown.notification-dropdown .nav-link span.badge {
+    position: absolute;
+    top: 11px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 100%;
+    padding: 3px 0px 0px;
+    font-size: 10px;
+    color: #fff!important;
+    background: #f33421;
+    display: block;
+    border: 1px solid #fff;
+}
+</style>
+
 <div class="header-container">
 	<header class="header navbar navbar-expand-sm">
-		<a href="javascript:void(0);" class="sidebarCollapse" data-placement="bottom"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></a>
+	<a href="javascript:void(0);" class="sidebarCollapse" data-placement="bottom"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></a>
 		<div class="nav-logo align-self-center">
 			<a class="navbar-brand" href="{{url('/')}}"><span class="navbar-brand-name">{{ session('cafeName') }}</span></a>
 		</div>
@@ -37,8 +54,8 @@
 							<li class="menu single-menu {{ $segm ? 'active' : ''}}">
 								<a href="#app" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
 									<div class="">
-										<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-cpu"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
-										<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-cpu shadow-icons"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-database"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-database shadow-icons"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
 										<span>Master Data</span>
 									</div>
 									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -64,7 +81,7 @@
 						@endif
 						@if(Perm::can(['order_lihat']) || Perm::can(['pengeluaran_lihat']))
 							<?php
-								$segm = (Request::segment(1) == 'order' || Request::segment(1) == 'pengeluaran');
+								$segm = (Request::segment(2) == 'order' || Request::segment(1) == 'pengeluaran' || Request::segment(1) == 'showcase');
 							?>
 							<li class="menu single-menu {{ $segm ? 'active' : ''}}">
 								<a href="#transaction" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
@@ -77,30 +94,27 @@
 								</a>
 								<ul class="collapse submenu list-unstyled animated fadeInUp" id="transaction" data-parent="#topAccordion">
 									@if(Perm::can(['order_lihat']))
-										<li><a href="{{ url('/order/meja/view') }}">Meja Pesanan</a></li>
+										<li><a href="{{ url('/order/index') }}">Daftar Pesanan</a></li>
 									@endif
 									@if(Perm::can(['order_lihat']))
-										<li><a href="{{ url('/order/index') }}">Daftar Pesanan Ditempat</a></li>
-									@endif
-									@if(Perm::can(['order_pembayaran']))
-										<li><a href="{{ url('/order/index-bungkus') }}">Daftar Pesanan bungkus</a></li>
+										<li><a href="{{ url('/order/preorder') }}">{{ trans('fields.preOrder') }}</a></li>
 									@endif
 									@if(Perm::can(['pengeluaran_lihat']))
-										<li><a href="{{ url('/pengeluaran') }}">Pengeluaran</a></li>
+										<li><a href="{{ url('/pengeluaran') }}">{{ trans('fields.expense') }}</a></li>
+									@endif
+									@if(Perm::can(['showcase_lihat']))
+										<li><a href="{{ url('/showcase') }}">{{ trans('fields.showcase') }}</a></li>
 									@endif
 								</ul>
 							</li>
 						@endif
 						@if(Perm::can(['showcase_lihat']))
-						<?php
-							$segm = Request::segment(1) == 'showcase';
-						?>
 						<li class="menu {{ $segm ? 'active' : ''}}">
-							<a href="{{url('/showcase')}}" class="dropdown-toggle">
+							<a href="{{url('/order')}}" class="dropdown-toggle">
 								<div class="">
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-clock shadow-icons"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-									<span>{{trans('fields.showcase')}}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-inbox"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-inbox shadow-icons"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+									<span>{{ trans('fields.sales') }}</span>
 								</div>
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 							</a>
@@ -121,17 +135,11 @@
 									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 								</a>
 								<ul class="collapse submenu list-unstyled animated fadeInUp" id="report" data-parent="#topAccordion">
-								@if(Perm::can(['laporan_lihat']))
-										<li><a href="{{ url('/laporan-pengeluaran') }}">Laporan Pengeluaran</a></li>
-									@endif
 									@if(Perm::can(['laporan_lihat']))
 										<li><a href="{{ url('/laporan') }}">Laporan Transaksi</a></li>
 									@endif
 									@if(Perm::can(['laporan_lihat']))
-										<li><a href="{{ url('/laporan-shift') }}">Laporan Shift</a></li>
-									@endif
-									@if(Perm::can(['laporan_lihat']))
-										<li><a href="{{ url('/laporan-menu') }}">Laporan Menu</a></li>
+										<li><a href="{{ url('/laporan-product') }}">Laporan Menu</a></li>
 									@endif
 									@if(Perm::can(['log_lihat']))
 										<li><a href="{{ url('/log') }}">Log</a></li>
@@ -158,9 +166,6 @@
 									@if(Perm::can(['pengaturan_lihat']))
 										<li><a href="{{ url('/setting') }}">Pengaturan</a></li>
 									@endif
-									@if(Perm::can(['pengaturan_notif']))
-										<li><a href="{{ url('/setting/notif') }}">Notifikasi</a></li>
-									@endif
 									<li><a href="{{ url('/setting/aboutus') }}">Tentang kami</a></li>
 									<li><a href="{{ url('/setting/hotkey') }}">Tombol Pintas</a></li>
 								</ul>
@@ -170,15 +175,34 @@
 			</div>
 		</ul>
 		<ul class="navbar-item flex-row ml-auto"></ul>
-		<span id="notiferror" class="badge badge-danger d-none">Notif Error</span> &nbsp;&nbsp;
+		
 		<a class="text-dark" href="#!" onclick="javascript:toggleFullScreen()"><i data-feather="maximize"></i></a>
 		<ul class="navbar-item flex-row nav-dropdowns">
+			<li class="nav-item dropdown notification-dropdown">
+				<a href="javascript:void(0);" class="nav-link dropdown-toggle" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bell"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+					<span class="badge badge-danger counter"></span>
+				</a>
+				<div id="notifDropDown" class="dropdown-menu position-absolute animated fadeInUp" aria-labelledby="notificationDropdown">
+					<div class="notification-scroll">
+						<div class="dropdown-item">
+							<a href="{{url('/order/preorder')}}">
+								<div class="media server-log">
+									<div class="media-body">
+										<h6 class="">{{ trans('fields.checkAll') }}</h6>
+									</div>
+								</div>
+							</a>
+						</div>
+					</div>
+				</div>
+			</li>
 
 			<li class="nav-item dropdown user-profile-dropdown order-lg-0 order-1">
 				<a href="javascript:void(0);" class="nav-link dropdown-toggle user" id="user-profile-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<div class="media">
 						<div class="media-body align-self-center">
-								<h6 style="margin-bottom: .3rem !important;"><span>Halo,</span> {{ session('username') }}</h6>
+								<h6 style="margin-bottom: .3rem !important;">{{ session('username') }}</h6>
 						</div>
 						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>
 						<img src="{{ asset('/images/avatar.png') }}" class="img-fluid">

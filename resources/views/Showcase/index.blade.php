@@ -17,10 +17,10 @@
         <thead>
           <tr>
             <th>{{ trans('fields.name')}} {{trans('fields.product')}}</th>
-            <th>{{ trans('fields.qty') }}</th>
+            <th>{{ trans('fields.stock') }}</th>
+            <th>{{ trans('fields.status') }}</th>
             <th>{{ trans('fields.date') }}</th>
             <th>{{ trans('fields.expDate') }}</th>
-            <th>{{ trans('fields.status') }}</th>
             <th class="no-content"></th>
           </tr>
         </thead>
@@ -74,7 +74,18 @@
             }
           },
           { 
-            data: 'showcaseqty',
+            data: null,
+            searchText: true,
+            render: function(data, type, full, meta){
+              if(data.showcaseqty){
+                return data.showcaseqty;
+              } else{
+                return "-";
+              }
+            }
+          },
+          { 
+            data: 'status',
             searchText: true
           },
           { 
@@ -84,17 +95,6 @@
           { 
             data: 'showcaseexpdate',
             searchText: true
-          },
-          { 
-            data:null,
-            searchText: true,
-            render: function(data, type, full, meta){
-              if(data.showcasestatus == 'AVAILABLE'){
-                return '<span class="badge badge-success"> Tersedia </span>';  
-              }else{
-                return '<span class="badge badge-danger"> Kosong </span>';
-              }
-            }
           },
           { 
             data:null,
@@ -123,8 +123,9 @@
         const url = "{{ url('showcase/hapus') . '/' }}" + rowData.id;
         const title = 'Hapus Menu';
         const pesan = 'Apakah anda yakin ingin menghapus data ini?'
+        const batal = 'Data Showcase batal dihapus'
         //console.log(rowData, url)
-        gridDeleteRow(url, title, pesan, grid);
+        gridDeleteRow(url, title, pesan, batal, grid);
       });
     });
 

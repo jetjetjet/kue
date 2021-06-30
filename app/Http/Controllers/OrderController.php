@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 use App\Libs\Helpers;
 use App\Libs\Cetak;
-use App\Http\Controllers\ShiftController;
+// use App\Http\Controllers\ShiftController;
 use App\Repositories\OrderRepository;
 use App\Repositories\MenuRepository;
 use App\Repositories\ProductRepository;
@@ -25,31 +25,14 @@ class OrderController extends Controller
 		return view('Order.index');
 	}
 
-	
-	public function indexBungkus()
-	{
-		return view('Order.indexBungkus');
-	}
-
-	public function indexCustomer(Request $request)
-	{
-		$respon = Helpers::$responses;
-    $menu = MenuRepository::getMenu();
-    return view('Order.orderCustomer')->with('menu', $menu);
-	}
-
-  public function getGridaway(Request $request)
+	public function grid(Request $request)
 	{
 		$filter = Helpers::getFilter($request);
-		$results = OrderRepository::gridTakeAway($filter);
-		
-		return response()->json($results);
-	}
-
-	public function getGridin(Request $request)
-	{
-		$filter = Helpers::getFilter($request);
-		$results = OrderRepository::gridDineIn($filter);
+		$permission = Array(
+			'save' => (Auth::user()->can(['order_simpan']) == true ? 1 : 0),
+			'delete' => (Auth::user()->can(['order_hapus']) == true ? 1 : 0)
+		);
+		$results = OrderRepository::grid($filter, $permission);
 		
 		return response()->json($results);
 	}
@@ -71,68 +54,59 @@ class OrderController extends Controller
 			->with('data', $data['data']);
   }
 
+  public function preOrder()
+	{
+		return view('order.preorder');
+	}
+
+	public function getPO(Request $request)
+	{
+		$permission = Array(
+			'save' => (Auth::user()->can(['order_simpan']) == true ? "true" : "false") . " as can_save",
+		);
+		$results = OrderRepository::preOrderGrid($permission);
+		
+		return response()->json($results);
+	}
+
   public function detail(Request $request, $id)
   {
     $url = $request->path();
     $kasir = Auth::user()->can(['order_pembayaran'],[]);
-    if($kasir){
-      $cekShift = ShiftRepository::cekShiftStatus();
-      if (!$cekShift){
-				$request->session()->put('urlintend', (string)$url);
-        $request->session()->flash('warning', ['Shift belum diisi. Mohon diisi terlebih dahulu']);
+    // if($kasir){
+    //   $cekShift = ShiftRepository::cekShiftStatus();
+    //   if (!$cekShift){
+		// 		$request->session()->put('urlintend', (string)$url);
+    //     $request->session()->flash('warning', ['Shift belum diisi. Mohon diisi terlebih dahulu']);
 				
-        return redirect()->action([ShiftController::class, 'getById']);
-      }
-    }
+    //     return redirect()->action([ShiftController::class, 'getById']);
+    //   }
+    // }
     $respon = Helpers::$responses;
     $results = OrderRepository::getOrder($respon, $id);
 
 		if($results['status'] == 'error'){
 			$request->session()->flash($results['status'], $results['messages']);
-			return redirect()->action([OrderController::class, 'orderView']);
+			return redirect()->action([OrderController::class, 'index']);
 		}
 
     return view('Order.detail')->with('data', $results['data']);
   }
 
-	public function orderView()
+  public function getDetail(Request $request, $idOrder)
 	{
-		return view('Order.boardView');
-	}
-
-	public function orderViewLists()
-	{
-		$perms = Array(
-			'is_kasir' => (Auth::user()->can(['order_pembayaran']) == true ? "true" : "false") . " as is_kasir",
-			'is_pelayan' => (Auth::user()->can(['order_pelayan']) == true ? "true" : "false") . " as is_pelayan"
-		);
-		$data = OrderRepository::orderGrid($perms);
-		return response()->json($data);
-	}
-
-	public function orderBungkus()
-	{
-		$data = OrderRepository::orderBungkus();
-		return DataTables::of($data)->make(true);
+		$results = OrderRepository::GetSubOrder($idOrder);
+		
+		return response()->json($results);
 	}
 
   public function save(Request $request, $id = null)
   {
     $respon = Helpers::$responses;
-		$rules = array(
-			// 'ordertype' => 'required',
-			// 'orderboardid' => 'required_if:ordertype,DINEIN'
-		);
-		
 		$inputs = $request->all();
 
 		// Subs.
 		$inputs['dtl'] = $this->mapRowsX(isset($inputs['dtl']) ? $inputs['dtl'] : null);
-		$validator = validator::make($inputs, $rules);
-
-		if ($validator->fails()){
-			return redirect()->back()->withErrors($validator)->withInput($inputs);
-		}
 
 		$loginid = Auth::user()->getAuthIdentifier();
     $results = OrderRepository::save($respon, $id, $inputs, $loginid);
@@ -157,17 +131,6 @@ class OrderController extends Controller
 		return response()->json($results);
 	}
 
-	public function deleteMenuOrder(Request $request, $id, $idSub)
-	{
-		$respon = Helpers::$responses;
-
-		$loginid = Auth::user()->getAuthIdentifier();
-		$results = OrderRepository::deleteMenuOrder($respon, $id, $idSub, $loginid);
-		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Hapus Menu Pesanan', $loginid);
-
-		return response()->json($results);
-	}
-
   public function voidById(Request $request, $id)
 	{
 		$respon = Helpers::$responses;
@@ -177,7 +140,8 @@ class OrderController extends Controller
 		$loginid = Auth::user()->getAuthIdentifier();
 		$results = OrderRepository::void($respon, $id, $loginid, $inputs);
 		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Batalkan Pesanan', $loginid);
-
+    if($inputs['cek'])
+      self::opendrawer($request);
 		return response()->json($results);
 	}
   
@@ -186,10 +150,10 @@ class OrderController extends Controller
 		$respon = Helpers::$responses;
 
     $inputs = $request->all();
-	
-		$loginid = Auth::user()->getAuthIdentifier();
+ 
+    $loginid = Auth::user()->getAuthIdentifier();
 		$results = OrderRepository::paid($respon, $id, $loginid, $inputs);
-		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Bayar Pesanan', $loginid);
+		AuditTrailRepository::saveAuditTrail($request->path(), $results, "Transaksi", $loginid);
 
 		// if($results['status'] == "success"){
 		// 	event(new BoardEvent('ok'));
@@ -198,7 +162,27 @@ class OrderController extends Controller
 		self::orderReceiptkasir($id, $request);
 		$request->session()->flash($results['status'], $results['messages']);
 
-		return redirect('/order/meja/view');
+		return redirect('/');
+	}
+
+  public function completeById(Request $request, $id)
+	{
+		$respon = Helpers::$responses;
+
+    $inputs = $request->all();
+ 
+    $loginid = Auth::user()->getAuthIdentifier();
+		$results = OrderRepository::complete($respon, $id, $loginid);
+		AuditTrailRepository::saveAuditTrail($request->path(), $results, "Transaksi", $loginid);
+
+		// if($results['status'] == "success"){
+		// 	event(new BoardEvent('ok'));
+		// 	event(new OrderProceed('ok'));
+		// }
+		self::orderReceiptkasir($id, $request);
+		$request->session()->flash($results['status'], $results['messages']);
+
+		return redirect('/');
 	}
 
 	public function orderReceipt($idOrder)
@@ -209,11 +193,12 @@ class OrderController extends Controller
 
 	public function orderReceiptkasir($id, Request $request)
 	{
+    $respon = Helpers::$responses;
 		$data = OrderRepository::getOrderReceiptkasir($id);
 		$inputs = $request->all();
 		
-		$cetak = Cetak::printkasir($data, $inputs);
-		return redirect('/order/meja/view');
+		$cetak = Cetak::printkasir($data, $inputs, $respon);
+		return response()->json($cetak);
 	}
 
 	public function opendrawer(Request $request)

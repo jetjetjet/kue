@@ -139,11 +139,14 @@ class ProductRepository
   public static function apiShowcaseCode($respon, $id)
   {
     $query = Product::join('showcases as s', 'products.id', 'showcaseproductid')
+      ->join('product_stock as ps', function($join){
+        $join->on('ps.productid', 'products.id')
+        ->on('ps.stockshowcaseid', 's.id');})
       ->where('productactive','1')
       ->where('showcaseactive', '1')
       ->where('products.id', $id)
       ->whereNull('showcaseexpiredat')
-      ->select('s.id','showcasecode')
+      ->select('s.id','showcasecode', 'ps.qty')
       ->get();
 
     if(count($query) <= 0){
@@ -217,7 +220,7 @@ class ProductRepository
   public static function save($respon, $inputs, $file, $loginid)
   {
     $oldPath = isset($inputs['productimg']) ? $inputs['productimg'] : null ;
-    $filePath = isset($file) ? '/doc/images/' . $file->newName : $oldPath; 
+    $filePath = isset($file) ? 'images/products/' . $file->newName : $oldPath; 
     $id = $inputs['id'] ?? 0;
     $data = Product::where('productactive', '1')
       ->where('id',$id)
@@ -428,15 +431,14 @@ class ProductRepository
   {
     $promo = self::searchPromo();
     
-    return Product::join('productcategory as mc', 'mc.id', 'productmcid')
+    return Product::join('productcategories as mc', 'mc.id', 'productpcid')
       ->leftJoinSub($promo, 'promo', function ($join) {
         $join->on('products.id', '=', 'promo.spproductid');
       })
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
       ->where('productactive', '1')
-      ->where('productavaible', '1')
       ->whereNull('promoid')
-      ->select('products.id', 'mcname as productcategory', 'productname as text', 'producttype', 'productprice')
+      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productcode', 'productprice')
       ->orderby('productname', 'ASC')
       ->limit(5)
       ->get();

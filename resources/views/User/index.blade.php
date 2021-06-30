@@ -119,8 +119,9 @@
         const url = "{{ url('user/hapus') . '/' }}" + rowData.id;
         const title = 'Hapus User';
         const pesan = 'Apakah anda yakin ingin menghapus user ini?'
+        const batal = 'Data User batal dihapus'
         //console.log(rowData, url)
-        gridDeleteRow(url, title, pesan, grid);
+        gridDeleteRow(url, title, pesan, batal, grid);
       });
     });
   </script>

@@ -91,7 +91,7 @@ class UserController extends Controller
 		
 		if(!isset($inputs['id'])){
 			$rules = array(
-				'username' => 'required|unique:users,username',
+				'username' => 'required',
 				'userpassword' => 'required',
 				'userfullname' => 'required'
 			);

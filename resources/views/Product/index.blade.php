@@ -110,8 +110,9 @@
         const url = "{{ url('product/hapus') . '/' }}" + rowData.id;
         const title = "Hapus {{ trans('fields.product') }}";
         const pesan = "Apakah anda yakin ingin menghapus {{ trans('fields.product') }} ini?"
+        const batal = "Data {{ trans('fields.product') }} batal dihapus"
         //console.log(rowData, url)
-        gridDeleteRow(url, title, pesan, grid);
+        gridDeleteRow(url, title, pesan, batal, grid);
       });
     });
 

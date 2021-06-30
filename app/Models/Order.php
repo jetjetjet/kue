@@ -35,6 +35,11 @@ class Order extends Model
 		'ordercreatedby',
 		'ordermodifiedat',
 		'ordermodifiedby',
-		'orderdiscountprice'
+		'orderdiscountprice',
+    'orderestdate',
+    'ordercompleteddate',
+    'ordercompletedby',
+    'orderremainingpaid',
+    'orderrefundid'
   ];
 }

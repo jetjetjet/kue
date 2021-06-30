@@ -16,6 +16,7 @@
       <table id="grid" class="table table-hover" style="width:100%">
         <thead>
           <tr>
+            <th>Code</th>
             <th>Nama</th>
             <th>Jumlah</th>
             <th>Tanggal</th>
@@ -28,6 +29,7 @@
         </tbody>
         <tfoot>
           <tr>
+            <th>Code</th>
             <th>Nama</th>
             <th>Jumlah</th>
             <th>Tanggal</th>
@@ -76,6 +78,10 @@
         "lengthMenu": [10, 20, 50],
         "pageLength": 15,
         columns: [
+          {
+            data: 'expensecode',
+            searchText: true
+          },
           { 
             data: 'expensename',
             searchText: true
@@ -99,7 +105,7 @@
               render: function(data, type, full, meta){
                 if(data.expenseexecutedat == null){
                   return '<span class="badge badge-warning">Draft</span>';  
-                }else{
+                } else{
                   return '<span class="badge badge-success">Selesai</span>';
                 }
               }

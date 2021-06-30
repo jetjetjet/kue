@@ -10,62 +10,49 @@ use Validator;
 use App\Libs\Helpers;
 use App\Repositories\ReportRepository;
 use Auth;
+use PDF;
+
 class ReportController extends Controller
 {
 	public function index(Request $request)
 	{
 		$inputs = $request->all();
 		$data = new \stdClass;
-		$user = ReportRepository::getName();
 
-		if($inputs){
+		if(isset($inputs['startdate'])){
+			$explode = explode(" to ", $inputs['startdate']);
+			$request['enddate'] = $explode[1] ?? $explode[0];
+			
+			$inputs['startdate'] = $explode[0] . ' 00:00:01';
+			$inputs['enddate'] = ($explode[1] ?? $explode[0]) . ' 23:59:59';
+			$inputs['expense'] = $inputs['expense'] ?? 1;
+			
 			$data = ReportRepository::grid($inputs);
-			$data->sub = ReportRepository::get($inputs);
+			$data->label = \sprintf('Laporan Transaksi Periode %s - %s', $explode[0], $request['enddate']);
+			// $data->sum = ReportRepository::sumTrx($inputs)[0];
 			
+			$print = $request->input('print');
+			if(!empty($print)){
+				$pdf = \App::make('dompdf.wrapper');
+				/* Careful: use "enable_php" option only with local html & script tags you control.
+				used with remote html or scripts is a major security problem (remote php injection) */
+				$pdf->getDomPDF()->set_option("enable_php", true);
+				$pdf->loadview('Report.trx_pdf', ['data' => $data]);
+				return $pdf->stream('laporan-transaksi-periode-'.$inputs['startdate'].'-'.$inputs['enddate'].'.pdf');
+			}
 		}else{
-			$data->sub['total'] = '0';
+			$data = [];
 		}
-		// dd($data);
-		return view('Report.index')->with('data', $data)->with('user', $user);
+		return view('Report.index')->with('data', $data);
 	}
 
-	public function exIndex(Request $request)
-	{
-		$inputs = $request->all();
-		$data = new \stdClass;
-
-		if($inputs){
-			$data = ReportRepository::gridEx($inputs);
-			$data->sub = ReportRepository::getEx($inputs);
-			
-		}else{
-			$data->sub['total'] = '0';
-		}
-		// dd($data);
-		return view('Report.exRep')->with('data', $data);
-	}
-
-	public function shiftReport(Request $request)
-	{
-		$inputs = $request->all();
-		$data = new \stdClass;
-		$user = ReportRepository::getName();
-		if($inputs){
-			$data = ReportRepository::getShiftReport($inputs);
-		}else{
-			$data->sub['total'] = '0';
-		}
-		// dd($data);
-		return view('Report.shiftReport')->with('data', $data)->with('user', $user);
-	}
-
-	public function menuReport(Request $request)
+	public function productReport(Request $request)
 	{
 		$inputs = $request->all();
 		// dd($inputs);
 		$data = new \stdClass;
 		if($inputs){
-			$data = ReportRepository::getMenuReport($inputs);
+			$data = ReportRepository::getProductReport($inputs);
 		}
 		// dd($data);
 		return view('Report.menuRep')->with('data', $data);

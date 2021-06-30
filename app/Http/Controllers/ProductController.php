@@ -67,7 +67,7 @@ class ProductController extends Controller
 		);
 		
 		$inputs = $request->all();
-    $file = Helpers::prepareFile($inputs, '/doc/images/');
+    $file = Helpers::prepareFile($inputs, '/images/products/');
 		$validator = validator::make($inputs, $rules);
 
 		if ($validator->fails()){
@@ -100,6 +100,14 @@ class ProductController extends Controller
   {
 		$cari = $request->has('q') ? $request->q : null;
 		$data = ProductRepository::searchProductShowcase($cari);
+		
+		return response()->json($data);
+  }
+
+  public function searchProducts(Request $request)
+  {
+		$cari = $request->has('q') ? $request->q : null;
+		$data = ProductRepository::search($cari);
 		
 		return response()->json($data);
   }
