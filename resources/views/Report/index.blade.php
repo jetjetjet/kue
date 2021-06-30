@@ -14,8 +14,7 @@
   <div class="widget-content widget-content-area br-6">
     <div>
     <form id="formsub" class="needs-validation" method="get" novalidate action="{{ url('/laporan/') }}">
-      <div class="form-row">     
-        <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
+      <div class="form-row">
         <div class="col-md-4 mb-1">
           <h4>Periode</h4>
           <input id="start" value="{{request('startdate')}}" name="startdate" class="form-control flatpickr flatpickr-input date" required>
@@ -40,8 +39,8 @@
         </div> 
       </div>
       <div class="float-right mb-3">
-        <button class="btn btn-success mt-2" id="print">Cetak</button>
-        <button class="btn btn-primary mt-2" id="sub" type="submit">Cari</button>
+        <a class="btn btn-success mt-2" id="print">Cetak</a>
+        <a class="btn btn-primary mt-2" id="search">Cari</a>
       </div>
     </form>
   </div>
@@ -141,6 +140,11 @@
           .attr('target', '_blank')
           .submit();
       });
+
+      $('#search').click(function (e){
+        $('[name=print]').remove();
+        $('form').removeAttr('target').submit();
+      });
       
       let fDate = flatpickr($('#start'), {
         mode: "range",
@@ -165,11 +169,6 @@
         },
         // defaultDate: ["2016-10-10", "2016-10-20"]
       });
-
-      $('#formsub').on('submit', function(){
-        let us = $( "#user option:selected" ).text();
-        $('#domkar').val(us)
-      })
 
       $('#grid').DataTable( {
         dom: '<"row"<"col-md-12" ><"col-md-12"rt> >',
