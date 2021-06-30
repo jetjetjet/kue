@@ -28,6 +28,9 @@
           <li>Dibatalkan Oleh: <b>{{$data->ordervoidedusername}}</b></li>
           <li>Dibatalkan Pada: {{$data->ordervoidedat}}</li>
           <li>Alasan: {{$data->ordervoidreason}}</li>
+          @if(isset($data->orderrefundid))
+          <li>Kode Refund : <a style="color: inherit; text-decoration: inherit;" href="{{url('/pengeluaran/detail')}}/{{$data->orderrefundid}}"><b>{{$data->expensecode}}</b></a></li>
+          @endif
         </ul>
     </div>
   @endif

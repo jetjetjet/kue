@@ -40,6 +40,7 @@ class CreateOrdersTable extends Migration
             $table->integer('ordervoidedby')->nullable();
             $table->dateTime('ordervoidedat')->nullable();
             $table->string('ordervoidreason')->nullable();
+            $table->bigInteger('orderrefundid')->nullable();
             $table->dateTime('ordercreatedat');
             $table->integer('ordercreatedby');
             $table->dateTime('ordermodifiedat')->nullable();
