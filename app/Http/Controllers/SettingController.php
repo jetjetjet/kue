@@ -117,9 +117,7 @@ class SettingController extends Controller
 		$rules = array(
 			'NamaApp' => 'required',
 			'Alamat' => 'required',
-			'KodeInvoice' => 'required',
-			'HeaderStruk' => 'required',
-			'FooterStruk' => 'required', 
+			'KodeInvoice' => 'required', 
 			'HeaderStrukKasir' => 'required',
 			'FooterStrukKasir' => 'required', 
 			'IpPrinter' => 'required',
