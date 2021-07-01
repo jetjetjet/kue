@@ -158,6 +158,7 @@ class OrderRepository
   {
     return Order::where('orderactive', '1')
     ->join('orderdetail as od', 'odorderid', 'orders.id')
+    ->join('products as p', 'p.id', 'odproductid')
     ->whereIn('orderstatus', ['DP', 'PAID'])
     ->where('od.odtype', 'PO')
     ->select('orders.id',
@@ -165,7 +166,9 @@ class OrderRepository
       'ordercustname', 
       DB::raw("to_char(orderdate, 'dd-mm-yyyy HH24:MI:SS') as orderdate"), 
       DB::raw("to_char(orderestdate, 'dd-mm-yyyy') as orderestdate"),
-      'orderprice',
+      'productcode',
+      'productname',
+      'odqty',
       DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN '<span class=". '"' ."badge badge-warning". '"' .">Draf</span>' 
       WHEN orders.orderstatus = 'DP' THEN '<span class=". '"' ."badge badge-secondary". '"' .">Bayar Dimuka</span>'
       WHEN orders.orderstatus = 'PAID' THEN '<span class=". '"' ."badge badge-info". '"' .">Lunas</span>'
@@ -182,6 +185,7 @@ class OrderRepository
     if($id){
       $data = Order::leftJoin('users as uvoid', 'uvoid.id', 'ordervoidedby')
         ->leftJoin('users as ucom', 'ucom.id', 'ordercompletedby')
+        ->leftJoin('expenses as e', 'e.id', 'orderrefundid' )
         ->where('orderactive', '1')
         ->where('orders.id', $id)
         ->select(
@@ -207,6 +211,8 @@ class OrderRepository
           'orderremainingpaid',
           'ucom.username as ordercompletedname',
           'uvoid.username as ordervoidedusername',
+          'orderrefundid',
+          'expensecode',
           DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Diproses' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' END as orderstatuscase")
         )->first();
       if($data == null){
@@ -576,44 +582,50 @@ class OrderRepository
 
   public static function void($respon, $id, $loginid, $inputs)
   {
-    $data = Order::where('orderactive', '1')
+    try{
+      DB::beginTransaction();
+      $data = Order::where('orderactive', '1')
       ->where('id', $id)
       ->first();
-    // dd($data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"));
 
-    $cekDelete = false;
-    if ($data != null){
-      $data->update([
-        'ordervoidreason' => $inputs['ordervoidreason'] ,
-        'orderstatus' => 'VOIDED',
-        'ordervoid' => '1',
-        'ordermodifiedby' => $loginid,
-        'ordermodifiedat' => now()->toDateTimeString(),
-        'ordervoidedby' => $loginid,
-        'ordervoidedat' => now()->toDateTimeString()
-      ]);       
-      $cekDelete = true;
+      if ($data != null){
+        if($inputs['cek']){
+          $idEx = Expense::create([
+            'expensecode' => "EXES".time(),
+            'expensename' => "Pembatalan Order ".$data->orderinvoice,
+            'expenseprice' => $data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"),
+            'expensedate' => now()->toDateTimeString(),
+            'expensedetail' => $inputs['ordervoidreason'],
+            'expenseexecutedby' => $loginid,
+            'expenseexecutedat' => now()->toDateTimeString(),
+            'expenseactive' => '1',
+            'expensecreatedat' => now()->toDateTimeString(),
+            'expensecreatedby' => $loginid
+          ])->id;
+        }
+        $data->update([
+          'ordervoidreason' => $inputs['ordervoidreason'] ,
+          'orderstatus' => 'VOIDED',
+          'orderrefundid' => $idEx??null,
+          'ordervoid' => '1',
+          'ordermodifiedby' => $loginid,
+          'ordermodifiedat' => now()->toDateTimeString(),
+          'ordervoidedby' => $loginid,
+          'ordervoidedat' => now()->toDateTimeString()
+        ]);
+      }       
+
+      DB::commit();
       $respon['status'] = 'success';
       array_push($respon['messages'], 'Pesanan Dibatalkan');
-      if($inputs['cek']){
-        Expense::create([
-          'expensecode' => "EXES".time(),
-          'expensename' => "Pembatalan Order ".$data->orderinvoice,
-          'expenseprice' => $data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"),
-          'expensedate' => now()->toDateTimeString(),
-          'expensedetail' => $inputs['ordervoidreason'],
-          'expenseexecutedby' => $loginid,
-          'expenseexecutedat' => now()->toDateTimeString(),
-          'expenseactive' => '1',
-          'expensecreatedat' => now()->toDateTimeString(),
-          'expensecreatedby' => $loginid
-        ]);
-      }
-    }else{
+    }catch(\Exception $e){
+      $eMsg = $e->getMessage() ?? "NOT_RECORDED";
+      Log::channel('errorKape')->error("OrderDelete_" . trim($eMsg));
+      DB::rollback();
       $respon['status'] = 'error';
       array_push($respon['messages'], 'Kesalahan');
     }
-    
+  
     return $respon;
   }
 

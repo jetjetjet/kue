@@ -18,9 +18,10 @@
           <tr>
             <th>{{ trans('fields.invoiceNo') }}</th>
             <th>{{ trans('fields.customerName') }}</th>
+            <th>{{ trans('fields.product') }}</th>
+            <th>{{ trans('fields.qty') }}</th>
             <th>{{ trans('fields.dateOrder') }}</th>
             <th>{{ trans('fields.estDate') }}</th>
-            <th>{{ trans('fields.price') }}</th>
             <th>{{ trans('fields.status') }}</th>
             <th class="no-content"></th>
           </tr>
@@ -31,9 +32,10 @@
           <tr>
             <th>{{ trans('fields.invoiceNo') }}</th>
             <th>{{ trans('fields.customerName') }}</th>
+            <th>{{ trans('fields.product') }}</th>
+            <th>{{ trans('fields.qty') }}</th>
             <th>{{ trans('fields.dateOrder') }}</th>
             <th>{{ trans('fields.estDate') }}</th>
-            <th>{{ trans('fields.price') }}</th>
             <th>{{ trans('fields.status') }}</th>
             <th></th>
           </tr>
@@ -85,15 +87,22 @@
             searchText: true
           },
           { 
+            data:null,
+            searchText: true,
+            render: function(data, type, full, meta){
+              return data.productcode + ' - ' + data.productname;
+            }
+          },
+          { 
+            data: 'odqty',
+            searchText: true
+          },
+          { 
             data: 'orderdate',
             searchText: true
           },
           { 
             data: 'orderestdate',
-            searchText: true
-          },
-          { 
-            data: 'orderprice',
             searchText: true
           },
           { 
@@ -118,17 +127,6 @@
         e.preventDefault();
         const rowData = grid.row($(this).closest('tr')).data();
         window.location = "{{ url('/order/detail') . '/' }}"+ rowData.id;
-      });
-
-      $('#grid').on('click', 'a.gridDelete', function (e) {
-        e.preventDefault();
-        
-        const rowData = grid.row($(this).closest('tr')).data();
-        const url = "{{ url('/jabatan/hapus') . '/' }}" + rowData.id;
-        const title = 'Hapus Jabatan';
-        const pesan = 'Apakah anda yakin ingin menghapus jabatan ini?'
-        const batal = 'Data Jabatan batal dihapus'
-        gridDeleteRow(url, title, pesan, batal, grid);
       });
     });
   </script>

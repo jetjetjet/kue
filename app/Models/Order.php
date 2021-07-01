@@ -39,6 +39,7 @@ class Order extends Model
     'orderestdate',
     'ordercompleteddate',
     'ordercompletedby',
-    'orderremainingpaid'
+    'orderremainingpaid',
+    'orderrefundid'
   ];
 }
