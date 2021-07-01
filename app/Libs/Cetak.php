@@ -95,11 +95,11 @@ class Cetak
     // dd($data);
     try{
       $profile = CapabilityProfile::load("simple");
-      // $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
+      $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
 
       // // virtualprinter
       // $connector = null;
-      $connector = new WindowsPrintConnector("test2");
+      // $connector = new WindowsPrintConnector("test2");
 
       $printer = new Printer($connector, $profile);
       $printer->setJustification(Printer::JUSTIFY_CENTER);
@@ -232,9 +232,9 @@ class Cetak
   {
     try{
       $profile = CapabilityProfile::load("simple");
-      // $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
-      $connector = null;
-      $connector = new WindowsPrintConnector("test2");
+      $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
+      // $connector = null;
+      // $connector = new WindowsPrintConnector("test2");
       $printer = new Printer($connector, $profile);
       $printer -> pulse();
       $printer->close();
@@ -251,9 +251,9 @@ class Cetak
   {
     try{
       $profile = CapabilityProfile::load("simple");
-      // $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
-      $connector = null;
-      $connector = new WindowsPrintConnector("test2");
+      $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
+      // $connector = null;
+      // $connector = new WindowsPrintConnector("test2");
       $printer = new Printer($connector, $profile);
       $printer->close();
       $respon['status'] = 'success';
