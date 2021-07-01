@@ -15,6 +15,7 @@ class ShowcaseRepository
     ->join('products as p', 'showcases.showcaseproductid', 'p.id')
     ->leftJoin('product_stock as ps', 'showcases.id', 'ps.stockshowcaseid')
     ->select('showcases.id',
+      'showcasecode',
       'productname',
       'productcode',
       'productprice',
