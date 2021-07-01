@@ -70,7 +70,7 @@
             data: null,
             searchText: true,
             render: function(data, type, full, meta){
-              return data.productname + ' - ' + data.productcode;
+              return data.productname + ' - Kd. Produksi: ' + data.showcasecode;
             }
           },
           { 
