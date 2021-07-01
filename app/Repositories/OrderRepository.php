@@ -600,7 +600,7 @@ class OrderRepository
           'expensecode' => "EXES".time(),
           'expensename' => "Pembatalan Order ".$data->orderinvoice,
           'expenseprice' => $data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"),
-          'expensedate' => now()->toDateString(),
+          'expensedate' => now()->toDateTimeString(),
           'expensedetail' => $inputs['ordervoidreason'],
           'expenseexecutedby' => $loginid,
           'expenseexecutedat' => now()->toDateTimeString(),

@@ -23,11 +23,11 @@
         <div class="col-md-4 mb-1">
           <h4>Status Pemasukan</h4>
           <select id='status' class="form-control" name="status">
-            <option value="">Semua</option>
+            <option value="">Selesai</option>
             <option value="DRAFT" {{ request('status') == 'DRAFT' ? 'selected' : ''}}>Draf</option>
             <option value="DP" {{ request('status') == 'DP' ? 'selected' : ''}}>DP</option>
             <option value="PAID" {{ request('status') == 'PAID' ? 'selected' : ''}}>Lunas</option>
-            <option value="COMPLETED" {{ request('status') == 'COMPLETED' ? 'selected' : ''}}>Selesai</option>
+            {{-- <option value="COMPLETED" {{ request('status') == 'COMPLETED' ? 'selected' : ''}}>Selesai</option> --}}
             <option value="VOIDED" {{ request('status') == 'VOIDED' ? 'selected' : ''}}>Dibatalkan</option>
           </select>
         </div>
@@ -110,6 +110,13 @@
               <td style="border: 10px solid transparent;" colspan="7"></td>
               <td><h4> <strong>Selisih</strong> </h4></td>
               <td colspan="2"><h4><strong>{{ number_format($sum->sub_total) }}</strong></h4></td>
+            </tr>
+          @endif
+          @if($sum->total_debit > 0 && $sum->total_kredit < 1)
+            <tr class="text-right">
+              <td style="border: 10px solid transparent;" colspan="7"></td>
+              <td><h4> <strong>Selisih</strong> </h4></td>
+              <td colspan="2"><h4><strong>{{ number_format($sum->total_debit - $sum->total_discount) }}</strong></h4></td>
             </tr>
           @endif
         </tfoot>
