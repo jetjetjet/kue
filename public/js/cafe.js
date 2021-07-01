@@ -464,6 +464,12 @@ $.fn.registerAddRow = function ($rowTemplateContainer, $addRow, rowAddedFn, vali
     }
   });
 }
+$('[type=number]').keydown( function(e) {
+  console.log(e)
+  if(e.keyCode == 189 || e.keyCode == 69 || e.keyCode ==109 ) {
+      return false;
+    }
+  })
 
 function cloneRow($targetContainer, $rowTemplateContainer, rowIndex){
   var $rowTemplateTbody = $rowTemplateContainer.find('> tbody'),

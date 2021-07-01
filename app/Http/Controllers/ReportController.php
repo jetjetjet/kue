@@ -49,12 +49,10 @@ class ReportController extends Controller
 	public function productReport(Request $request)
 	{
 		$inputs = $request->all();
-		// dd($inputs);
 		$data = new \stdClass;
 		if($inputs){
 			$data = ReportRepository::getProductReport($inputs);
 		}
-		// dd($data);
-		return view('Report.menuRep')->with('data', $data);
+		return view('Report.productRep')->with('data', $data);
 	}
 }

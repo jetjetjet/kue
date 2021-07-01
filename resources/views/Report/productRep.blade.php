@@ -2,17 +2,17 @@
 
 @section('breadcumb')
   <div class="title">
-    <h3>Laporan Pengeluaran</h3>
+    <h3>Laporan {{trans('fields.product')}}</h3>
   </div>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="javascript:void(0);">Laporan</a></li>
-    <li class="breadcrumb-item active"  aria-current="page"><a href="javascript:void(0);">Laporan Pengeluaran</a></li>
+    <li class="breadcrumb-item active"  aria-current="page"><a href="javascript:void(0);">Laporan {{trans('fields.product')}}</a></li>
   </ol>
 @endsection
 
 @section('content-form')
   <div class="widget-content widget-content-area br-6">
-    <form class="needs-validation" method="get" novalidate action="{{ url('/laporan-pengeluaran') }}">
+    <form class="needs-validation" method="get" novalidate action="{{ url('/laporan-product') }}">
       <div class="form-row">     
         <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
         <div class="col-md-6 mb-1">
@@ -22,21 +22,13 @@
         <div class="col-md-6 mb-1">
           <h4>Tanggal Akhir</h4>
           <input id="end" value="{{request('enddate')}}" name="enddate" class="form-control flatpickr flatpickr-input date">
-        </div>
-        <div class="col-md-12 mb-1">
-          <h4>Status</h4>
-          <select id='status' class="form-control" name="status">
-            <option value="Semua">Semua</option>
-              <option value="1" {{ request('status') == '1' ? 'selected' : ''}}>Dilaksanakan</option>
-              <option value="0" {{ request('status') == '0' ? 'selected' : ''}}>Draft</option>
-          </select>
         </div> 
       </div>
       <div class="float-right mb-3">
         <button class="btn btn-primary mt-2" id="sub" type="submit">Cari</button>
       </div>
     </form>
-  @if($data->sub['total'] != 0)
+  @if($data)
     <div class="table-responsive mb-4 mt-4">
       <hr>
       <h3 style="color:#1b55e2">Hasil Pencarian</h3>
@@ -44,39 +36,30 @@
         <thead>
           <tr>
             <th>No</th>
-            <th>Nama</th>
-            <th>Tanggal</th>
+            <th>Nama {{trans('fields.product')}}</th>
+            <th>Harga</th>
             <th>Jumlah</th>
-            <th>Karyawan</th>
-            <th>Status</th>
-            <th>Diselesaikan oleh</th>
-            <th>Tanggal Diselesaikan</th>
+            <th>Total</th>
           </tr>
         </thead>
         <tbody>
           @foreach($data as $key=>$row)
           <tr>
-            <td>{{$key + 1}}</td>
-            <td><a href="{{url('/pengeluaran/detail')}}/{{$row['id']}}">{{$row['expensename']}}</a></td>
-            <td>{{$row['tanggal']}}</td>
-            <td>{{number_format($row['expenseprice'])}}</td>
-            <td>{{$row['create']}}</td>
-            <td>{{$row['status']}}</td>
-            <td>{{$row['execute']}}</td>
-            <td>{{$row['tanggalend']}}</td>
+            <td>{{$key+1}}</td>
+            <td>{{$row['productname']}}</td>
+            <td>{{number_format($row['productprice'])}}</td>
+            <td>{{$row['totalorder']}}</td>
+            <td>{{number_format($row['grantotal'])}}</td>
           </tr>
           @endforeach
         </tbody>
         <tfoot>
           <tr>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th class="text-right"><h3>Total : </h3></th>
-            <th><h3><b>{{number_format($data->sub['total'])}}</b></h3></th>
+            <th>No</th>
+            <th>Nama {{trans('fields.product')}}</th>
+            <th>Harga</th>
+            <th>Jumlah</th>
+            <th>Total</th>
           </tr>
         </tfoot>
       </table>
@@ -145,7 +128,7 @@ $('#grid').DataTable( {
                         $(win.document.body)
                           .prepend(
                               "<br><h2><b>{{session('cafeName')}}</b></h2><hr>"+
-                              "<h2 style='color:#1b55e2'>Laporan Pengeluaran</h2>"+
+                              "<h2 style='color:#1b55e2'>Laporan Menu</h2>"+
                               "<div class='form-row'>"+
                               "<div class='col-md-12'><h4 class='text-right'>{{request('startdate')}}/{{request('enddate')}}</h4></div>"+
                               "</div>"
