@@ -60,6 +60,7 @@
         <th>Discount</th>
         <th>Kredit</th>
         <th>Status</th>
+        <th>Oleh</th>
       </tr>
 		</thead>
 		<tbody>
@@ -76,6 +77,7 @@
         <td class="text-right">{{ $row->discount == null ? '-' : number_format($row->discount) }}</td>
         <td class="text-right">{{ $row->kredit == null ? '-' : number_format($row->kredit) }}</td>
         <td><b>{{ $row->trxstatus }}</b></td>
+        <td>{{ $row->trxusername }}</td>
       </tr>
       @endforeach
 		</tbody>
@@ -85,25 +87,25 @@
       <tr class="text-right">
         <td style="border: 10px solid transparent;" colspan="6"></td>
         <td colspan="2"><strong>Total Debit</strong> </td>
-        <td colspan="2"><strong>{{ number_format($sum->total_debit) }}</strong></td>
+        <td colspan="3"><strong>{{ number_format($sum->total_debit) }}</strong></td>
       </tr>
       @if($sum->total_discount > 0)
         <tr class="text-right">
           <td style="border: 10px solid transparent;" colspan="6"></td>
           <td colspan="2"><strong>Total Diskon</strong></td>
-          <td colspan="2"><strong>{{ number_format($sum->total_discount) }}</strong></td>
+          <td colspan="3"><strong>{{ number_format($sum->total_discount) }}</strong></td>
         </tr>
       @endif
       <tr class="text-right">
         <td style="border: 10px solid transparent;" colspan="6"></td>
         <td colspan="2"><strong>Total Kredit</strong> </td>
-        <td colspan="2"><strong>{{ number_format($sum->total_kredit) }}</strong></td>
+        <td colspan="3"><strong>{{ number_format($sum->total_kredit) }}</strong></td>
       </tr>
       @if($sum->total_debit > 0 && $sum->total_kredit > 1)
         <tr class="text-right">
           <td style="border: 10px solid transparent;" colspan="6"></td>
           <td colspan="2"><strong>Sub Total</strong> </td>
-          <td colspan="2"><strong>{{ number_format($sum->sub_total) }}</strong></td>
+          <td colspan="3"><strong>{{ number_format($sum->sub_total) }}</strong></td>
         </tr>
       @endif
     </tfoot>

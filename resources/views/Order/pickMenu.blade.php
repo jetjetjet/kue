@@ -152,8 +152,7 @@
     }
 
     .product_card_image img {
-      width: 160px;
-      height: 160px
+      width: 100%
     }
 
     .product_card_content {
