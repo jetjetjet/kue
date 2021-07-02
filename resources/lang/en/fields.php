@@ -47,5 +47,6 @@ return [
   'totalTransaction' => 'Total Transaksi',
   'update' => 'Ubah',
   'view' => 'Lihat',
-  'void' => 'Batal'
+  'void' => 'Batal',
+  'executedBy' => 'Diselesaikan oleh: ',
 ];

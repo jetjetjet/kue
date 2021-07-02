@@ -34,10 +34,16 @@ class PromoRepository
     if($id){
       $header = Promo::where('promoactive', '1')
         ->where('promo.id', $id)
+        ->leftJoin('users as cr', 'promocreatedby', 'cr.id')
+        ->leftJoin('users as mod', 'promomodifiedby', 'mod.id')
         ->select(
-          'id',
+          'promo.id',
           'promoname',
           'promodetail',
+          DB::raw("to_char(promocreatedat, 'dd-mm-yyyy hh:mi') as promocreatedat"),
+          'cr.username as promocreatedby',
+          DB::raw("to_char(promomodifiedat, 'dd-mm-yyyy hh:mi') as promomodifiedat"),
+          'mod.username as promomodifiedby',
           DB::raw("to_char(promostart, 'dd-mm-yyyy HH24:MI:SS') as promostart"),
           DB::raw("to_char(promoend, 'dd-mm-yyyy HH24:MI:SS') as promoend"),
           DB::raw("case when now()::timestamp without time zone > promoend::timestamp without time zone then false else true end as editable"),

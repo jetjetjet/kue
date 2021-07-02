@@ -19,8 +19,23 @@ class ExpenseRepository
       $respon['data'] = Expense::getFields($data);
       if($id){
         $respon['data'] = Expense::where('expenseactive', '1')
-        ->where('id', $id)
-        ->select('id','expensecode', 'expensename', 'expenseprice', DB::raw("to_char(expensedate, 'DD-MM-YYYY')as expensedateraw"), 'expensedetail', 'expenseactive', 'expenseexecutedat', 'expenseexecutedby','expensedate')
+        ->where('expenses.id', $id)
+        ->leftJoin('users as cr', 'expensecreatedby', 'cr.id')
+        ->leftJoin('users as mod', 'expensemodifiedby', 'mod.id')
+        ->leftJoin('users as exe', 'expenseexecutedby', 'exe.id')
+        ->select('expenses.id',
+        'expensecode', 
+        'expensename', 
+        'expenseprice',
+        DB::raw("to_char(expenseexecutedat, 'dd-mm-yyyy hh:mi') as expenseexecutedat"),
+        'exe.username as expenseexecutedby',
+        DB::raw("to_char(expensecreatedat, 'dd-mm-yyyy hh:mi') as expensecreatedat"),
+        'cr.username as expensecreatedby',
+        DB::raw("to_char(expensemodifiedat, 'dd-mm-yyyy hh:mi') as expensemodifiedat"),
+        'mod.username as expensemodifiedby',
+        DB::raw("to_char(expensedate, 'DD-MM-YYYY')as expensedateraw"), 
+        'expensedetail', 
+        'expensedate')
         ->first();
   
         if($respon['data'] == null){

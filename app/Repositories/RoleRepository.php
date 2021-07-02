@@ -29,12 +29,18 @@ class RoleRepository
 
     if($id){
       $respon['data'] = Role::where('roleactive', '1')
-      ->where('id', $id)
+      ->where('roles.id', $id)
+      ->leftJoin('users as cr', 'rolecreatedby', 'cr.id')
+      ->leftJoin('users as mod', 'rolemodifiedby', 'mod.id')
       ->select(
-        'id',
+        'roles.id',
         'roleisadmin',
         'rolename',
         'roledetail',
+        DB::raw("to_char(rolecreatedat, 'dd-mm-yyyy hh:mi') as rolecreatedat"),
+        'cr.username as rolecreatedby',
+        DB::raw("to_char(rolemodifiedat, 'dd-mm-yyyy hh:mi') as rolemodifiedat"),
+        'mod.username as rolemodifiedby',
         'rolepermissions')
       ->first();
 

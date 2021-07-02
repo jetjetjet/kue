@@ -29,6 +29,8 @@ class ProductRepository
     if($id){
       $respon['data'] = Product::join('productcategories as pc', 'productpcid', 'pc.id')
       ->where('productactive', '1')
+      ->leftJoin('users as cr', 'productcreatedby', 'cr.id')
+      ->leftJoin('users as mod', 'productmodifiedby', 'mod.id')
       ->where('products.id', $id)
       ->select(
         'productcode',
@@ -38,11 +40,11 @@ class ProductRepository
         'productname', 
         'productdetail',
         'productimg',
-        'productprice',
-        'productcreatedat',
-        'productcreatedby',
-        'productmodifiedat',
-        'productmodifiedby')
+        DB::raw("to_char(productcreatedat, 'dd-mm-yyyy hh:mi') as productcreatedat"),
+        'cr.username as productcreatedby',
+        DB::raw("to_char(productmodifiedat, 'dd-mm-yyyy hh:mi') as productmodifiedat"),
+        'mod.username as productmodifiedby',
+        'productprice' )
       ->first();
 
       if($respon['data'] == null){

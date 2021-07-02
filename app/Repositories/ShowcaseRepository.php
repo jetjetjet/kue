@@ -54,13 +54,13 @@ class ShowcaseRepository
           DB::raw("to_char(showcasedate, 'dd-mm-yyyy') as showcasedate"),
           DB::raw("to_char(showcaseexpdate, 'dd-mm-yyyy') as showcaseexpdate"),
           'showcasestatus',
-          DB::raw("to_char(showcasecreatedat, 'dd-mm-yyyy hh:mm') as showcasecreatedat"),
+          DB::raw("to_char(showcasecreatedat, 'dd-mm-yyyy hh:mi') as showcasecreatedat"),
           'cr.username as showcasecreatedby',
-          DB::raw("to_char(showcasemodifiedat, 'dd-mm-yyyy hh:mm') as showcasemodifiedat"),
+          DB::raw("to_char(showcasemodifiedat, 'dd-mm-yyyy hh:mi') as showcasemodifiedat"),
           'mod.username as showcasemodifiedby',
-          DB::raw("to_char(showcasesoldat, 'dd-mm-yyyy hh:mm') as showcasesoldat"),
+          DB::raw("to_char(showcasesoldat, 'dd-mm-yyyy hh:mi') as showcasesoldat"),
           'sold.username as showcasesoldby',
-          DB::raw("to_char(showcaseexpiredat, 'dd-mm-yyyy hh:mm') as showcaseexpiredat"),
+          DB::raw("to_char(showcaseexpiredat, 'dd-mm-yyyy hh:mi') as showcaseexpiredat"),
           'exp.username as showcaseexpiredby')
         ->first();
       if($respon['data'] == null){

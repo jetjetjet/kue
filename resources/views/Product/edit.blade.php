@@ -127,7 +127,38 @@ box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
       </div>
     </div>
   </div>
-
+  @if(isset($data->id))
+  <hr/>
+  <div class="accordion" id="accordionExample">
+    <div class="card">
+      <div class="card-header" id="headingThree">
+        <section class="mb-0 mt-0">
+          <div role="menu" class="collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+          {{ trans('fields.log') }}  
+            <div class="icons float-right"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg></div>
+          </div>
+        </section>
+      </div>
+      <div id="collapseThree" class="collapse show" aria-labelledby="headingThree" data-parent="#accordionExample">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div class="col">
+              <strong>{{ trans('fields.createdBy') }}</strong>
+              <p><strong>{{ $data->productcreatedby }}</strong> - {{ $data->productcreatedat }}</p>
+            </div>
+            @if(isset($data->productmodifiedat))
+            <div class="col">
+              <strong>{{ trans('fields.modifiedBy') }}</strong>
+              <p><strong>{{ $data->productmodifiedby }}</strong> - {{ $data->productmodifiedat }}</p>
+            </div>
+            @endif
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endif
+  
   <div id="popCate" class="d-none">
     <div class="form-horizontal">
       <div class="form-group required">

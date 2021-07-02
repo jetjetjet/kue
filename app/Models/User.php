@@ -84,4 +84,14 @@ class User extends Authenticatable
         }
         return !in_array(false, $valids, true);
     }
+
+    public function createdBy()
+    {
+        return $this->belongsTo('App\Models\User', 'usercreatedby', 'id');
+    }
+
+    public function modifiedBy()
+    {
+        return $this->belongsTo('App\Models\User', 'usermodifiedby', 'id');
+    }
 }
