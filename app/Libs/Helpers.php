@@ -2,6 +2,8 @@
 namespace App\Libs;
 
 use Carbon\Carbon;
+use Image;
+use File;
 
 class Helpers
 {
@@ -18,7 +20,17 @@ class Helpers
         $file->path = storage_path('app/public/') . $subFolder;
         $file->newName = time()."_".$file->getClientOriginalName();
         $file->originalName = explode('.',$file->getClientOriginalName())[0];
-        $file->move($file->path ,$file->newName);
+        // $file->move($file->path ,$file->newName);
+        Image::make($file)->save($file->path . '/' . $file->newName);
+
+        //buat folder tumbnail
+        $tumbPath = $file->path . 'thumbnail/';
+        if (!File::isDirectory($tumbPath)) {
+          File::makeDirectory($tumbPath);
+        }
+
+        $img = Image::make($file);
+        $img->resize(160, 160)->save($tumbPath . $file->newName);
       }
     } catch (Exception $e){
         // supress

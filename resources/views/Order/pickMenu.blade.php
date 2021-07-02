@@ -223,7 +223,7 @@
 
       .product_card_item_name,
       .product_card_item_price {
-        font-size: 20px
+        font-size: 10px
       }
     }
 </style>
@@ -249,7 +249,7 @@
         </ul>
     </div>
   @endif
-  <div class="col-6">
+  <div class="col-6 xs-col-12">
     <div class="widget-content widget-content-area">
       <div class="tab-pane fade show active">
         @foreach($products as $cat)
@@ -271,7 +271,7 @@
                     <div class="product_card_slider_container">
                       <div class=" product_card_item">
                         <div class="product_card_image">
-                          <img src="{{ isset($shc->productimg) ? asset('storage/' . $shc->productimg) : asset('/public/images/fnb.jpg') }}" onerror="this.onerror=null;this.src='{{asset('/images/fnb.jpg')}}';" alt="">
+                          <img src="{{ isset($shc->productimg) ? asset('storage/images/products/thumbnail/' . $shc->productimg) : asset('/storage/images/fnb.jpg') }}" onerror="this.onerror=null;this.src='{{asset('/storage/images/fnb.jpg')}}';" alt="">
                         </div>
                         <div class="product_card_content">
                           @if($shc->promodiscount)
@@ -296,7 +296,7 @@
       </div>
     </div>
   </div>
-  <div class="col-6">
+  <div class="col-6 xs-col-12">
     <div class="statbox box" >
       <div class="widget-content widget-content-area" style="margin-bottom:25px">
         <form id="orderProductForm" method="post" novalidate action="{{url('/order/save')}}">
@@ -539,7 +539,7 @@
           rowId = $("#addToTableProduct").attr('data-pId'),
           rowPromo = $("#addToTableProduct").attr('data-pPromo'),
           rowPromoId = $("#addToTableProduct").attr('data-pPromoId'),
-          rowProductType = $("#addToTableProduct").attr('data-pProductType') ?? "PO",
+          // rowProductType = $("#addToTableProduct").attr('data-pProductType') ?? "PO",
           qty = 1,
           // remark = $('#uiModalInstance').find('#productRemark').val(),
           tprice = qty*rowProductPrice;
@@ -560,11 +560,12 @@
       $row.find('[name^=dtl][name$="[odprice]"]').val(rowProductPrice);
       $row.find('[name^=dtl][name$="[odpriceraw]"]').val(rowProductPriceRaw);
 
-      $row.find('[id^=dtl][id$="[odtype]"]').html(rowProductType);
-      $row.find('[name^=dtl][name$="[odtype]"]').val(rowProductType);
+      // $row.find('[id^=dtl][id$="[odtype]"]').html(rowProductType);
+      // $row.find('[name^=dtl][name$="[odtype]"]').val(rowProductType);
       $row.find('[name^=dtl][name$="[odshowcaseid]"]').val("");
 
       window.setTimeout(() => {
+        selectOrderReady($row);
         caclculatedOrder()        
       }, 0);
     })
@@ -623,58 +624,7 @@
       caclculatedOrder();
     })
     .on('row-delivering', function (e, $row){
-      let productId = $row.find('[name^=dtl][name$="[odproductid]"]').val(),
-          productType = $row.find('[name^=dtl][name$="[odtype]"]');
-
-        if(productType.val() == 'READYSTOCK'){
-          $row.find('[name^=dtl][name$="[odqty]"]').val(1);
-          // $('.modal-add-row').attr('disabled', 'disabled');
-          $(".showcasePopup").empty();
-          $.ajax({
-            type: "GET",
-            url: "{{ url('api/product/showcase-code') }}" + "/" + productId,
-            success: function(sData){
-              if(sData.status == 'success'){
-                $("#addToTableProduct").attr("data-pShowcaseId",sData.data[0]['id']);
-
-                let productCodeChild = '';
-                $.each( sData.data, function( key, value ) {
-                  productCodeChild += "<option value='"+ value.id +"'>" + value.showcasecode + "</option>";
-                });
-                $('#popupShowcaseCode').val(sData.data[0]['showcasecode']);
-                $('#popupStock').val(sData.data[0]['qty']);
-                $('.showcasePopup').append(productCodeChild);
-                
-                showPopupOrder(sData.data, function(){
-                  let selected = $('#uiModalInstance').find('#showcasePopup').val();
-                  let code = $('#uiModalInstance').find('#popupShowcaseCode').val();
-                  let stock = $('#uiModalInstance').find('#popupStock').val();
-                  
-                  let rqt = $row.find('[name^=dtl][name$="[odqty]"]');
-                  rqt.attr('max', stock) 
-
-                  $row.find('[name^=dtl][name$="[odshowcaseid]"]').val(selected);
-                  $row.find('[id^=dtl][id$="[odshowcase]"]').html('Kd. Produksi:' + code);
-                }, function(){
-                  productType.val("PO").change();
-                });
-              } else {
-                productType.val("PO").change();
-                toast({
-                  type: sData.status,
-                  title: sData.messages[0],
-                  padding: '2em',
-                });
-              }
-            }
-          });
-        } else {
-          $row.find('[name^=dtl][name$="[odqty]"]').val(1);
-          $row.find('[name^=dtl][name$="[odshowcaseid]"]').val(null);
-          $row.find('[id^=dtl][id$="[odshowcase]"]').html('');
-        }
-
-      // caclculatedOrder();
+      selectOrderReady($row);
     });
   }
   
@@ -687,6 +637,59 @@
     });
     $('#idTotal').html(formatter.format(totalPrice));
     $('[name="orderprice"]').val(totalPrice);
+  }
+
+  function selectOrderReady($row){
+    let productId = $row.find('[name^=dtl][name$="[odproductid]"]').val(),
+        productType = $row.find('[name^=dtl][name$="[odtype]"]');
+
+    if(productType.val() == 'READYSTOCK'){
+      $row.find('[name^=dtl][name$="[odqty]"]').val(1);
+      // $('.modal-add-row').attr('disabled', 'disabled');
+      $(".showcasePopup").empty();
+      $.ajax({
+        type: "GET",
+        url: "{{ url('api/product/showcase-code') }}" + "/" + productId,
+        success: function(sData){
+          if(sData.status == 'success'){
+            $("#addToTableProduct").attr("data-pShowcaseId",sData.data[0]['id']);
+
+            let productCodeChild = '';
+            $.each( sData.data, function( key, value ) {
+              productCodeChild += "<option value='"+ value.id +"'>" + value.showcasecode + "</option>";
+            });
+            $('#popupShowcaseCode').val(sData.data[0]['showcasecode']);
+            $('#popupStock').val(sData.data[0]['qty']);
+            $('.showcasePopup').append(productCodeChild);
+            
+            showPopupOrder(sData.data, function(){
+              let selected = $('#uiModalInstance').find('#showcasePopup').val();
+              let code = $('#uiModalInstance').find('#popupShowcaseCode').val();
+              let stock = $('#uiModalInstance').find('#popupStock').val();
+              
+              let rqt = $row.find('[name^=dtl][name$="[odqty]"]');
+              rqt.attr('max', stock) 
+
+              $row.find('[name^=dtl][name$="[odshowcaseid]"]').val(selected);
+              $row.find('[id^=dtl][id$="[odshowcase]"]').html('Kd. Produksi:' + code);
+            }, function(){
+              productType.val("PO").change();
+            });
+          } else {
+            productType.val("PO").change();
+            toast({
+              type: sData.status,
+              title: 'Tidak ada stok tersedia!',
+              padding: '2em',
+            });
+          }
+        }
+      });
+    } else {
+      $row.find('[name^=dtl][name$="[odqty]"]').val(1);
+      $row.find('[name^=dtl][name$="[odshowcaseid]"]').val(null);
+      $row.find('[id^=dtl][id$="[odshowcase]"]').html('');
+    }
   }
 
   const toast = swal.mixin({
