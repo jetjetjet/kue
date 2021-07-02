@@ -30,8 +30,8 @@
     <input type="hidden" name="dtl[{{ $rowIndex }}][odshowcasecode]" value="{{$odshowcasecode}}" />
     @if(($data->orderstatus != 'DRAFT' && !isset($rowIndex)) ||  Perm::can(['order_deleteDetail']) )
       <select id="productType" class="" name="dtl[{{ $rowIndex }}][odtype]" deliver-row>
-        <option value="PO">{{ trans('fields.preOrder') }}</option>
         <option value="READYSTOCK">{{ trans('fields.readyStock') }}</option>
+        <option value="PO">{{ trans('fields.preOrder') }}</option>
       </select>
     @else
       <p id="dtl[{{ $rowIndex }}][odshowcase]">{{ $odtype }}</p>

@@ -30,7 +30,6 @@ class ReportController extends Controller
 			$data = ReportRepository::grid($inputs);
 			$data->label = \sprintf('Laporan Transaksi Periode %s - %s', $explode[0], $request['enddate']);
 			// $data->sum = ReportRepository::sumTrx($inputs)[0];
-			
 			$print = $request->input('print');
 			if(!empty($print)){
 				$pdf = \App::make('dompdf.wrapper');

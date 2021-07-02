@@ -110,7 +110,8 @@ returns table(
   debit numeric,
   discount numeric,
   kredit numeric, 
-  trxstatus varchar
+  trxstatus varchar,
+  trxusername varchar
 ) as $$
 begin
 	return query
@@ -128,24 +129,31 @@ begin
       subprice,
       case when substatus = 'DP' then null else orderdiscountprice end,
       null,
-      label::varchar
+      label::varchar,
+      subusername::varchar
       from orders o2
       join 
-        ( select o1.id, orderdate as subdate, orderprice as subprice, 'DRAFT' as substatus, 'Draf' as label
+        ( select o1.id, orderdate as subdate, orderprice as subprice, 'DRAFT' as substatus, 'Draf' as label, u1.username as subusername
           from orders o1
+          join users u1
+          	on u1.id = o1.ordercreatedby
           where ordervoid is null
           and orderactive = '1'
           and orderstatus = 'DRAFT'
           and orderdate between p_startdate and p_enddate
           union all 
-          select odp.id, orderdate, orderdp, 'DP', case when orderstatus = 'VOIDED' then 'DP (Refund)' else 'DP' end
+          select odp.id, orderdate, orderdp, 'DP', case when orderstatus = 'VOIDED' then 'DP (Refund)' else 'DP' end, udp.username 
           from orders odp
+          join users udp
+          	on udp.id = odp.ordercreatedby 
           where orderdp is not null
           and orderactive = '1'
           and orderdate between p_startdate and p_enddate
           union all 
-          select ol.id, orderpaidat, orderprice , 'PAID', 'Lunas'
+          select ol.id, orderpaidat, orderprice , 'PAID', 'Lunas', ul.username 
           from orders ol
+          join users ul
+          	on ul.id = ol.orderpaidby 
           where ordervoid is null 
           and orderactive = '1'
           and orderstatus = 'PAID'
@@ -155,8 +163,10 @@ begin
           select oc.id, ordercompleteddate ,
             case when orderremainingpaid is not null then orderremainingpaid + coalesce(orderdiscountprice, 0)
                 else orderprice end,
-            'COMPLETED', 'Selesai'
+            'COMPLETED', 'Selesai', uv.username 
           from orders oc
+          join users uv
+          	on uv.id = oc.ordercompletedby 
           where ordervoid is null
           and orderactive = '1'
           and orderstatus = 'COMPLETED'
@@ -167,8 +177,10 @@ begin
             case when orderdp is not null and orderremainingpaid is null then orderdp
               when orderremainingpaid is not null then orderremainingpaid + coalesce(orderdiscountprice, 0)
               else orderprice end,
-            'VOIDED', 'Batal'
+            'VOIDED', 'Batal', uo.username 
           from orders ov
+          join users uo
+          	on uo.id = ov.ordervoidedby 
           where ordervoid is not null 
           and ordervoidedat between p_startdate and p_enddate
         ) a
@@ -189,8 +201,11 @@ begin
           null,
           null,
           expenseprice,
-          'Selesai'::varchar
+          'Selesai'::varchar,
+          ue.username 
       from expenses e 
+      join users ue
+      	on ue.id = e.expenseexecutedby 
       where expenseactive = '1'
       and expenseexecutedat between p_startdate and p_enddate
       and 1 = p_out

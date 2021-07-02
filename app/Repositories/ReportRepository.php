@@ -32,6 +32,7 @@ class ReportRepository
         $model->kredit = $row->kredit;
         $model->discount = $row->discount;
         $model->trxstatus = $row->trxstatus;
+        $model->trxusername = $row->trxusername;
         
         array_push($temp, $model);
 
