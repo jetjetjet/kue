@@ -182,7 +182,7 @@
                         @if(isset($data->showcaseexpiredat))
                         <div class="col">
                           <strong>{{ trans('fields.expired') }}</strong>
-                          <p><strong>{{ $data->showcaseexpiredat }}</strong> - {{ $data->showcaseexpiredby }}</p>
+                          <p><strong>{{ $data->showcaseexpiredby }}</strong> - {{ $data->showcaseexpiredat }}</p>
                         </div>
                         @endif
                       </div>
