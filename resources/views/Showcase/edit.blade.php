@@ -76,7 +76,7 @@
                       <input type="text" id="showcasecode" name="showcasecode" value="{{ $data->showcasecode }}" style="font-weight: bold;" class="form-control" readonly>
                     </div>
                     @endif
-                    @if(empty($data->showcaseexpiredat))
+                    @if($data->status=="ReadyStock" || empty($data->status))
                       <div class="col-12">
                         <label for="cate">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
                         <select class="" id="productsearch" name="showcaseproductid">
@@ -136,13 +136,13 @@
                     @endif
                   </div>
                   <div class="float-left mt-2">
-                    @if(isset($data->id) && empty($data->showcaseexpiredat) && Perm::can(['showcase_kadaluarsa']))
+                    @if($data->status =="ReadyStock" && isset($data->id) && Perm::can(['showcase_kadaluarsa']))
                       <a type="button" id="expBtn" class="btn btn-danger mt-2">{{ trans('fields.expired') }}</a>
                     @endif
                   </div>
                   <div class="float-right mt-2">
                     <a href="{{ url('/showcase') }}" type="button" class="btn btn-danger mt-2" type="submit">{{ isset($data->id) ? trans('fields.back') : trans('fields.cancel') }}</a>
-                    @if(empty($data->showcaseexpiredat))
+                    @if($data->status=="ReadyStock" || empty($data->status))
                     <button class="btn btn-primary mt-2" id="sub" type="submit">Simpan</button>
                     @endif
                   </div>

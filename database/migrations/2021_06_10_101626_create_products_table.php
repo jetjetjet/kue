@@ -17,7 +17,6 @@ class CreateProductsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('productpcid');
             $table->unsignedBigInteger('productrecipeid')->nullable();
-            $table->string('productcode');
             $table->string('productname');
             $table->string('productimg')->nullable();
             $table->string('productdetail')->nullable();

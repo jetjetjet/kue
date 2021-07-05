@@ -39,6 +39,7 @@ class ShowcaseRepository
         ->leftJoin('users as mod', 'showcasemodifiedby', 'mod.id')
         ->leftJoin('users as exp', 'showcaseexpiredby', 'exp.id')
         ->leftJoin('users as sold', 'showcasesoldby', 'sold.id')
+        ->leftJoin('product_stock as ps', 'showcases.id', 'ps.stockshowcaseid')
         ->where('productactive', '1')
         ->where('showcaseactive', '1')
         ->where('showcases.id', $id)
@@ -61,7 +62,9 @@ class ShowcaseRepository
           DB::raw("to_char(showcasesoldat, 'dd-mm-yyyy hh:mi') as showcasesoldat"),
           'sold.username as showcasesoldby',
           DB::raw("to_char(showcaseexpiredat, 'dd-mm-yyyy hh:mi') as showcaseexpiredat"),
-          'exp.username as showcaseexpiredby')
+          'exp.username as showcaseexpiredby',
+          DB::raw("case when showcaseexpiredat is not null then 'Kadaluarsa' when showcaseexpiredat is null and ps.qty > 1  then 'ReadyStock' when showcaseexpiredat is null and ps.qty is null then 'Habis' end as status"),
+          )
         ->first();
       if($respon['data'] == null){
         $respon['status'] = 'error';
@@ -194,6 +197,7 @@ class ShowcaseRepository
     $model->showcasesoldby= null;
     $model->showcaseexpiredat= null;
     $model->showcaseexpiredby= null;
+    $model->status= null;
 
     return $model;
   }

@@ -62,11 +62,7 @@ box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
             <div class="form-row">
               <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
               <input type="hidden" id="id" name="id" value="{{ old('id', $data->id) }}" />
-              <div class="col-md-6 mb-2">
-                <label for="name">{{ trans('fields.code') }} {{ trans('fields.product') }}</label>
-                <input type="text" name="productcode" value="{{ old('productcode', $data->productcode) }}" class="form-control" id="name" placeholder="Kode Produk" required>
-              </div>
-              <div class="col-md-6 mb-2">
+              <div class="col-md-12 mb-2">
                 <label for="name">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
                 <input type="text" name="productname" value="{{ old('productname', $data->productname) }}" class="form-control" id="name" placeholder="Nama" required>
               </div>

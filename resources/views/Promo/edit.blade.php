@@ -92,7 +92,6 @@
                   <thead>
                       <tr>
                         <th>{{trans('fields.product')}}</th>
-                        <th>Code</th>
                         <th>Kategori</th>
                         <th>Harga</th>
                         <th>Harga Promo</th>

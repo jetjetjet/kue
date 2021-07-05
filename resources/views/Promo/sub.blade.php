@@ -27,10 +27,6 @@
     @endif
   </td>
   <td style="padding-top:1px !important">
-    <input type="hidden" name="sub[{{ $rowIndex }}][productcode]" value="{{$productCode}}" />
-    <p id="sub[{{ $rowIndex }}][productCode]">{{$productCode}}</p>
-  </td>
-  <td style="padding-top:1px !important">
     <input type="hidden" name="sub[{{ $rowIndex }}][productcategory]" value="{{$productCategory}}" />
     <p id="sub[{{ $rowIndex }}][productCategory]">{{$productCategory}}</p>
   </td>

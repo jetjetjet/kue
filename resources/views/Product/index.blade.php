@@ -17,7 +17,6 @@
         <thead>
           <tr>
             <th>Nama</th>
-            <th>Kode</th>
             <th>Kategori</th>
             <th>Harga</th>
             <th class="no-content"></th>
@@ -67,10 +66,6 @@
         columns: [
           { 
             data: 'productname',
-            searchText: true
-          },
-          { 
-            data: 'productcode',
             searchText: true
           },
           { 

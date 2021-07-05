@@ -232,7 +232,6 @@ class ProductRepository
       if ($data != null){
         $data = $data->update([
           'productpcid' => $inputs['productpcid'],
-          'productcode' => $inputs['productcode'],
           'productname' => $inputs['productname'],
           'productimg' => $filePath,
           'productdetail' => $inputs['productdetail'],
@@ -247,7 +246,6 @@ class ProductRepository
       } else {
         $data = Product::create([
           'productpcid' => $inputs['productpcid'],
-          'productcode' => $inputs['productcode'],
           'productname' => $inputs['productname'],
           'productimg' => $filePath,
           'productdetail' => $inputs['productdetail'],
@@ -413,7 +411,6 @@ class ProductRepository
   public static function getFields($model)
   {
     $model->id = null;
-    $model->productcode = null;
     $model->productpcid = null;
     $model->productrecipeid = null;
     $model->productname = null;
@@ -440,7 +437,7 @@ class ProductRepository
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
       ->where('productactive', '1')
       ->whereNull('promoid')
-      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productcode', 'productprice')
+      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productprice')
       ->orderby('productname', 'ASC')
       ->limit(5)
       ->get();
@@ -466,11 +463,12 @@ class ProductRepository
   {
     return Product::where('productactive', '1')
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
+      ->join('productcategories as pc', 'pc.id', 'productpcid')
       ->select('productprice', 
-        DB::raw("productcode || ' - ' || productname as text"),
+        DB::raw("productname || ' - ' || pcname as text"),
         'productname',
         'productimg',
-        'id')
+        'products.id')
       ->limit(5)
       ->get();
   }

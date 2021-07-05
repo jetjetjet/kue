@@ -25,6 +25,7 @@ class Showcase extends Model
     'showcasesoldby',
     'showcaseexpiredat',
     'showcaseexpiredby',
-    'showcaseexpiredqty'
+    'showcaseexpiredqty',
+    'status'
   ];
 }
