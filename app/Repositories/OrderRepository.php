@@ -166,7 +166,6 @@ class OrderRepository
       'ordercustname', 
       DB::raw("to_char(orderdate, 'dd-mm-yyyy HH24:MI:SS') as orderdate"), 
       DB::raw("to_char(orderestdate, 'dd-mm-yyyy') as orderestdate"),
-      'productcode',
       'productname',
       'odqty',
       DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN '<span class=". '"' ."badge badge-warning". '"' .">Draf</span>' 

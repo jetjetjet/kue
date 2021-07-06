@@ -4,7 +4,6 @@
   $productId = isset($sub->spproductid) && isset($rowIndex) ? $sub->spproductid : null;
   $productName = isset($sub->productname) && isset($rowIndex) ? $sub->productname : null;
   $productCategory = isset($sub->productcategory) && isset($rowIndex) ? $sub->productcategory : null;
-  $productCode = isset($sub->productcode) && isset($rowIndex) ? $sub->productcode : 0;
   $productPrice = isset($sub->productprice) && isset($rowIndex) ? $sub->productprice : 0;
   $productPromo = isset($sub->productpromo) && isset($rowIndex) ? $sub->productpromo : 0;
 

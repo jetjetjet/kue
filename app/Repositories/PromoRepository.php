@@ -67,7 +67,6 @@ class PromoRepository
           'spproductid',
           'spindex',
           'productname',
-          'productcode',
           'productprice',
           'pcname as productcategory',
           DB::raw("productprice - ". $header->promodiscount ." as productpromo "))
@@ -305,7 +304,6 @@ class PromoRepository
     $db->productimg = null;
     $db->productprice = null;
     $db->promoprice = null;
-    $db->productcode = null;
     $db->promoname = null;
     $db->promodetail = null;
     $db->promostart = null;
@@ -329,7 +327,7 @@ class PromoRepository
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
       ->where('spactive', '1')
       ->whereNull('promoid')
-      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productprice', 'productcode')
+      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productprice')
       ->orderby('productname', 'ASC')
       ->limit(5)
       ->get();

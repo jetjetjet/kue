@@ -297,7 +297,6 @@
           id: item.id,
           category: item.productcategory,
           price: item.productprice,
-          code: item.productcode,
         }
     });
 
@@ -307,8 +306,6 @@
       console.log(dt)
 
       $targetContainer.find('[name^=sub][name$="[productname]"]').val(dt.text);
-      $targetContainer.find('[id^=sub][id$="[productCode]"]').html(dt.code);
-      $targetContainer.find('[name^=sub][name$="[productcode]"]').val(dt.code);
       $targetContainer.find('[id^=sub][id$="[productCategory]"]').html(dt.category);
       $targetContainer.find('[name^=sub][name$="[productcategory]"]').val(dt.category);
       $targetContainer.find('[name^=sub][name$="[productprice]"]').val(dt.price);

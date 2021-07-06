@@ -82,7 +82,7 @@
                         <select class="" id="productsearch" name="showcaseproductid">
                           <option value="">Hapus</option>
                           @if($data->showcaseproductid)
-                            <option value="{{$data->showcaseproductid}}" selected="selected">{{$data->productcode}} - {{$data->productname}}</option>
+                            <option value="{{$data->showcaseproductid}}" selected="selected">{{$data->productname}}</option>
                           @endif
                         </select>
                       </div>
@@ -110,7 +110,7 @@
                     @else
                       <div class="col-12">
                         <label for="cate">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
-                        <input value="{{$data->productcode}} - {{$data->productname}}" class="form-control" readonly>
+                        <input value="{{$data->productname}}" class="form-control" readonly>
                       </div>
                       <div class="col-6 mb-2">
                         <label for="name">{{ trans('fields.price') }}</label>
