@@ -17,7 +17,6 @@ class ShowcaseRepository
     ->select('showcases.id',
       'showcasecode',
       'productname',
-      'productcode',
       'productprice',
       'ps.qty as showcaseqty',
       DB::raw("to_char(showcasedate, 'DD-MM-YYYY') as showcasedate"),
@@ -48,7 +47,6 @@ class ShowcaseRepository
           'showcases.id as id',
           'showcaseproductid',
           'productname',
-          'productcode',
           'productprice',
           'productimg',
           'showcaseqty',
@@ -181,7 +179,6 @@ class ShowcaseRepository
     $model->showcasecode = null;
     $model->showcaseproductid = null;
     $model->productname= null;
-    $model->productcode= null;
     $model->productprice= null;
     $model->productimg = null;
     $model->showcaseqty = null;

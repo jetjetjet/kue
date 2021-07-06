@@ -12,7 +12,6 @@ class ProductRepository
     return Product::where('productactive', '1')
     ->join('productcategories as pc', 'products.productpcid', '=', 'pc.id')
     ->select('products.id',
-      'productcode',
       'productname', 
       'productprice', 
       'pcname as productcategory',
@@ -33,7 +32,6 @@ class ProductRepository
       ->leftJoin('users as mod', 'productmodifiedby', 'mod.id')
       ->where('products.id', $id)
       ->select(
-        'productcode',
         'products.id',
         'productpcid',
         'pcname as productpcname',

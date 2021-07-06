@@ -12,7 +12,6 @@ class Product extends Model
 	protected $fillable = [
     'productpcid',
     'productrecipeid',
-    'productcode',
     'productname',
     'productimg',
     'productdetail',
