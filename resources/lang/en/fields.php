@@ -17,6 +17,7 @@ return [
   'delete' => 'Hapus',
   'draft' => 'Draf',
   'dp' => 'DP',
+  'empty' => 'Kosong',
   'estDate' => 'Tgl. Estimasi',
   'expDate' => ' Tgl. Kadaluarsa',
   'expired' => 'Kadaluarsa',
