@@ -4,7 +4,6 @@
   $productId = isset($sub->spproductid) && isset($rowIndex) ? $sub->spproductid : null;
   $productName = isset($sub->productname) && isset($rowIndex) ? $sub->productname : null;
   $productCategory = isset($sub->productcategory) && isset($rowIndex) ? $sub->productcategory : null;
-  $productCode = isset($sub->productcode) && isset($rowIndex) ? $sub->productcode : 0;
   $productPrice = isset($sub->productprice) && isset($rowIndex) ? $sub->productprice : 0;
   $productPromo = isset($sub->productpromo) && isset($rowIndex) ? $sub->productpromo : 0;
 
@@ -25,10 +24,6 @@
     @else
       {{ $productName }} 
     @endif
-  </td>
-  <td style="padding-top:1px !important">
-    <input type="hidden" name="sub[{{ $rowIndex }}][productcode]" value="{{$productCode}}" />
-    <p id="sub[{{ $rowIndex }}][productCode]">{{$productCode}}</p>
   </td>
   <td style="padding-top:1px !important">
     <input type="hidden" name="sub[{{ $rowIndex }}][productcategory]" value="{{$productCategory}}" />

@@ -9,23 +9,76 @@ use Carbon\Carbon;
 
 class ShowcaseRepository
 {
-  public static function grid($perms)
+  public static function grid($filter, $perms)
   {
-    return Showcase::where('showcaseactive', '1')
+    $q = Showcase::where('showcaseactive', '1')
     ->join('products as p', 'showcases.showcaseproductid', 'p.id')
     ->leftJoin('product_stock as ps', 'showcases.id', 'ps.stockshowcaseid')
     ->select('showcases.id',
       'showcasecode',
       'productname',
-      'productcode',
       'productprice',
       'ps.qty as showcaseqty',
       DB::raw("to_char(showcasedate, 'DD-MM-YYYY') as showcasedate"),
       DB::raw("to_char(showcaseexpdate, 'DD-MM-YYYY') as showcaseexpdate"),
-      DB::raw("case when showcaseexpiredat is not null then '<span class=". '"' ."badge badge-danger". '"' .">Kadaluarsa</span>' when showcaseexpiredat is null and ps.qty > 1  then '<span class=". '"' ."badge badge-success". '"' .">ReadyStock</span>' when showcaseexpiredat is null and ps.qty is null then '<span class=". '"' ."badge badge-warning". '"' .">Habis</span>' end as status"),
+      DB::raw("case when showcaseexpiredat is not null then 'Kadaluarsa' when showcaseexpiredat is null and ps.qty > 1  then 'ReadyStock' when showcaseexpiredat is null and ps.qty is null then 'Habis' end as status"),
       DB::raw($perms['save']),
-      DB::raw($perms['delete']))
-    ->get();
+      DB::raw($perms['delete']));
+    
+    $count = $q->count();
+
+    if(!empty($filter->filterDate)){
+      $q->whereRaw("showcasedate::date between '". $filter->filterDate->from . "'::date and '" . $filter->filterDate->to . "'::date");
+    }
+    
+    //Filter Kolom.
+    if (!empty($filter->filterText) && !empty($filter->filterColumn)){
+      // if (empty($filterText)) continue;
+      $trimmedText = trim($filter->filterText);
+      $filterCol = $filter->filterColumn;
+
+      $text = strtolower(implode('%', explode(' ', $trimmedText)));
+      $q->whereRaw('upper('.$filterCol .') like upper(?)', [ '%' . $text . '%']);
+    }
+
+    //Filter Status.
+    if (!empty($filter->filterStatus)){
+      // if (empty($filterText)) continue;
+      $trimmedFilter= trim($filter->filterStatus);
+      $fText;
+      if($trimmedFilter == 'ReadyStock'){
+        $fText = 'showcaseexpiredat is null and ps.qty > 1';
+      } else if ( $trimmedFilter == 'Kadaluarsa'){
+        $fText = 'showcaseexpiredat is not null';
+      } else if($trimmedFilter == 'Habis'){
+        $fText = 'showcaseexpiredat is null and ps.qty is null';
+      }
+      
+      $q->whereRaw($fText);
+    }
+
+    $countFiltered = $q->count();
+    // Order.
+    if (!empty($filter->sortColumns)){
+      foreach ($filter->sortColumns as $value){
+        $field = $value->field;
+        if (empty($field)) continue;
+        $q->orderBy($field, $value->dir);
+      }
+    } else {
+      $q->orderByRaw("showcasedate desc");
+    }
+
+    // Paging.
+    $q->skip($filter->pageOffset)
+      ->take($filter->pageLimit);
+
+    $grid = new \stdClass();
+    $grid->recordsTotal = $count;
+    $grid->recordsFiltered = $countFiltered;
+    $grid->data = $q->get();
+
+    return $grid;
   }
 
   public static function get($respon, $id)
@@ -39,6 +92,7 @@ class ShowcaseRepository
         ->leftJoin('users as mod', 'showcasemodifiedby', 'mod.id')
         ->leftJoin('users as exp', 'showcaseexpiredby', 'exp.id')
         ->leftJoin('users as sold', 'showcasesoldby', 'sold.id')
+        ->leftJoin('product_stock as ps', 'showcases.id', 'ps.stockshowcaseid')
         ->where('productactive', '1')
         ->where('showcaseactive', '1')
         ->where('showcases.id', $id)
@@ -47,21 +101,22 @@ class ShowcaseRepository
           'showcases.id as id',
           'showcaseproductid',
           'productname',
-          'productcode',
           'productprice',
           'productimg',
           'showcaseqty',
           DB::raw("to_char(showcasedate, 'dd-mm-yyyy') as showcasedate"),
           DB::raw("to_char(showcaseexpdate, 'dd-mm-yyyy') as showcaseexpdate"),
           'showcasestatus',
-          DB::raw("to_char(showcasecreatedat, 'dd-mm-yyyy hh:mm') as showcasecreatedat"),
+          DB::raw("to_char(showcasecreatedat, 'dd-mm-yyyy hh:mi') as showcasecreatedat"),
           'cr.username as showcasecreatedby',
-          DB::raw("to_char(showcasemodifiedat, 'dd-mm-yyyy hh:mm') as showcasemodifiedat"),
+          DB::raw("to_char(showcasemodifiedat, 'dd-mm-yyyy hh:mi') as showcasemodifiedat"),
           'mod.username as showcasemodifiedby',
-          DB::raw("to_char(showcasesoldat, 'dd-mm-yyyy hh:mm') as showcasesoldat"),
+          DB::raw("to_char(showcasesoldat, 'dd-mm-yyyy hh:mi') as showcasesoldat"),
           'sold.username as showcasesoldby',
-          DB::raw("to_char(showcaseexpiredat, 'dd-mm-yyyy hh:mm') as showcaseexpiredat"),
-          'exp.username as showcaseexpiredby')
+          DB::raw("to_char(showcaseexpiredat, 'dd-mm-yyyy hh:mi') as showcaseexpiredat"),
+          'exp.username as showcaseexpiredby',
+          DB::raw("case when showcaseexpiredat is not null then 'Kadaluarsa' when showcaseexpiredat is null and ps.qty > 1  then 'ReadyStock' when showcaseexpiredat is null and ps.qty is null then 'Habis' end as status"),
+          )
         ->first();
       if($respon['data'] == null){
         $respon['status'] = 'error';
@@ -178,7 +233,6 @@ class ShowcaseRepository
     $model->showcasecode = null;
     $model->showcaseproductid = null;
     $model->productname= null;
-    $model->productcode= null;
     $model->productprice= null;
     $model->productimg = null;
     $model->showcaseqty = null;
@@ -194,6 +248,7 @@ class ShowcaseRepository
     $model->showcasesoldby= null;
     $model->showcaseexpiredat= null;
     $model->showcaseexpiredby= null;
+    $model->status= null;
 
     return $model;
   }

@@ -12,7 +12,6 @@ class ProductRepository
     return Product::where('productactive', '1')
     ->join('productcategories as pc', 'products.productpcid', '=', 'pc.id')
     ->select('products.id',
-      'productcode',
       'productname', 
       'productprice', 
       'pcname as productcategory',
@@ -29,20 +28,21 @@ class ProductRepository
     if($id){
       $respon['data'] = Product::join('productcategories as pc', 'productpcid', 'pc.id')
       ->where('productactive', '1')
+      ->leftJoin('users as cr', 'productcreatedby', 'cr.id')
+      ->leftJoin('users as mod', 'productmodifiedby', 'mod.id')
       ->where('products.id', $id)
       ->select(
-        'productcode',
         'products.id',
         'productpcid',
         'pcname as productpcname',
         'productname', 
         'productdetail',
         'productimg',
-        'productprice',
-        'productcreatedat',
-        'productcreatedby',
-        'productmodifiedat',
-        'productmodifiedby')
+        DB::raw("to_char(productcreatedat, 'dd-mm-yyyy hh:mi') as productcreatedat"),
+        'cr.username as productcreatedby',
+        DB::raw("to_char(productmodifiedat, 'dd-mm-yyyy hh:mi') as productmodifiedat"),
+        'mod.username as productmodifiedby',
+        'productprice' )
       ->first();
 
       if($respon['data'] == null){
@@ -220,7 +220,7 @@ class ProductRepository
   public static function save($respon, $inputs, $file, $loginid)
   {
     $oldPath = isset($inputs['productimg']) ? $inputs['productimg'] : null ;
-    $filePath = isset($file) ? 'images/products/' . $file->newName : $oldPath; 
+    $filePath = isset($file) ? $file->newName : $oldPath; 
     $id = $inputs['id'] ?? 0;
     $data = Product::where('productactive', '1')
       ->where('id',$id)
@@ -230,7 +230,6 @@ class ProductRepository
       if ($data != null){
         $data = $data->update([
           'productpcid' => $inputs['productpcid'],
-          'productcode' => $inputs['productcode'],
           'productname' => $inputs['productname'],
           'productimg' => $filePath,
           'productdetail' => $inputs['productdetail'],
@@ -245,7 +244,6 @@ class ProductRepository
       } else {
         $data = Product::create([
           'productpcid' => $inputs['productpcid'],
-          'productcode' => $inputs['productcode'],
           'productname' => $inputs['productname'],
           'productimg' => $filePath,
           'productdetail' => $inputs['productdetail'],
@@ -411,7 +409,6 @@ class ProductRepository
   public static function getFields($model)
   {
     $model->id = null;
-    $model->productcode = null;
     $model->productpcid = null;
     $model->productrecipeid = null;
     $model->productname = null;
@@ -438,7 +435,7 @@ class ProductRepository
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
       ->where('productactive', '1')
       ->whereNull('promoid')
-      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productcode', 'productprice')
+      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productprice')
       ->orderby('productname', 'ASC')
       ->limit(5)
       ->get();
@@ -464,11 +461,12 @@ class ProductRepository
   {
     return Product::where('productactive', '1')
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
+      ->join('productcategories as pc', 'pc.id', 'productpcid')
       ->select('productprice', 
-        DB::raw("productcode || ' - ' || productname as text"),
+        DB::raw("productname || ' - ' || pcname as text"),
         'productname',
         'productimg',
-        'id')
+        'products.id')
       ->limit(5)
       ->get();
   }

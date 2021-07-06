@@ -90,7 +90,7 @@
             data:null,
             searchText: true,
             render: function(data, type, full, meta){
-              return data.productcode + ' - ' + data.productname;
+              return data.productname;
             }
           },
           { 

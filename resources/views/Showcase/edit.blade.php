@@ -76,13 +76,13 @@
                       <input type="text" id="showcasecode" name="showcasecode" value="{{ $data->showcasecode }}" style="font-weight: bold;" class="form-control" readonly>
                     </div>
                     @endif
-                    @if(empty($data->showcaseexpiredat))
+                    @if($data->status=="ReadyStock" || empty($data->status))
                       <div class="col-12">
                         <label for="cate">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
                         <select class="" id="productsearch" name="showcaseproductid">
                           <option value="">Hapus</option>
                           @if($data->showcaseproductid)
-                            <option value="{{$data->showcaseproductid}}" selected="selected">{{$data->productcode}} - {{$data->productname}}</option>
+                            <option value="{{$data->showcaseproductid}}" selected="selected">{{$data->productname}}</option>
                           @endif
                         </select>
                       </div>
@@ -110,7 +110,7 @@
                     @else
                       <div class="col-12">
                         <label for="cate">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
-                        <input value="{{$data->productcode}} - {{$data->productname}}" class="form-control" readonly>
+                        <input value="{{$data->productname}}" class="form-control" readonly>
                       </div>
                       <div class="col-6 mb-2">
                         <label for="name">{{ trans('fields.price') }}</label>
@@ -136,13 +136,13 @@
                     @endif
                   </div>
                   <div class="float-left mt-2">
-                    @if(isset($data->id) && empty($data->showcaseexpiredat) && Perm::can(['showcase_kadaluarsa']))
+                    @if($data->status =="ReadyStock" && isset($data->id) && Perm::can(['showcase_kadaluarsa']))
                       <a type="button" id="expBtn" class="btn btn-danger mt-2">{{ trans('fields.expired') }}</a>
                     @endif
                   </div>
                   <div class="float-right mt-2">
                     <a href="{{ url('/showcase') }}" type="button" class="btn btn-danger mt-2" type="submit">{{ isset($data->id) ? trans('fields.back') : trans('fields.cancel') }}</a>
-                    @if(empty($data->showcaseexpiredat))
+                    @if($data->status=="ReadyStock" || empty($data->status))
                     <button class="btn btn-primary mt-2" id="sub" type="submit">Simpan</button>
                     @endif
                   </div>
@@ -182,7 +182,7 @@
                         @if(isset($data->showcaseexpiredat))
                         <div class="col">
                           <strong>{{ trans('fields.expired') }}</strong>
-                          <p><strong>{{ $data->showcaseexpiredat }}</strong> - {{ $data->showcaseexpiredby }}</p>
+                          <p><strong>{{ $data->showcaseexpiredby }}</strong> - {{ $data->showcaseexpiredat }}</p>
                         </div>
                         @endif
                       </div>

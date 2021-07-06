@@ -34,10 +34,16 @@ class PromoRepository
     if($id){
       $header = Promo::where('promoactive', '1')
         ->where('promo.id', $id)
+        ->leftJoin('users as cr', 'promocreatedby', 'cr.id')
+        ->leftJoin('users as mod', 'promomodifiedby', 'mod.id')
         ->select(
-          'id',
+          'promo.id',
           'promoname',
           'promodetail',
+          DB::raw("to_char(promocreatedat, 'dd-mm-yyyy hh:mi') as promocreatedat"),
+          'cr.username as promocreatedby',
+          DB::raw("to_char(promomodifiedat, 'dd-mm-yyyy hh:mi') as promomodifiedat"),
+          'mod.username as promomodifiedby',
           DB::raw("to_char(promostart, 'dd-mm-yyyy HH24:MI:SS') as promostart"),
           DB::raw("to_char(promoend, 'dd-mm-yyyy HH24:MI:SS') as promoend"),
           DB::raw("case when now()::timestamp without time zone > promoend::timestamp without time zone then false else true end as editable"),
@@ -61,7 +67,6 @@ class PromoRepository
           'spproductid',
           'spindex',
           'productname',
-          'productcode',
           'productprice',
           'pcname as productcategory',
           DB::raw("productprice - ". $header->promodiscount ." as productpromo "))
@@ -299,7 +304,6 @@ class PromoRepository
     $db->productimg = null;
     $db->productprice = null;
     $db->promoprice = null;
-    $db->productcode = null;
     $db->promoname = null;
     $db->promodetail = null;
     $db->promostart = null;
@@ -323,7 +327,7 @@ class PromoRepository
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
       ->where('spactive', '1')
       ->whereNull('promoid')
-      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productprice', 'productcode')
+      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productprice')
       ->orderby('productname', 'ASC')
       ->limit(5)
       ->get();

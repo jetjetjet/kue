@@ -19,11 +19,12 @@ class ShowcaseController extends Controller
 
 	public function getLists(Request $request)
 	{
+		$filter = Helpers::getFilter($request);
 		$permission = Array(
 			'save' => (Auth::user()->can(['showcase_simpan']) == true ? 1 : 0)."as can_save",
 			'delete' => (Auth::user()->can(['showcase_hapus']) == true ? 1 : 0)."as can_delete"
 		);
-		$results = ShowcaseRepository::grid($permission);
+		$results = ShowcaseRepository::grid($filter, $permission);
 		
 		return response()->json($results);
 	}
