@@ -82,30 +82,33 @@ class Helpers
     // Custom filter.
     $filter->filter = (object)$request->input('filter');
 
+    // Columns.
+    $columns = $request->input('columns') == null ? array() : $request->input('columns');
+        
+    // Filter columns.
+    $filter->filterColumn = $request->input('filterColumn') ?? null;
+    $filter->filterText = $request->input('filterText') ?? null;
+    $filter->filterStatus = $request->input('filterStatus') ?? null;
+
     // Filter Date
     $tempDate = new \StdClass;
     if($request->input('filterDate')){
       $filterDate = explode(" to ",$request->input('filterDate'));
       $tempDate->from = $filterDate[0];
-      $tempDate->to = $filterDate[1];
+      $tempDate->to = $filterDate[1] ?? $filterDate[0];
     // } else if($request->input('filterText') && $request->input('filterColumn')){
     //   $tempDate = null;
+    } else if($filter->filterStatus || $filter->filterColumn){
+      //surpass
+      $tempDate = null;
     } else {
-      $tempDate->from = Carbon::now()->subDays(7)->format('d-m-Y');
-      $tempDate->to = Carbon::now()->format('d-m-Y');
+      $tempDate->from = Carbon::now()->subDays(30)->format('d-m-Y h:m');
+      $tempDate->to = Carbon::now()->format('d-m-Y h:m');
     }
     $filter->filterDate = $tempDate;
     
     // Global filter.
     // $filter->filterTexts = preg_split('/(-|\/)/', $request->input('search')['value']);
-
-    // Columns.
-    $columns = $request->input('columns') == null ? array() : $request->input('columns');
-    
-    // Filter columns.
-    $filter->filterColumn = $request->input('filterColumn') ?? null;
-    $filter->filterText = $request->input('filterText') ?? null;
-    $filter->filterStatus = $request->input('filterStatus') ?? null;
     
     // Sort columns.
     $filter->sortColumns = array();

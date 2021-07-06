@@ -97,7 +97,7 @@
 										<li><a href="{{ url('/order/index') }}">Daftar Pesanan</a></li>
 									@endif
 									@if(Perm::can(['order_lihat']))
-										<li><a href="{{ url('/order/preorder') }}">{{ trans('fields.preOrder') }}</a></li>
+										<li><a href="{{ url('/order/preorder') }}">Daftar {{ trans('fields.preOrder') }}</a></li>
 									@endif
 									@if(Perm::can(['pengeluaran_lihat']))
 										<li><a href="{{ url('/pengeluaran') }}">{{ trans('fields.expense') }}</a></li>

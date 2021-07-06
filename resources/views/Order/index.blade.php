@@ -214,14 +214,6 @@
       });
 
       $("#apply").on("click", function(){
-        let dataTes = [{
-          action: "asdasdasdasdas",
-          createdat: "2021-04-25 03:20:31",
-          messages: "Promo berhasil ditambah",
-          path: "promo/simpan",
-          status: "success",
-          username: "superadmin"
-        }];
         grid2.ajax.reload()
       });
     });

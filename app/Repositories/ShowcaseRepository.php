@@ -9,9 +9,9 @@ use Carbon\Carbon;
 
 class ShowcaseRepository
 {
-  public static function grid($perms)
+  public static function grid($filter, $perms)
   {
-    return Showcase::where('showcaseactive', '1')
+    $q = Showcase::where('showcaseactive', '1')
     ->join('products as p', 'showcases.showcaseproductid', 'p.id')
     ->leftJoin('product_stock as ps', 'showcases.id', 'ps.stockshowcaseid')
     ->select('showcases.id',
@@ -23,8 +23,62 @@ class ShowcaseRepository
       DB::raw("to_char(showcaseexpdate, 'DD-MM-YYYY') as showcaseexpdate"),
       DB::raw("case when showcaseexpiredat is not null then 'Kadaluarsa' when showcaseexpiredat is null and ps.qty > 1  then 'ReadyStock' when showcaseexpiredat is null and ps.qty is null then 'Habis' end as status"),
       DB::raw($perms['save']),
-      DB::raw($perms['delete']))
-    ->get();
+      DB::raw($perms['delete']));
+    
+    $count = $q->count();
+
+    if(!empty($filter->filterDate)){
+      $q->whereRaw("showcasedate::date between '". $filter->filterDate->from . "'::date and '" . $filter->filterDate->to . "'::date");
+    }
+    
+    //Filter Kolom.
+    if (!empty($filter->filterText) && !empty($filter->filterColumn)){
+      // if (empty($filterText)) continue;
+      $trimmedText = trim($filter->filterText);
+      $filterCol = $filter->filterColumn;
+
+      $text = strtolower(implode('%', explode(' ', $trimmedText)));
+      $q->whereRaw('upper('.$filterCol .') like upper(?)', [ '%' . $text . '%']);
+    }
+
+    //Filter Status.
+    if (!empty($filter->filterStatus)){
+      // if (empty($filterText)) continue;
+      $trimmedFilter= trim($filter->filterStatus);
+      $fText;
+      if($trimmedFilter == 'ReadyStock'){
+        $fText = 'showcaseexpiredat is null and ps.qty > 1';
+      } else if ( $trimmedFilter == 'Kadaluarsa'){
+        $fText = 'showcaseexpiredat is not null';
+      } else if($trimmedFilter == 'Habis'){
+        $fText = 'showcaseexpiredat is null and ps.qty is null';
+      }
+      
+      $q->whereRaw($fText);
+    }
+
+    $countFiltered = $q->count();
+    // Order.
+    if (!empty($filter->sortColumns)){
+      foreach ($filter->sortColumns as $value){
+        $field = $value->field;
+        if (empty($field)) continue;
+        $q->orderBy($field, $value->dir);
+      }
+    } else {
+      $q->orderByRaw("showcasedate desc");
+    }
+
+    // Paging.
+    $q->skip($filter->pageOffset)
+      ->take($filter->pageLimit);
+
+    $grid = new \stdClass();
+    $grid->recordsTotal = $count;
+    $grid->recordsFiltered = $countFiltered;
+    $grid->data = $q->get();
+
+    return $grid;
   }
 
   public static function get($respon, $id)
