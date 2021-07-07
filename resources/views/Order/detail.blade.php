@@ -409,7 +409,7 @@
         lbl()
         $('#lblKembalian').html(0);
         $('#drawer').attr('disabled', true);
-      }else if(Number(change) >= 0 && tgl && cust){
+      }else if(Number(change) >= 0 && tgl && (cust||!valid)){
         lbl()
         $("#lblKembalian").html(formatter.format(change));
         $('#drawer').removeAttr('disabled');
