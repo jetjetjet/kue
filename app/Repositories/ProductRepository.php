@@ -12,7 +12,6 @@ class ProductRepository
     return Product::where('productactive', '1')
     ->join('productcategories as pc', 'products.productpcid', '=', 'pc.id')
     ->select('products.id',
-      'productcode',
       'productname', 
       'productprice', 
       'pcname as productcategory',
@@ -29,20 +28,21 @@ class ProductRepository
     if($id){
       $respon['data'] = Product::join('productcategories as pc', 'productpcid', 'pc.id')
       ->where('productactive', '1')
+      ->leftJoin('users as cr', 'productcreatedby', 'cr.id')
+      ->leftJoin('users as mod', 'productmodifiedby', 'mod.id')
       ->where('products.id', $id)
       ->select(
-        'productcode',
         'products.id',
         'productpcid',
         'pcname as productpcname',
         'productname', 
         'productdetail',
         'productimg',
-        'productprice',
-        'productcreatedat',
-        'productcreatedby',
-        'productmodifiedat',
-        'productmodifiedby')
+        DB::raw("to_char(productcreatedat, 'dd-mm-yyyy hh:mi') as productcreatedat"),
+        'cr.username as productcreatedby',
+        DB::raw("to_char(productmodifiedat, 'dd-mm-yyyy hh:mi') as productmodifiedat"),
+        'mod.username as productmodifiedby',
+        'productprice' )
       ->first();
 
       if($respon['data'] == null){
@@ -139,22 +139,21 @@ class ProductRepository
   public static function apiShowcaseCode($respon, $id)
   {
     $query = Product::join('showcases as s', 'products.id', 'showcaseproductid')
+      ->join('product_stock as ps', function($join){
+        $join->on('ps.productid', 'products.id')
+        ->on('ps.stockshowcaseid', 's.id');})
       ->where('productactive','1')
       ->where('showcaseactive', '1')
       ->where('products.id', $id)
       ->whereNull('showcaseexpiredat')
-      ->select('showcasecode')
+      ->select('s.id','showcasecode', 'ps.qty')
       ->get();
 
     if(count($query) <= 0){
       $respon['status'] = 'error';
       array_push($respon['messages'], sprintf('Data %s tidak ditemukan', trans('fields.showcase')));
     } else {
-      $data = Array();
-      foreach($query as $q){
-        array_push($data, $q->showcasecode);
-      }
-      $respon['data'] = $data;
+      $respon['data'] = $query;
       $respon['status'] = 'success';
     }
 
@@ -221,7 +220,7 @@ class ProductRepository
   public static function save($respon, $inputs, $file, $loginid)
   {
     $oldPath = isset($inputs['productimg']) ? $inputs['productimg'] : null ;
-    $filePath = isset($file) ? '/doc/images/' . $file->newName : $oldPath; 
+    $filePath = isset($file) ? $file->newName : $oldPath; 
     $id = $inputs['id'] ?? 0;
     $data = Product::where('productactive', '1')
       ->where('id',$id)
@@ -231,7 +230,6 @@ class ProductRepository
       if ($data != null){
         $data = $data->update([
           'productpcid' => $inputs['productpcid'],
-          'productcode' => $inputs['productcode'],
           'productname' => $inputs['productname'],
           'productimg' => $filePath,
           'productdetail' => $inputs['productdetail'],
@@ -246,7 +244,6 @@ class ProductRepository
       } else {
         $data = Product::create([
           'productpcid' => $inputs['productpcid'],
-          'productcode' => $inputs['productcode'],
           'productname' => $inputs['productname'],
           'productimg' => $filePath,
           'productdetail' => $inputs['productdetail'],
@@ -291,8 +288,8 @@ class ProductRepository
 
     $respon['status'] = $data != null && $cekDelete ? 'success': 'error';
     $data != null && $cekDelete
-      ? array_push($respon['messages'], sprintf('? Berhasil Dihapus.'), trans('fields.product')) 
-      : array_push($respon['messages'], sprintf('? Tidak Ditemukan.'), trans('fields.product'));
+      ? array_push($respon['messages'], trans('fields.product').' Berhasil Dihapus.')
+      : array_push($respon['messages'], trans('fields.product').' Tidak Ditemukan.');
     
     return $respon;
   }
@@ -412,7 +409,6 @@ class ProductRepository
   public static function getFields($model)
   {
     $model->id = null;
-    $model->productcode = null;
     $model->productpcid = null;
     $model->productrecipeid = null;
     $model->productname = null;
@@ -432,15 +428,14 @@ class ProductRepository
   {
     $promo = self::searchPromo();
     
-    return Product::join('productcategory as mc', 'mc.id', 'productmcid')
+    return Product::join('productcategories as mc', 'mc.id', 'productpcid')
       ->leftJoinSub($promo, 'promo', function ($join) {
         $join->on('products.id', '=', 'promo.spproductid');
       })
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
       ->where('productactive', '1')
-      ->where('productavaible', '1')
       ->whereNull('promoid')
-      ->select('products.id', 'mcname as productcategory', 'productname as text', 'producttype', 'productprice')
+      ->select('products.id', 'pcname as productcategory', 'productname as text', 'productprice')
       ->orderby('productname', 'ASC')
       ->limit(5)
       ->get();
@@ -466,11 +461,12 @@ class ProductRepository
   {
     return Product::where('productactive', '1')
       ->whereRaw('UPPER(productname) LIKE UPPER(\'%'. $cari .'%\')')
+      ->join('productcategories as pc', 'pc.id', 'productpcid')
       ->select('productprice', 
-        DB::raw("productcode || ' - ' || productname as text"),
+        DB::raw("productname || ' - ' || pcname as text"),
         'productname',
         'productimg',
-        'id')
+        'products.id')
       ->limit(5)
       ->get();
   }

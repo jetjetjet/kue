@@ -13,11 +13,11 @@ class LoginController extends Controller
 {
   public function index(Request $request)
 	{
-		// $bool = is_bool(env('APP_FRESH')) ? env('APP_FRESH') : false;
-		// if($bool)
-		// {
-		// 	return view('Setting.initApp');
-		// }
+		 $bool = is_bool(env('APP_FRESH')) ? env('APP_FRESH') : false;
+		if($bool)
+		{
+			return view('Setting.initApp');
+		}
 		// Redirects to home if the user is already logged into the application.
 
 		if (Auth::check()){

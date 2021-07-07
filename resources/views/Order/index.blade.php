@@ -7,14 +7,13 @@
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="javascript:void(0);">Transaksi</a></li>
     <li class="breadcrumb-item"><a href="javascript:void(0);">Daftar Pesanan</a></li>
-    <li class="breadcrumb-item active" aria-current="page"><a href="javascript:void(0);">Makan Ditempat</a></li>
   </ol>
 @endsection
 
 @section('content-table')
   <div class="widget-content widget-content-area br-6">
     <div class="mb-4">
-      <h3>Pesanan Ditempat (7 Hari Terakhir)</h3>
+      <h3>Pesanan 30 Hari Terakhir</h3>
     </div>
     <fieldset>
       <div class="form-row ml-4">
@@ -30,9 +29,20 @@
         <div class="form-group col-1 pl-0">
           <select id="filterColumn" class="form-control form-control-sm" style="border-top-left-radius: 0px!important; border-bottom-left-radius: 0px!important;">
             <option value=""></option>
-            <option value="orderinvoice">No. Invoice</option>
-            <option value="orderboard">Meja</option>
-            <option value="orderprice">Total Harga</option>
+            <option value="orderinvoice">{{ trans('fields.invoiceNo') }}</option>
+            <option value="ordercustname">{{ trans('fields.customerName') }}</option>
+            <option value="orderprice">{{ trans('fields.price') }}</option>
+            <!-- <option value="orderstatus">Meja</option> -->
+          </select>
+        </div>
+        <div class="form-group col-1 pl-0">
+          <select id="filterStatus" class="form-control form-control-sm" >
+            <option value="">{{ trans('fields.all') }} {{ trans('fields.status') }}</option>
+            <option value="DRAFT">{{ trans('fields.draft') }}</option>
+            <option value="DP">{{ trans('fields.dp') }}</option>
+            <option value="PAID">{{ trans('fields.paid') }}</option>
+            <option value="COMPLETED">{{ trans('fields.complete') }}</option>
+            <option value="VOIDED">{{ trans('fields.void') }}</option>
             <!-- <option value="orderstatus">Meja</option> -->
           </select>
         </div>
@@ -46,12 +56,11 @@
       <table id="griddinein" class="table table-hover" style="width:100%">
         <thead>
           <tr>
-            <th>No.Invoice</th>
-            <th>No.meja</th>
-            <th>Tipe pesanan</th>
-            <th>tanggal</th>
-            <th>total</th>
-            <th>status</th>
+            <th>{{ trans('fields.invoiceNo') }}</th>
+            <th>{{ trans('fields.customerName') }}</th>
+            <th>{{ trans('fields.dateOrder') }}</th>
+            <th>{{ trans('fields.price') }}</th>
+            <th>{{ trans('fields.status') }}</th>
             <th class="no-content"></th>
           </tr>
         </thead>
@@ -59,12 +68,11 @@
         </tbody>
         <tfoot>
           <tr>
-          <th>No.Invoice</th>
-            <th>No.Meja</th>
-            <th>Tipe Pesanan</th>
-            <th>Tanggal</th>
-            <th>Total</th>
-            <th>Status</th>
+            <th>{{ trans('fields.invoiceNo') }}</th>
+            <th>{{ trans('fields.customerName') }}</th>
+            <th>{{ trans('fields.dateOrder') }}</th>
+            <th>{{ trans('fields.price') }}</th>
+            <th>{{ trans('fields.status') }}</th>
             <th></th>
           </tr>
         </tfoot>
@@ -76,6 +84,18 @@
 @section('js-table')
   <script>
     $(document).ready(function (){
+
+      const query = window.location.search.substring(1);
+      const urlParams = new URLSearchParams(query);
+      const status = urlParams.get('status');
+
+      if(status){
+        // setTimeout(() => {
+          $('#filterStatus').val(status).change();
+          $('#apply').trigger('click');
+        // }, 0);
+      }
+
       let fDate = flatpickr($('#periodeLog'), {
         mode: "range",
         altinput: true,
@@ -100,12 +120,13 @@
 
       let grid2 = $('#griddinein').DataTable({
         ajax: {
-            url: "{{ url('order/index/grid/dinein') }}",
+            url: "{{ url('order/index/grid') }}",
             "data": function(dt){
               return $.extend( {}, dt, {
                 "filterDate" : $('#periodeLog').val(),
                 'filterText': $('#filterText').val(), 
-                'filterColumn': $('#filterColumn').val()
+                'filterColumn': $('#filterColumn').val(), 
+                'filterStatus': $('#filterStatus').val()
               } );
             },
             // dataSrc:''
@@ -138,11 +159,7 @@
             searchText: true
           },
           { 
-              data: 'orderboardtext',
-              searchText: true
-          },
-          { 
-              data: 'ordertypetext',
+              data: 'ordercustname',
               searchText: true
           },
           { 
@@ -187,6 +204,7 @@
 
       $('#reset').on('click', function(e){
         $('#filterColumn').val("").change();
+        $('#filterStatus').val("").change();
         $('#periodeLog').val(null);
         fDate.clear();
         $('#filterText').val(null);
@@ -196,14 +214,6 @@
       });
 
       $("#apply").on("click", function(){
-        let dataTes = [{
-          action: "asdasdasdasdas",
-          createdat: "2021-04-25 03:20:31",
-          messages: "Promo berhasil ditambah",
-          path: "promo/simpan",
-          status: "success",
-          username: "superadmin"
-        }];
         grid2.ajax.reload()
       });
     });

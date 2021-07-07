@@ -157,7 +157,9 @@ return [
         'ordertype' => 'Jenis Pesanan',
         'DINEIN' => 'Makan Ditempat',
         'userfullname' => 'Nama Lengkap',
-        'menumcid' => 'Kategori Menu'
+        'menumcid' => 'Kategori Menu',
+        'showcaseproductid' => 'Nama Produk',
+        'showcaseqty' => 'Jumlah Showcase'
     ],
 
     'values' => [

@@ -239,7 +239,8 @@ function gridDeleteInput(url, title, message, grid){
 
 function gridDeleteInput2(url, title, message){
   const swalWithBootstrapButtons = swal.mixin({
-    input: 'textarea',
+    html: "<div class='n-chk'><label class='new-control new-checkbox checkbox-warning'><input type='checkbox' value='1' id='cek' class='new-control-input'><span class='new-control-indicator'></span>Dengan Pengeluaran</label></div>"
+    + '<textarea id="voidreason" class="swal2-textarea"></textarea>',
     confirmButtonClass: 'btn btn-success btn-rounded',
     cancelButtonClass: 'btn btn-danger btn-rounded mr-3',
     buttonsStyling: false,
@@ -255,11 +256,12 @@ function gridDeleteInput2(url, title, message){
     reverseButtons: true,
     padding: '2em'
   }).then(function(result) {
-    if (result.value) {
-      $.post(url,{'ordervoidreason':result.value}, function (data){
+    if ($('#voidreason').val()) {
+      $.post(url,{'ordervoidreason':$('#voidreason').val(), 'cek':$('#cek:checked').val()??0}, function (data){
         if (data.status == 'success'){
           sweetAlert('Pesanan dibatalkan', data.messages[0], 'success')
-          location.reload();
+          const url = $('#board').val()
+          window.location = url;
         } else {
           sweetAlert('Kesalahan!', data.messages[0], 'error')
         }
@@ -309,7 +311,7 @@ function gridDeleteInput3(url, title, message, callbackfn){
   });
 }
 
-function gridDeleteRow(url, title, message, grid){
+function gridDeleteRow(url, title, message, batal, grid){
   const swalWithBootstrapButtons = swal.mixin({
     confirmButtonClass: 'btn btn-success btn-rounded',
     cancelButtonClass: 'btn btn-danger btn-rounded mr-3',
@@ -338,7 +340,7 @@ function gridDeleteRow(url, title, message, grid){
     } else if (
       result.dismiss === swal.DismissReason.cancel
     ) {
-      sweetAlert('Batal','Data meja batal hapus','error')
+      sweetAlert('Batal',batal,'error')
     }
   });
 }
@@ -373,43 +375,17 @@ function gridDeleteSub(url, title, message, callBackfn){
   });
 }
 
-function showPopupOrder(paramBody, actFn){
+function showPopupOrder(param, actFn, closeFn){
   // Enables modal on current element.
   $(this).attr('data-toggle', 'modal');
   $(this).attr('data-target', '#uiModalInstance');
 
-  let $modal = cloneModal($('#menuModal'));
+  let $modal = cloneModal($('#productModal'));
   // $('#uiModalInstance').modal({
   //   // backdrop: 'static',
   //   keyboard: true
   // });
   $modal.on('show.bs.modal', function (){
-      // Draws text.
-      let pricePromoText = '';
-      if(paramBody['promo']){
-        pricePromoText = '&nbsp;<span class="badge outline-badge-info"> Harga Normal ' + paramBody['priceRaw'] +'</span>';
-        $modal.find('#rowPromo').removeClass('d-none')
-        $modal.find('#menuPopupPromo').html(paramBody['promo'] + '<p><span class="badge outline-badge-info"> Promo '
-          + paramBody['promoText'] + ' s/d '+ paramBody['promoEnd'] +'</span></p>');
-      }
-
-      $modal.find('.modal-title').html('Tambah');
-      $modal.find('#menuPopupText').html(paramBody['text']);
-      $modal.find('#menuPopupPrice').html(paramBody['price'] + pricePromoText);
-
-      if(paramBody['promo']){
-        $modal.find('#rowPromo').removeClass('d-none')
-        $modal.find('#menuPopupPromo').html(paramBody['promo'] + '<p><span class="badge outline-badge-info"> Promo '
-          + paramBody['promoText'] + ' s/d '+ paramBody['promoEnd'] +'</span></p>');
-      }
-      
-      let inputQty = $modal.find('#menuPopupQty');
-      //console.log(inputQty)
-      inputNumber(inputQty);
-      $modal.modal({
-          backdrop: 'static',
-          keyboard: false
-        });
       $('.modal-add-row')
       .click(function (){
         if (actFn){
@@ -417,7 +393,26 @@ function showPopupOrder(paramBody, actFn){
         }
         $modal.modal('hide');
       });
+      $('.modal-close-row')
+      .click(function (){
+        if (closeFn){
+          closeFn();
+        }
+        $modal.modal('hide');
+      });
   }).modal('show');
+  
+  $modal.find('#showcasePopup').on('change', function(){
+    let thisSelect = $(this).val();
+    console.log(param, thisSelect)
+    $.each( param, function( key, value ) {
+      if(value.id == thisSelect){
+        $modal.find('#popupStock').val(value.qty);
+        $modal.find('#popupShowcaseCode').val(value.showcasecode);
+        return false;
+      }
+    });
+  })
 }
 
 $.fn.registerAddRow = function ($rowTemplateContainer, $addRow, rowAddedFn, validationFn){
@@ -469,6 +464,12 @@ $.fn.registerAddRow = function ($rowTemplateContainer, $addRow, rowAddedFn, vali
     }
   });
 }
+$('[type=number]').keydown( function(e) {
+  console.log(e)
+  if(e.keyCode == 189 || e.keyCode == 69 || e.keyCode ==109 ) {
+      return false;
+    }
+  })
 
 function cloneRow($targetContainer, $rowTemplateContainer, rowIndex){
   var $rowTemplateTbody = $rowTemplateContainer.find('> tbody'),
@@ -516,7 +517,7 @@ $('table,.subitem-container')
   $table.triggerHandler("row-removed", [$tr]);
 
   $table.attr('data-has-changed', '1');
-}).on('click', '[deliver-row]', function(e){
+}).on('change', '[deliver-row]', function(e){
   var $tr = $(this).closest('tr,.panel,.rowpanel'),
       $table = $tr.closest('table,.subitem-container');
   

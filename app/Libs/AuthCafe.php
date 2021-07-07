@@ -15,23 +15,15 @@ class AuthCafe
     'jabatan_hapus',
 
     'laporan_lihat',
-    'log_lihat',
-
-    'meja_lihat',
-    'meja_simpan',
-    'meja_hapus',    
-
-    'menu_lihat',
-    'menu_simpan',
-    'menu_hapus',
+    'log_lihat',  
 
     'order_lihat',
-    'order_lihatBungkus',
     'order_simpan',
     'order_hapus',
     'order_batal',
     'order_pembayaran',
-    'order_pelayan',
+    'order_deleteDetail',
+    'order_updatePesanan',
 
     'pengaturan_lihat',
     'pengaturan_edit',
@@ -46,11 +38,14 @@ class AuthCafe
     'promo_simpan',
     'promo_hapus',
 
-    'shift_lihat',
-    'shift_simpan',
-    'shift_tutup',
-    'shift_hapus',
-    'shift_detail',
+    'product_lihat',
+    'product_simpan',
+    'product_hapus',
+
+    'showcase_lihat',
+    'showcase_simpan',
+    'showcase_hapus',
+    'showcase_kadaluarsa',
 
     'user_lihat',
     'user_simpan',

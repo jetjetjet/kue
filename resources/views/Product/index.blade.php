@@ -17,10 +17,8 @@
         <thead>
           <tr>
             <th>Nama</th>
-            <th>Jenis</th>
             <th>Kategori</th>
             <th>Harga</th>
-            <th>Status</th>
             <th class="no-content"></th>
           </tr>
         </thead>
@@ -46,7 +44,7 @@
           '<"col-md-12"rt> <"col-md-12"<"row"<"col-md-5"i><"col-md-7"p>>> >',
         buttons: {
             buttons: [{ 
-              text: "Tambah Menu",
+              text: "Tambah {{ trans('fields.product') }}",
               className: 'btn',
               action: function ( e, dt, node, config ) {
                 window.location = "{{ url('/product/detail') }}";
@@ -71,11 +69,7 @@
             searchText: true
           },
           { 
-            data: 'productstock',
-            searchText: true
-          },
-          { 
-            data: 'productdate',
+            data: 'productcategory',
             searchText: true
           },
           { 
@@ -83,17 +77,6 @@
             render: function(data, type, full, meta){
             return formatter.format(data.productprice);
             }
-          },
-          { 
-              data:null,
-              searchText: true,
-              render: function(data, type, full, meta){
-                if(data.productstatus == 'Tersedia'){
-                  return '<span class="badge badge-success"> Tersedia </span>';  
-                }else{
-                  return '<span class="badge badge-danger"> Kosong </span>';
-                }
-              }
           },
           { 
             data:null,
@@ -120,10 +103,11 @@
         
         const rowData = grid.row($(this).closest('tr')).data();
         const url = "{{ url('product/hapus') . '/' }}" + rowData.id;
-        const title = 'Hapus Menu';
-        const pesan = 'Apakah anda yakin ingin menghapus data ini?'
+        const title = "Hapus {{ trans('fields.product') }}";
+        const pesan = "Apakah anda yakin ingin menghapus {{ trans('fields.product') }} ini?"
+        const batal = "Data {{ trans('fields.product') }} batal dihapus"
         //console.log(rowData, url)
-        gridDeleteRow(url, title, pesan, grid);
+        gridDeleteRow(url, title, pesan, batal, grid);
       });
     });
 

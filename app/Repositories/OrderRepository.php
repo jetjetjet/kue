@@ -3,6 +3,7 @@ namespace App\Repositories;
 
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Expense;
 use Illuminate\Support\Facades\Log;
 use DB;
 use Carbon\Carbon;
@@ -10,201 +11,23 @@ use Exception;
 
 class OrderRepository
 {
-  private static function orderBoard($filters)
-  {
-    $qOrder = Order::where('orderactive', '1')
-      ->whereNotNull('orderboardid')
-      ->whereNull('ordervoid')
-      ->orderBy('ordercreatedat', 'DESC')
-      ->select('id', 'orderstatus', 'orderboardid', 'orderinvoice');
-    
-    $order = DB::table(DB::raw("({$qOrder->toSql()}) a"))
-      ->select(
-        DB::raw("distinct on(a.orderboardid) a.id"),
-        'a.orderstatus', 'a.orderboardid', 'a.orderinvoice'
-      )->mergeBindings($qOrder->getQuery());
-    
-    $board = DB::table('boards')
-      ->leftJoinSub($order, 'o', function ($join) {
-        $join->on('boards.id', '=', 'o.orderboardid');
-      })
-      ->where('boardactive', '1')
-      ->select(
-        'o.orderstatus',
-        DB::raw("case when o.orderstatus = 'PAID' or o.orderstatus = 'VOIDED' then true
-        when o.orderstatus is null then true else false end as boardstatus"),
-        'o.id as orderid',
-        'boards.id as boardid',
-        'boardfloor',
-        'o.orderinvoice',
-        'boardnumber');
-        dd($board->toSql());
-    if($filters){
-      $board = $board->addSelect(
-        DB::raw($filters['is_kasir']),
-        DB::raw($filters['is_pelayan'])
-      );
-    }
-    return $board;
-  }
-  public static function orderGrid($filters)
-  {
-    $f = $filters['is_kasir']  ?? "";
-    $fp = $filters['is_pelayan'] ?? "";
-    $f1 = DB::raw($f != null?$f. "," : "");
-    $f2 = DB::raw($fp != null ?$fp. ",": "");
-    $q = DB::select(DB::raw("
-      select o.orderstatus,". $f1 . $f2 ."
-        case when o.orderstatus = 'PAID' or o.orderstatus = 'VOIDED' then true
-              when o.orderstatus is null then true else false end as boardstatus, 
-        o.id as orderid, 
-        boards.id as boardid, 
-        boardfloor, 
-        o.orderinvoice, 
-        boardnumber from boards 
-      left join (
-        select distinct on(a.orderboardid) a.id, 
-        a.orderstatus, 
-        a.orderboardid, 
-        a.orderinvoice from (
-          select id, 
-            orderstatus, 
-            orderboardid, 
-            orderinvoice from orders 
-          where orderactive = '1' 
-          and orderboardid is not null 
-          and orderpaid = '0'
-          and ordervoid is null order by ordercreatedat desc) 
-        a) as o 
-      on boards.id = o.orderboardid 
-      where boardactive = '1'
-      order by boardfloor asc, boardnumber asc
-    "));
-    return $q;
-  }
-
-  public static function orderBungkus()
-  {
-    $dataOrder = Order::where('orderactive','1')
-      ->where('ordertype', 'TAKEAWAY')
-      ->whereRaw("(orderpaid is null or orderpaid = '0')")
-      ->orderBy('ordercreatedat', 'ASC')
-      ->select(
-        'id',
-        'orderinvoice',
-        'orderdate',
-        'orderprice')
-      ->get();
-    return $dataOrder;
-  }
-
-  public static function orderChart($filter, $range, $month)
-  {
-    $transaction = Order::select(DB::raw('ordercreatedat::date as date,sum(orderprice) as total'))
-      ->where('orderstatus', 'PAID')
-      ->where('orderactive', '1')
-      ->whereRaw("orderdate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
-      ->groupBy(DB::raw('ordercreatedat::date'))->get();
-    
-    $expenses = DB::table('expenses')
-      ->where('expenseactive', '1')
-      ->whereNotNull('expenseexecutedat')
-      ->whereRaw("expensedate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
-      ->groupBy(DB::raw('expensedate::date'))
-      ->select(
-        DB::raw('expensedate::date as date,sum(expenseprice) as total')
-      )->get();
-      
-    $data = new \StdClass();
-    $inc = [];
-    $exp = [];
-    foreach ($range as $row) {
-      $f_date = strlen($row) == 1 ? 0 . $row:$row;
-      $date = $month . "-".  $f_date;
-      $totalInc = $transaction->firstWhere('date', $date);
-      $totalExp = $expenses->firstWhere('date', $date);
-      
-      array_push($inc,$totalInc ? $totalInc->total:0);
-      array_push($exp,$totalExp ? $totalExp->total:0);
-    }
-    
-    $data->chartIncome = implode(",", $inc);
-    $data->chartExpense = implode(",", $exp);
-    $data->chartTgl = implode(",", $range);
-    return $data;
-  }
-
-  public static function gridTakeAway($filter)
+  public static function grid($filter, $perms)
   {
     $q = Order::where('orderactive', '1')
-      ->where('ordertype', 'TAKEAWAY')
-      ->select(
-        'id',
-        'orderinvoice',  
-        // 'ordercustname', 
-        DB::raw("CASE WHEN orders.ordertype = 'DINEIN' THEN 'Makan ditempat' ELSE 'Bungkus' END as ordertypetext"), 
-        'orderdate',
-        'orderprice', 
-        DB::raw("CASE WHEN orders.orderstatus = 'PROCEED' THEN 'Diproses' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'ADDITIONAL' THEN 'Proses Tambah' END as orderstatuscase")
-      );
-
-    $count = $q->count();
-
-    if(!empty($filter->filterDate)){
-      $q->whereRaw("ordercreatedat::date between '". $filter->filterDate->from . "'::date and '" . $filter->filterDate->to . "'::date");
-    }
-    
-    //Filter Kolom.
-    if (!empty($filter->filterText) && !empty($filter->filterColumn)){
-      // if (empty($filterText)) continue;
-      $trimmedText = trim($filter->filterText);
-      $filterCol = $filter->filterColumn;
-      if($filterCol == "orderprice"){
-        $filterCol = "cast(orderprice as varchar)";
-      }
-
-      $text = strtolower(implode('%', explode(' ', $trimmedText)));
-      $q->whereRaw('upper('.$filterCol .') like upper(?)', [ '%' . $text . '%']);
-    }
-
-    $countFiltered = $q->count();
-    // Order.
-    if (!empty($filter->sortColumns)){
-      foreach ($filter->sortColumns as $value){
-        $field = $value->field;
-        if (empty($field)) continue;
-        $q->orderBy($field, $value->dir);
-      }
-    } else {
-      $q->orderBy('ordercreatedat', 'DESC');
-    }
-
-    // Paging.
-    $q->skip($filter->pageOffset)
-      ->take($filter->pageLimit);
-
-    $grid = new \stdClass();
-    $grid->recordsTotal = $count;
-    $grid->recordsFiltered = $countFiltered;
-    $grid->data = $q->get();
-
-    return $grid;
-  }
- 
-  public static function gridDineIn($filter)
-  {
-    $q = Order::where('orderactive', '1')
-      ->where('ordertype', 'DINEIN')
-      ->join('boards', 'orderboardid' ,'=', 'boards.id')
       ->select(
         'orders.id',
-        'orderinvoice', 
-        DB::raw("concat('Meja No. ', boardnumber , ' - Lantai ', boardfloor) as orderboardtext"),
-        // 'ordercustname', 
-        DB::raw("CASE WHEN orders.ordertype = 'DINEIN' THEN 'Makan ditempat' ELSE 'Bungkus' END as ordertypetext"), 
-        'orderdate',
+        'orderinvoice',
+        'ordercustname',
+        DB::raw("to_char(orderdate, 'dd-mm-yyyy HH24:MI:SS') as orderdate"),
         'orderprice', 
-        DB::raw("CASE WHEN orders.orderstatus = 'PROCEED' THEN 'Diproses' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'ADDITIONAL' THEN 'Proses Tambah' END as orderstatuscase")
+        DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN '<span class=". '"' ."badge badge-warning". '"' .">Draf</span>' 
+          WHEN orders.orderstatus = 'DP' THEN '<span class=". '"' ."badge badge-secondary". '"' .">Bayar Dimuka</span>'
+          WHEN orders.orderstatus = 'PAID' THEN '<span class=". '"' ."badge badge-info". '"' .">Lunas</span>'
+          WHEN orders.orderstatus = 'COMPLETED' THEN '<span class=". '"' ."badge badge-primary". '"' .">Selesai</span>'
+          WHEN orders.orderstatus = 'VOIDED' THEN '<span class=". '"' ."badge badge-danger". '"' .">Batal</span>' END as orderstatuscase"),
+        //Action
+        DB::raw("CASE WHEN orderpaid = '0' and 1 = " . $perms['save'] . " THEN true ELSE false END as can_save"),
+        DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' AND 1 = " . $perms['delete'] . " THEN true ELSE false END as can_delete")
       );
 
       $count = $q->count();
@@ -218,14 +41,21 @@ class OrderRepository
         // if (empty($filterText)) continue;
         $trimmedText = trim($filter->filterText);
         $filterCol = $filter->filterColumn;
-        if($filterCol == "orderboard"){
-          $filterCol = "concat('Meja No. ', boardnumber , ' - Lantai ', boardfloor)";
-        } else if($filterCol == "orderprice"){
+
+        if($filterCol == "orderprice"){
           $filterCol = "cast(orderprice as varchar)";
         }
 
         $text = strtolower(implode('%', explode(' ', $trimmedText)));
         $q->whereRaw('upper('.$filterCol .') like upper(?)', [ '%' . $text . '%']);
+      }
+
+      //Filter Status.
+      if (!empty($filter->filterStatus)){
+        // if (empty($filterText)) continue;
+        $trimmedFilter= trim($filter->filterStatus);
+        // $text = strtolower(implode('%', explode(' ', $trimmedText)));
+        $q->where('orderstatus', $trimmedFilter);
       }
   
       $countFiltered = $q->count();
@@ -237,7 +67,7 @@ class OrderRepository
           $q->orderBy($field, $value->dir);
         }
       } else {
-        $q->orderBy('ordercreatedat', 'DESC');
+        $q->orderByRaw("case orderstatus when 'DRAFT' then 1 else 2 end, ordercreatedat desc");
       }
   
       // Paging.
@@ -251,27 +81,121 @@ class OrderRepository
   
       return $grid;
   }
+  public static function orderChart($filter, $range, $month)
+  {
+    $compTransaction = Order::select(DB::raw('orderdate::date as date,sum(orderprice) - sum(coalesce(orderdiscountprice,0)) as total'))
+      ->whereNull('orderdp')
+      ->whereNull('orderremainingpaid')
+      ->whereIn('orderstatus', ['COMPLETED', 'PAID'])
+      // ->where('orderstatus', 'PAID')
+      ->where('orderactive', '1')
+      ->whereRaw("orderdate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
+      ->groupBy(DB::raw('orderdate::date'))->get();
+
+    $dpTransaction = Order::select(DB::raw('orderdate::date as date,sum(orderdp) as total'))
+      ->whereNotIn('orderstatus', ['VOIDED', 'DRAFT'])
+      // ->where('orderstatus', 'PAID')
+      ->where('orderactive', '1')
+      ->whereRaw("orderdate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
+      ->groupBy(DB::raw('orderdate::date'))->get();
+
+    $remainTransaction = Order::select(DB::raw('ordercompleteddate::date as date,sum(orderremainingpaid) as total'))
+      ->where('orderstatus', 'COMPLETED')
+      ->whereNotNull('orderdp')
+      // ->where('orderstatus', 'PAID')
+      ->where('orderactive', '1')
+      ->whereRaw("ordercompleteddate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
+      ->groupBy(DB::raw('ordercompleteddate::date'))->get();
+    
+    $expenses = DB::table('expenses')
+      ->where('expenseactive', '1')
+      ->whereNotNull('expenseexecutedat')
+      ->whereRaw("expensedate::date between '". $filter['awal'] . "'::date and '" . $filter['akhir'] . "'::date")
+      ->groupBy(DB::raw('expensedate::date'))
+      ->select(
+        DB::raw('expensedate::date as date,sum(expenseprice) as total')
+      )->get();
+      
+    $data = new \StdClass();
+    $totalInc = new \StdClass();
+    $inc = [];
+    $exp = [];
+    foreach ($range as $row) {
+      $f_date = strlen($row) == 1 ? 0 . $row:$row;
+      $date = $month . "-".  $f_date;
+      $totalInc->total = 0;
+      
+
+      $totalComp = $compTransaction->firstWhere('date', $date);
+      $totalRemain = $remainTransaction->firstWhere('date', $date);
+      $totalDP = $dpTransaction->firstWhere('date', $date);
+      if($totalComp){
+        $totalInc->total += $totalComp->total;
+      }
+      if($totalDP){
+        $totalInc->total += $totalDP->total;
+      }      
+      if($totalRemain){
+        $totalInc->total += $totalRemain->total;
+      }       
+      if($totalComp || $totalDP || $totalRemain){
+        $totalInc->date = $date;
+      }
+      
+      $totalExp = $expenses->firstWhere('date', $date);
+      
+      array_push($inc,$totalInc ? $totalInc->total:0);
+      array_push($exp,$totalExp ? $totalExp->total:0);
+    }
+    
+    $data->chartIncome = implode(",", $inc);
+    $data->chartExpense = implode(",", $exp);
+    $data->chartTgl = implode(",", $range);
+    return $data;
+  }
+
+  public static function preOrderGrid($perms)
+  {
+    return Order::where('orderactive', '1')
+    ->join('orderdetail as od', 'odorderid', 'orders.id')
+    ->join('products as p', 'p.id', 'odproductid')
+    ->whereIn('orderstatus', ['DP', 'PAID'])
+    ->where('od.odtype', 'PO')
+    ->select('orders.id',
+      'orderinvoice', 
+      'ordercustname', 
+      DB::raw("to_char(orderdate, 'dd-mm-yyyy HH24:MI:SS') as orderdate"), 
+      DB::raw("to_char(orderestdate, 'dd-mm-yyyy') as orderestdate"),
+      'productname',
+      'odqty',
+      DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN '<span class=". '"' ."badge badge-warning". '"' .">Draf</span>' 
+      WHEN orders.orderstatus = 'DP' THEN '<span class=". '"' ."badge badge-secondary". '"' .">Bayar Dimuka</span>'
+      WHEN orders.orderstatus = 'PAID' THEN '<span class=". '"' ."badge badge-info". '"' .">Lunas</span>'
+      WHEN orders.orderstatus = 'COMPLETED' THEN '<span class=". '"' ."badge badge-primary". '"' .">Selesai</span>'
+      WHEN orders.orderstatus = 'VOIDED' THEN '<span class=". '"' ."badge badge-danger". '"' .">Batal</span>' END as orderstatuscase"),
+      DB::raw($perms['save']))
+    ->orderBy('orderestdate', 'asc')
+    ->get();
+  }
 
   public static function getOrder($respon, $id)
   {
     $data = new \StdClass();
     if($id){
-      $data = Order::leftJoin('boards', function($q){
-        $q->whereRaw('orderboardid = boards.id')
-          ->whereRaw("boardactive = '1'");})
-        ->leftJoin('users as uvoid', 'uvoid.id', 'ordervoidedby')
+      $data = Order::leftJoin('users as uvoid', 'uvoid.id', 'ordervoidedby')
+        ->leftJoin('users as ucom', 'ucom.id', 'ordercompletedby')
+        ->leftJoin('expenses as e', 'e.id', 'orderrefundid' )
         ->where('orderactive', '1')
         ->where('orders.id', $id)
         ->select(
           'orders.id',
           'orderinvoice',
-          DB::raw("concat('Meja No. ', boardnumber , ' - Lantai ', boardfloor) as orderboardtext"),
-          DB::raw("case when ordertype = 'DINEIN' then 'Makan Ditempat' else 'Bungkus' end as ordertypetext"),
-          'orderboardid',
-          'ordertype',
           DB::raw("to_char(orderdate, 'dd/mm/yyyy HH24:MI') as orderdate"),
           DB::raw("to_char(orderpaidat, 'dd/mm/yyyy HH24:MI') as orderpaiddate"),
           'orderprice',
+          'orderdp',
+          DB::raw("to_char(orderestdate, 'dd/mm/yyyy') as orderestdate"),
+          'ordercustname',
           'orderpaid',
           'orderpaidprice',
           'orderstatus',
@@ -281,18 +205,22 @@ class OrderRepository
           'ordervoidreason',
           'ordervoidedby',
           'orderdiscountprice',
+          'ordercompleteddate',
+          'ordercompletedby',
+          'orderremainingpaid',
+          'ucom.username as ordercompletedname',
           'uvoid.username as ordervoidedusername',
-          DB::raw("CASE WHEN orders.orderstatus = 'PROCEED' THEN 'Diproses' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'ADDITIONAL' THEN 'Proses Tambah' END as orderstatuscase")
+          'orderrefundid',
+          'expensecode',
+          DB::raw("CASE WHEN orders.orderstatus = 'DRAFT' THEN 'Diproses' WHEN orders.orderstatus = 'DP' THEN 'Bayar Dimuka' WHEN orders.orderstatus = 'PAID' THEN 'Lunas' WHEN orders.orderstatus = 'VOIDED' THEN 'Batal' WHEN orders.orderstatus = 'COMPLETED' THEN 'Selesai' END as orderstatuscase")
         )->first();
       if($data == null){
         $respon['status'] = 'error';
         array_push($respon['messages'],'Pesanan tidak ditemukan!');
       } else {
-        $data->subOrder = self::getSubOrder($id);
-        $cekDelivered = OrderDetail::where('oddelivered', '0')->where('odorderid', $id)->select(DB::raw("CASE WHEN oddelivered = false THEN '1' else '0' END as odstat"))->first();
-        $dId = $cekDelivered->odstat??null;
-        $data->getstat = $dId;
-      
+        $data->subs = self::getSubOrder($id);
+        $data->odTypeCek= OrderDetail::where('odorderid', $id)->select(DB::raw("CASE WHEN odtype = 'PO' THEN true ELSE false END as odcek"))->orderBy('odtype', 'ASC')->first();
+
         $respon['status'] = 'success';
         $respon['data'] = $data;
       }
@@ -302,45 +230,6 @@ class OrderRepository
     return $respon;
   }
 
-  public static function getDataDapur()
-  {
-    $temp = Array();
-    $data = Order::where('orderactive', '1')
-      ->leftJoin('boards', 'boards.id', 'orderboardid')
-      ->where('orderstatus', 'PROCEED')
-      ->orWhere('orderstatus', 'ADDITIONAL')
-      ->orderBy('ordercreatedat')
-      ->select(
-        'orders.id',
-        'orderinvoice',
-        DB::raw("case when ordertype = 'DINEIN' then concat('Meja No. ', boardnumber , ' - Lantai ', boardfloor) else '' end as orderboardtext"),
-        DB::raw("case when ordertype = 'DINEIN' then 'Makan Ditempat' else 'Bungkus' end as ordertype"),
-        'orderdate')
-      ->get();
-
-      foreach($data as $d){
-        $orderHeader = self::dbOrderHeader($d);
-        $subs = OrderDetail::join('menus', 'menus.id', 'odmenuid')
-          ->where('odactive', '1')
-          ->where('odorderid', $d->id)
-          ->where('oddelivered', '0')
-          ->orderBy('odindex')
-          ->select(
-            DB::raw('menuname as odmenutext'),
-            'menutype as odmenutype',
-            'odqty',
-            'odremark'
-          )->get();
-
-          foreach($subs as $s){
-            $dataSub = self::dbOrderDetail($s);
-            array_push($orderHeader->subOrder, $dataSub);
-          }
-        array_push($temp, $orderHeader);
-      }
-    return $temp;
-  }
-
   public static function getSubOrder($idOrder)
   {
     $promo = DB::table('promo as p')
@@ -348,49 +237,41 @@ class OrderRepository
       ->where('spactive', '1')
       ->select(
         'p.id as promoid',
-        'spmenuid',
+        'spproductid',
         'promodiscount'
       );
 
-    return OrderDetail::join('menus',function($q){
-      $q->whereRaw("menuactive = '1'")
-        ->whereRaw("menus.id = odmenuid");})
-      ->leftJoinSub($promo, 'promo', function ($join) {
-        $join->on('menus.id', '=', 'promo.spmenuid');
-        $join->on('odpromoid', '=', 'promoid');
-      })
-      ->where('odactive', '1')
-      ->where('odorderid', $idOrder)
-      ->select(
-        'orderdetail.id',
-        'odmenuid',
-        DB::raw("menuname as odmenutext"),
-        'odqty',
-        'odprice',
-        'odtotalprice',
-        DB::raw("CASE WHEN oddelivered = true then 'Sudah Diantar' ELSE 'Sedang Diproses' END as oddelivertext"),
-        'oddelivered',
-        'odremark',
-        'odindex',
-        'odispromo',
-        'odpromoid',
-        'odpriceraw',
-        'odtotalpriceraw',
-        'promodiscount'
-        )
-      ->get();
-  }
-
-  private static function cekMejaStatus($boardid)
-  {
-    $q = DB::table('boards as b')
-      ->join('orders as o', 'orderboardid', 'b.id')
-      ->where('orderactive', '1')
-      ->where('b.id', $boardid)
-      // ->whereRaw("(orderpaid is null)")
-      ->whereNotIn('orderstatus', ['PAID', 'VOIDED'])
-      ->count();
-    return $q;
+    return OrderDetail::join('products',function($q){
+      $q->whereRaw("productactive = '1'")
+        ->whereRaw("products.id = odproductid");})
+        ->leftJoinSub($promo, 'promo', function ($join) {
+          $join->on('products.id', '=', 'promo.spproductid');
+          $join->on('odpromoid', '=', 'promoid');
+        })
+        ->leftJoin('showcases as sc', function($join){
+          $join->on('sc.id', 'odshowcaseid');
+        })
+        ->where('odactive', '1')
+        ->where('odorderid', $idOrder)
+        ->select(
+          'orderdetail.id',
+          'showcasecode as odshowcasecode',
+          'odproductid',
+          DB::raw("productname as odproducttext"),
+          'odqty',
+          'odtype',
+          'odprice',
+          'odtotalprice',
+          'odremark',
+          'odindex',
+          'odispromo',
+          'odpromoid',
+          'odpriceraw',
+          'odtotalpriceraw',
+          'promodiscount',
+          'showcasecode'
+          )
+        ->get();
   }
 
   public static function save($respon, $id, $inputs, $loginid)
@@ -398,15 +279,6 @@ class OrderRepository
     $respon['success'] = false;
     $id = $id != null ? $id : $inputs['id'] ;
     $details = $inputs['dtl'];
-
-    $cekMeja = self::cekMejaStatus($inputs['orderboardid']);
-    if($cekMeja > 0 && !$id){
-      $respon['status'] = "double";
-      array_push($respon['messages'], 'Pesanan sudah dibuat/Meja sudah terisi.');
-
-      return $respon;
-    }
-
     try{
       DB::transaction(function () use (&$respon, $id, $inputs, $loginid)
       {
@@ -439,12 +311,9 @@ class OrderRepository
         $data = Order::create([
           'orderinvoice' => $inv['invoice'],
           'orderinvoiceindex' => $inv['index'],
-          'orderboardid' => $inputs['orderboardid'],
-          'ordertype' => $inputs['ordertype'],
-          // 'ordercustname' => $inputs['ordercustname'],
           'orderdate' => now()->toDateTimeString(),
           'orderprice' => $inputs['orderprice'] ?? 1,
-          'orderstatus' => 'PROCEED',
+          'orderstatus' => 'DRAFT',
           'orderdetail' => $inputs['orderdetail'] ?? null,
           'orderpaid' => '0',
           'orderactive' => '1',
@@ -454,7 +323,7 @@ class OrderRepository
         if($data->id != null){
           $respon['id'] = $data->id;
           $respon['success'] = true;
-          array_push($respon['messages'], 'Pesanan sudah ditambahkan dan sedang diproses.');
+          array_push($respon['messages'], 'OK');
         } else {
           throw new Exception('rollback');
         }
@@ -462,8 +331,6 @@ class OrderRepository
         $data = Order::where('orderactive', '1')
           ->where('id', $id)
           ->update([
-            'orderboardid' => $inputs['orderboardid'] ?? null,
-            'ordertype' => $inputs['ordertype'],
             'orderprice' => $inputs['orderprice'] ?? 1,
             // 'orderstatus' => 'ADDITIONAL',
             'orderdetail' => $inputs['orderdetail'] ?? "",
@@ -509,7 +376,6 @@ class OrderRepository
   public static function saveDetailOrder($respon, $id, $details, $loginid)
   {
     $idHeader = $id != null ? $id : $respon['id'];
-    // dd($details);
     $detRow = "";
     try{
       foreach ($details as $dtl){
@@ -517,14 +383,15 @@ class OrderRepository
           if($dtl->odqty > 0){
             $detRow = OrderDetail::create([
               'odorderid' => $idHeader,
-              'odmenuid' => $dtl->odmenuid,
+              'odshowcaseid' => $dtl->odshowcaseid,
+              'odtype' => $dtl->odtype,
+              'odproductid' => $dtl->odproductid,
               'odqty' => $dtl->odqty,
               'odprice' => $dtl->odprice,
               'odtotalprice' => ($dtl->odprice * $dtl->odqty),
               'odpriceraw' => $dtl->odpriceraw,
               'odtotalpriceraw' => ($dtl->odpriceraw * $dtl->odqty),
               'odremark' => $dtl->odremark,
-              'oddelivered' => '0',
               'odindex' => $dtl->index,
               'odispromo' => isset($dtl->odpromoid) ? '1' : '0',
               'odpromoid' => $dtl->odpromoid ?? null,
@@ -532,19 +399,15 @@ class OrderRepository
               'odcreatedat' => now()->toDateTimeString(),
               'odcreatedby' => $loginid
             ]);
-  
-              $updStatus = Order::where('orderactive', '1')
-              ->where('id', $idHeader)
-              ->update([
-                'orderstatus' => 'ADDITIONAL'
-              ]);
           }
         } else {
           $detRow = OrderDetail::where('odactive', '1')
             ->where('id', $dtl->id);
           if($dtl->odqty > 0){
             $detRow->update([
-              'odmenuid' => $dtl->odmenuid,
+              'odproductid' => $dtl->odproductid,
+              'odshowcaseid' => $dtl->odshowcaseid,
+              'odtype' => $dtl->odtype,
               'odqty' => $dtl->odqty,
               'odprice' => $dtl->odprice,
               'odtotalprice' => ($dtl->odprice * $dtl->odqty),
@@ -559,7 +422,9 @@ class OrderRepository
             ]);
           }else{
             $detRow->update([
-              'odmenuid' => $dtl->odmenuid,
+              'odproductid' => $dtl->odproductid,
+              'odshowcaseid' => $dtl->odshowcaseid,
+              'odtype' => $dtl->odtype,
               'odqty' => $dtl->odqty,
               'odprice' => $dtl->odprice,
               'odtotalprice' => ($dtl->odprice * $dtl->odqty),
@@ -577,21 +442,9 @@ class OrderRepository
         }
       }
 
-      $doubleCek = OrderDetail::where('odactive', '1')
-        ->where('odorderid', $idHeader)
-        ->where('oddelivered', '0')
-        ->first();
-      if($doubleCek == null){
-        Order::where('orderactive', '1')
-          ->where('id', $idHeader)
-          ->where('orderpaid', '0')
-          ->update([
-            'orderstatus' => 'COMPLETED'
-          ]);
-      }
-
       $respon['success'] = true;
     }catch(\Exception $e){
+      dd($e);
       $eMsg = $e->getMessage() ?? "NOT_RECORDED";
       Log::channel('errorKape')->error("OrderDetailSave_" . trim($eMsg));
       throw new Exception('rollbacked');
@@ -609,7 +462,6 @@ class OrderRepository
     $ui->odmenuid = $db->odmenuid ?? null;
     $ui->odmenutext = $db->odmenutext ?? null;
     $ui->odmenutype = $db->odmenutype ?? null;
-    $ui->oddelivered = $db->oddelivered ?? false;
     $ui->odqty = $db->odqty ?? null;
     $ui->odprice = $db->odprice ?? "";
     $ui->odtotalprice = $db->odtotalprice ?? "";
@@ -680,41 +532,6 @@ class OrderRepository
     return $invoice;
   }
 
-  public static function deliver($respon, $id, $idSub, $loginid)
-  {
-    try{
-      DB::beginTransaction();
-      $data = OrderDetail::where('id', $idSub)
-        ->where('odorderid', $id)
-        ->where('oddelivered', '0')
-        ->where('odactive', '1');
-
-      $upd = $data->update([
-        'oddelivered' => '1',
-        'odmodifiedby' => $loginid,
-        'odmodifiedat' => now()->toDateTimeString()
-      ]);
-
-      $cekDelivered = OrderDetail::where('oddelivered', '0')->where('odactive', '1')->where('odorderid', $id)->first();
-      if($cekDelivered == null){
-        $updH = Order::where('orderactive', '1')
-          ->where('id', $id)->first();
-        $headerUpdated = $updH->update(['orderstatus' => 'COMPLETED']);
-      }
-
-      DB::commit();
-      $respon['status'] = 'success';
-      array_push($respon['messages'], 'Menu sudah diantar');
-    }catch(\Exception $e){
-      $eMsg = $e->getMessage() ?? "NOT_RECORDED";
-      Log::channel('errorKape')->error("OrderDeliver_" . trim($eMsg));
-      $respon['status'] = 'error';
-      array_push($respon['messages'], 'Kesalahan! Tidak dapat memproses.');
-    }
-    
-    return $respon;
-  }
-
   public static function delete($respon, $id, $loginid)
   {
     try{
@@ -725,8 +542,9 @@ class OrderRepository
       $datasub = OrderDetail::where('odactive', '1')
         ->where('odorderid', $id);
       
-      $ceksub = $datasub->where('oddelivered', '1')->first();
-      if($ceksub != null)
+      $ceksub = $data->whereIn('orderstatus', ["DRAFT"])->first();
+
+      if($ceksub == null)
         throw new Exception('subDelivered');
 
       $upd = $datasub->update([
@@ -754,80 +572,59 @@ class OrderRepository
       DB::rollback();
       $respon['status'] = 'error';
       if ($e->getMessage() === 'subDelivered') 
-        $ext = "Tidak dapat hapus Pesanan yang sudah diantar.";
+        $ext = "Tidak dapat hapus Pesanan sudah dibayar.";
       array_push($respon['messages'], 'Kesalahan!' . $ext);
     }
  
     return $respon;
   }
 
-  public static function deleteMenuOrder($respon, $id, $subId, $loginid)
-  {
-    $data = OrderDetail::where('odactive', '1')
-      ->where('odorderid', $id)
-      ->where('id', $subId)
-      ->first();
-
-    $cekDelete = false;
-
-    if ($data != null){
-      $data->update([
-        'odactive' => '0',
-        'odmodifiedat' => now()->toDateTimeString(),
-        'odmodifiedby' => $loginid
-      ]);
-
-      //Update Harga
-      $getTotalPrice = OrderDetail::where('odactive', '1') 
-        ->where('odorderid', $id)
-        ->sum('odtotalprice');
-      $updH = Order::where('orderactive', '1')
-        ->where('id', $id)
-        ->update(['orderprice' => $getTotalPrice]);
-
-      $cekDelivered = OrderDetail::where('oddelivered', '0')->where('odactive', '1')->where('odorderid', $id)->first();
-      if($cekDelivered == null){
-        $updH = Order::where('orderactive', '1')
-          ->where('id', $id)
-          ->update(['orderstatus' => 'COMPLETED']);
-      }
-
-      $cekDelete = true;
-    }
-
-    $respon['status'] = $data != null && $cekDelete ? 'success': 'error';
-    $data != null && $cekDelete
-      ? array_push($respon['messages'], 'Menu Pesanan Berhasil Dihapus.') 
-      : array_push($respon['messages'], 'Menu Pesanan Tidak Ditemukan');
-    
-    return $respon;
-  }
-
   public static function void($respon, $id, $loginid, $inputs)
   {
-    $data = Order::where('orderactive', '1')
+    try{
+      DB::beginTransaction();
+      $data = Order::where('orderactive', '1')
       ->where('id', $id)
       ->first();
 
-    $cekDelete = false;
-    if ($data != null){
-      $data->update([
-        'ordervoidreason' => $inputs['ordervoidreason'] ,
-        'orderstatus' => 'VOIDED',
-        'ordervoid' => '1',
-        'ordermodifiedby' => $loginid,
-        'ordermodifiedat' => now()->toDateTimeString(),
-        'ordervoidedby' => $loginid,
-        'ordervoidedat' => now()->toDateTimeString()
-      ]);       
-      $cekDelete = true;
+      if ($data != null){
+        if($inputs['cek']){
+          $idEx = Expense::create([
+            'expensecode' => "EXES".time(),
+            'expensename' => "Pembatalan Order ".$data->orderinvoice,
+            'expenseprice' => $data->orderdp ?? $data->orderprice - ($data->orderdiscountprice ?? "0"),
+            'expensedate' => now()->toDateTimeString(),
+            'expensedetail' => $inputs['ordervoidreason'],
+            'expenseexecutedby' => $loginid,
+            'expenseexecutedat' => now()->toDateTimeString(),
+            'expenseactive' => '1',
+            'expensecreatedat' => now()->toDateTimeString(),
+            'expensecreatedby' => $loginid
+          ])->id;
+        }
+        $data->update([
+          'ordervoidreason' => $inputs['ordervoidreason'] ,
+          'orderstatus' => 'VOIDED',
+          'orderrefundid' => $idEx??null,
+          'ordervoid' => '1',
+          'ordermodifiedby' => $loginid,
+          'ordermodifiedat' => now()->toDateTimeString(),
+          'ordervoidedby' => $loginid,
+          'ordervoidedat' => now()->toDateTimeString()
+        ]);
+      }       
+
+      DB::commit();
       $respon['status'] = 'success';
       array_push($respon['messages'], 'Pesanan Dibatalkan');
-    }else{
+    }catch(\Exception $e){
+      $eMsg = $e->getMessage() ?? "NOT_RECORDED";
+      Log::channel('errorKape')->error("OrderDelete_" . trim($eMsg));
+      DB::rollback();
       $respon['status'] = 'error';
       array_push($respon['messages'], 'Kesalahan');
     }
-    
+  
     return $respon;
   }
 
@@ -837,33 +634,69 @@ class OrderRepository
       ->where('id', $id)
       ->first();
 
-    $datasub = OrderDetail::where('odactive', '1')->where('odorderid', $id);
-
-    $otype = Order::where('orderactive', '1')->where('id', $id)->where('ordertype', 'TAKEAWAY')->first();
-
     $cekDelete = false;
     if ($data != null){
       $data->update([
         'orderpaymentmethod' => $inputs['orderpaymentmethod'],
         'orderpaidprice' => $inputs['orderpaidprice'],
+        'ordercustname' => $inputs['ordercustname'],
         'orderdiscountprice' => $inputs['orderdiscountprice'],
-        'orderstatus' => 'PAID',
-        'orderpaid' => '1',
-        'orderpaidby' => $loginid,
-        'orderpaidat' => now()->toDateTimeString(),
+        'orderstatus' => $inputs['orderstatus'],
+        'orderestdate' => $inputs['orderestdate']??null,
+        'orderdp' => $inputs['orderdp']??null,     
         'ordermodifiedby' => $loginid,
         'ordermodifiedat' => now()->toDateTimeString()
       ]);
-      if ($otype != null){
-        $datasub->update([
-          'oddelivered' => '1',
-          'odmodifiedat' => now()->toDateTimeString(),
-          'odmodifiedby' => $loginid
+      if ($inputs['orderpaidprice']){
+        $data->update([
+          'orderstatus' => 'PAID',
+          'orderpaid' => '1',
+          'orderpaidby' => $loginid,
+          'orderpaidat' => now()->toDateTimeString(),
         ]);
+        $respon['status'] = 'success';
+        array_push($respon['messages'], 'Pesanan Dibayar Lunas');
+      }else{
+        $respon['status'] = 'success';
+        array_push($respon['messages'], 'Pesanan Dibayar Dimuka');
+      }
+      if ($inputs['orderstatus'] == "COMPLETED"){
+        $data->update([
+          'orderremainingpaid' => $inputs['orderremainingpaid']??null,
+          'orderstatus' => 'COMPLETED',
+          'ordercompletedby' => $loginid,
+          'ordercompleteddate' => now()->toDateTimeString()
+        ]);
+        $respon['status'] = 'success';
+        array_push($respon['messages'], 'Pesanan Diambil');
       }       
       $cekDelete = true;
-      $respon['status'] = 'success';
-      array_push($respon['messages'], 'Pesanan Dibayar');
+
+    }else{
+      $respon['status'] = 'error';
+      array_push($respon['messages'], 'Kesalahan');
+    }
+    return $respon;
+  }
+
+  public static function complete($respon, $id, $loginid)
+  {
+    $data = Order::where('orderactive', '1')
+      ->where('id', $id)
+      ->first();
+
+    $cekDelete = false;
+    if ($data != null){
+      $data->update([
+        'orderstatus' => 'COMPLETED',
+        'ordercompletedby' => $loginid,
+        'ordercompleteddate' => now()->toDateTimeString()
+      ]);
+        $respon['status'] = 'success';
+        array_push($respon['messages'], 'Pesanan Diambil');
+      
+      $cekDelete = true;
+
     }else{
       $respon['status'] = 'error';
       array_push($respon['messages'], 'Kesalahan');
@@ -915,48 +748,43 @@ class OrderRepository
   {
     $dataOrder = new \StdClass();
     $data = Order::where('orderactive', '1')->where('orders.id', $id)->first();
-      if($data->orderboardid == null){
         $order = $data->where('orders.id', $id)
         ->select(
           'orderinvoice',
+          'ordercustname',
           'orderprice',
           'orderdate',   
           'orderpaidprice', 
           'orderpaymentmethod',
-          'orderdiscountprice' 
+          'orderdiscountprice',
+          'orderdp',
+          'orderestdate',
+          'ordercompleteddate',
+          'orderremainingpaid',
+          DB::raw("CASE WHEN orders.orderstatus = 'DP' THEN 'DP' WHEN orders.orderstatus = 'COMPLETED' THEN 'komplit' WHEN orders.orderstatus = 'PAID' THEN 'LUNAS' END as orderstatuscase"), 
         )->first();
-        $order->boardnumber = null;
-        $order->ordertype = 'Bungkus';
-      }else{
-        $order = $data->join('boards', 'boards.id', 'orderboardid')  
-        ->where('orders.id', $id)    
-        ->select(
-          'orderinvoice',
-          'orderprice',
-          'orderdate',
-          'orderpaidprice', 
-          'orderpaymentmethod', 
-          DB::raw("case when ordertype = 'DINEIN' then 'Makan Ditempat' else 'Bungkus' end as ordertype"),
-          DB::raw("'No.' ||boardnumber || ' - Lantai ' || boardfloor as boardnumber"),
-          'orderdiscountprice' 
-        )->first();
-      }
+      
       // dd($order);
     if($order != null){
       $dataOrder->invoice = $order->orderinvoice;
       $dataOrder->price = $order->orderprice;
+      $dataOrder->customer = $order->ordercustname;
+      $dataOrder->dp = $order->orderdp;
       $dataOrder->paidprice = $order->orderpaidprice;
       $dataOrder->discountprice = $order->orderdiscountprice;
       $dataOrder->payment = $order->orderpaymentmethod;
+      $dataOrder->status = $order->orderstatuscase;
+      $dataOrder->repaid = $order->orderremainingpaid;
       $dataOrder->date = Carbon::parse($order->orderdate)->format('d/m/Y H:i') ?? null;
-      $dataOrder->orderType = $order->ordertype;
-      $dataOrder->noTable = $order->boardnumber;
+      $dataOrder->estdate = $order->orderestdate ? Carbon::parse($order->orderestdate)->format('d/m/Y') : null;
+      $dataOrder->comdate = $order->ordercompleteddate ? Carbon::parse($order->ordercompleteddate)->format('d/m/Y H:i') : null;
+
       $dataOrder->detail = Array();
 
       $subs = self::getSubOrder($id);
       foreach($subs as $sub){
         $temp = new \StdClass();
-        $temp->text = $sub->odmenutext;
+        $temp->text = $sub->odproducttext;
         $temp->qty = $sub->odqty;
         $temp->price = $sub->odprice;
         $temp->totalPrice = $sub->odtotalprice;
@@ -964,10 +792,94 @@ class OrderRepository
         $temp->totalPriceraw = $sub->odtotalpriceraw;
         $temp->promodiscount = $sub->promodiscount;
         $temp->promo = $sub->odispromo;
+        $temp->code = $sub->showcasecode;
   
         array_push($dataOrder->detail, $temp);
       }
     }
     return $dataOrder;
+  }
+
+  private static function getNotif()
+  {
+    return DB::table('orderdetail as od')
+      ->join('orders as o', 'o.id', 'od.odorderid')
+      ->join('products as p', 'p.id', 'odproductid')
+      ->where('orderactive', '1')
+      ->where('odactive', '1')
+      ->whereNull('ordervoid')
+      ->where('odtype', 'PO')
+      ->whereNull('ordercompleteddate')
+      ->whereNotIn('orderstatus', Array('DRAFT', 'COMPLETED', 'VOIDED'));
+  }
+
+  public static function notifCount($respon)
+  {
+    $count = self::getNotif()
+      ->select(DB::raw('true'))
+      ->first();
+    
+    $respon['status'] = $count != null ? 'success' : 'error';
+
+    return $respon;
+  }
+
+  public static function notifTopbar($respon)
+  {
+    $data = self::dashboardPO(2);
+    $respon['status'] = count($data) > 0 ? 'success' : 'error';
+    $respon['data'] = count($data) > 0 ? $data  : [];
+
+    return $respon;
+  }
+
+  public static function dashboardCount()
+  {
+    $qOrder = Order::where('orderactive', '1')
+      ->whereNotIn('orderstatus', Array('DRAFT', 'VOIDED'))
+      ->count();
+
+    $qDraft = Order::where('orderactive', '1')
+      ->where('orderstatus', 'DRAFT')
+      ->count();
+    
+    $qExpense = DB::table('expenses as e')
+      ->where('expenseactive', '1')
+      ->whereNotNull('expenseexecutedat')
+      ->count();
+    
+    $qPO = DB::table('orderdetail as od')
+      ->join('orders as o', 'o.id', 'od.odorderid')
+      ->whereNotIn('orderstatus', Array('DRAFT', 'VOIDED'))
+      ->where('orderactive', '1')
+      ->where('odactive', '1')
+      ->whereNull('ordercompleteddate')
+      ->where('odtype', 'PO')
+      ->sum('odqty');
+    
+    $qRstock = DB::table('product_stock')
+      ->sum('qty');
+
+    return Array(
+      'orderCount' => $qOrder,
+      'orderDraft' => $qDraft,
+      'expenseCount' => $qExpense,
+      'preOrderSum' => $qPO,
+      'stockSum' => $qRstock
+    );
+  }
+
+  public static function dashboardPO($limit = 5)
+  {
+    return self::getNotif()->select(
+        'o.id',
+        'ordercustname',
+        'productname',
+        DB::raw("to_char(orderestdate, 'dd-mm-yyyy') as estdate"),
+        'odqty',
+        'odremark'
+      )
+      ->orderBy('orderestdate', 'ASC') // ORDER BY ESTDATE ASC
+      ->limit($limit)->get();
   }
 }

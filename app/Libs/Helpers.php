@@ -2,6 +2,8 @@
 namespace App\Libs;
 
 use Carbon\Carbon;
+use Image;
+use File;
 
 class Helpers
 {
@@ -15,10 +17,20 @@ class Helpers
     try {
       $file = isset($inputs['file']) ? $inputs['file'] : null;
       if($file != null){
-        $file->path = base_path() . $subFolder;
+        $file->path = storage_path('app/public/') . $subFolder;
         $file->newName = time()."_".$file->getClientOriginalName();
         $file->originalName = explode('.',$file->getClientOriginalName())[0];
-        $file->move($file->path ,$file->newName);
+        // $file->move($file->path ,$file->newName);
+        Image::make($file)->save($file->path . '/' . $file->newName);
+
+        //buat folder tumbnail
+        $tumbPath = $file->path . 'thumbnail/';
+        if (!File::isDirectory($tumbPath)) {
+          File::makeDirectory($tumbPath);
+        }
+
+        $img = Image::make($file);
+        $img->resize(160, 160)->save($tumbPath . $file->newName);
       }
     } catch (Exception $e){
         // supress
@@ -70,28 +82,33 @@ class Helpers
     // Custom filter.
     $filter->filter = (object)$request->input('filter');
 
+    // Columns.
+    $columns = $request->input('columns') == null ? array() : $request->input('columns');
+        
+    // Filter columns.
+    $filter->filterColumn = $request->input('filterColumn') ?? null;
+    $filter->filterText = $request->input('filterText') ?? null;
+    $filter->filterStatus = $request->input('filterStatus') ?? null;
+
     // Filter Date
     $tempDate = new \StdClass;
     if($request->input('filterDate')){
       $filterDate = explode(" to ",$request->input('filterDate'));
       $tempDate->from = $filterDate[0];
-      $tempDate->to = $filterDate[1];
+      $tempDate->to = $filterDate[1] ?? $filterDate[0];
     // } else if($request->input('filterText') && $request->input('filterColumn')){
     //   $tempDate = null;
+    } else if($filter->filterStatus || $filter->filterColumn){
+      //surpass
+      $tempDate = null;
     } else {
-      $tempDate->from = Carbon::now()->subDays(7)->format('d-m-Y');
-      $tempDate->to = Carbon::now()->format('d-m-Y');
+      $tempDate->from = Carbon::now()->subDays(30)->format('d-m-Y h:m');
+      $tempDate->to = Carbon::now()->format('d-m-Y h:m');
     }
     $filter->filterDate = $tempDate;
+    
     // Global filter.
     // $filter->filterTexts = preg_split('/(-|\/)/', $request->input('search')['value']);
-
-    // Columns.
-    $columns = $request->input('columns') == null ? array() : $request->input('columns');
-    
-    // Filter columns.
-    $filter->filterColumn = $request->input('filterColumn') ?? null;
-    $filter->filterText = $request->input('filterText') ?? null;
     
     // Sort columns.
     $filter->sortColumns = array();
@@ -108,7 +125,6 @@ class Helpers
     // Paging.
     $filter->pageLimit = $request->input('length') ?: 1;
     $filter->pageOffset = $request->input('start') ?: 0;
-    
     // Log::info(json_encode($filter));
     return $filter;
   }

@@ -38,15 +38,22 @@ class UserRepository
     $respon['data'] = self::getFields($data);
 
     if($id){
-      $respon['data'] = User::where('useractive', '1')
-      ->where('id', $id)
-      ->select(
-        'id',
-        'userfullname',
-        'username',
-        'usercontact',
-        'useraddress',
-        DB::raw("to_char(userjoindate, 'dd-mm-yyyy') as userjoindate"))
+      $respon['data'] = User::with(['createdBy','modifiedBy'])->where('users.useractive', '1')
+      ->where('users.id', $id)
+      // ->leftJoin('users as cr', 'users.id', '=', 'cr.usercreatedby')
+      // ->leftJoin('users as mod', 'users.id', '=', 'mod.usermodifiedby')
+      // ->select(
+      //   'users.id',
+      //   'userfullname',
+      //   'username',
+      //   'usercontact',
+      //   'useraddress',
+      //   DB::raw("to_char(users.userjoindate, 'dd-mm-yyyy') as userjoindate"),
+      //   DB::raw("to_char(users.usercreatedat, 'dd-mm-yyyy hh:mm') as usercreatedat"),
+        // 'cr.username as usercreatedbys',
+        // DB::raw("to_char(users.usermodifiedat, 'dd-mm-yyyy hh:mm') as usermodifiedat"),
+        // 'mod.username as usermodifiedbys',
+        // )
       ->first();
 
       if($respon['data'] == null){

@@ -118,8 +118,9 @@
         const url = "{{ url('promo/hapus') . '/' }}" + rowData.id;
         const title = 'Hapus Data Promo';
         const pesan = 'Apakah anda yakin ingin menghapus data ini?'
+        const batal = 'Data Promo batal dihapus'
         //console.log(rowData, url)
-        gridDeleteRow(url, title, pesan, grid);
+        gridDeleteRow(url, title, pesan, batal, grid);
       });
     });
   </script>

@@ -70,7 +70,7 @@
 			<div class="overlay"></div>
       <input type='hidden' id='bukalaci' value="{{url('/open/drawerauth')}}">
       <input type='hidden' id='ping' value="{{url('/cek/printer')}}">
-      <input type='hidden' id='board' value="{{url('/order/meja/view')}}">
+      <input type='hidden' id='board' value="{{url('/')}}">
 			<div class="search-overlay"></div>
 			<!--  BEGIN CONTENT PART  -->
 			<div id="content" class="main-content">
@@ -173,23 +173,34 @@
     <script src="{{ url('/') }}/plugins/sweetalerts/sweetalert2.min.js"></script>
     <script src="{{ url('/') }}/plugins/flatpickr/flatpickr.js"></script>
     <script src="{{ url('/') }}/plugins/flatpickr/custom-flatpickr.js"></script>
-    <script>
-      const pMaster = getIPWS();
-      let ws = new WebSocket('ws://'+ pMaster +':8910/kapews');
-      ws.onopen = function(e) {
-        $('#notiferror').addClass('d-none')
-        localStorage.setItem("notif", "1");
-        ws.send('Ok')
-      }
-      ws.onerror = function(e) {
-        localStorage.removeItem("notif");
-        $('#notiferror').removeClass('d-none')
-      }
-      $(document).ready(function (){
-        feather.replace();
-      })
-    </script>
     <script src="{{ url('/') }}/assets/js/custom.js"></script>
+    <script>
+      $.get("{{ url('notif/icon') }}", function( data ) {
+        // $( ".result" ).html( data );
+        if(data.status == 'success'){
+          $('.counter').removeClass('d-none')
+        } else {
+          $('.counter').addClass('d-none')
+          $('#notifDropDown').remove()
+        }
+      });
+      
+      $.get("{{ url('notif/get') }}", function( data ) {
+        if(data.status == 'success'){
+          $.each( data.data, function( key, value ) {
+            var url = "{{ url('/') }}/order/detail/" + value.id;
+            var content = '<div class="dropdown-item"><a href="'+ url +'"><div class="media server-log"><div class="media-body"><div class="data-info "><h6 class="">'+ value.ordercustname + ' / Pesanan: ' + value.productname +'</h6><p class="">'+ value.estdate +'"</p></div></div></div></a></div>'
+            
+            $('.notification-scroll').prepend(content);
+          })
+        }
+      });
+    </script>
+    <script>
+      $(document).ready(function() {
+        App.init();
+      });
+    </script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
     <script src="{{ url('/') }}/plugins/table/datatable/datatables.js"></script>
     <script src="{{ url('/') }}/plugins/rowgroup/dataTables.rowGroup.min.js"></script>

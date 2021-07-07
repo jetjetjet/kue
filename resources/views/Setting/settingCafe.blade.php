@@ -43,7 +43,7 @@
                 Alamat harus diisi!
               </div>
             </div>
-            <div class="form-group mb-2">
+            <!-- <div class="form-group mb-2">
               <label for="HeaderStruk">Header Struk Pelayan</label>
               <textarea class="form-control" name="HeaderStruk" required>{{ old('HeaderStruk')}}</textarea>
               <div class="invalid-feedback">
@@ -56,7 +56,7 @@
               <div class="invalid-feedback">
                 Format Akhir Struk harus diisi!
               </div>
-            </div>
+            </div> -->
             <div class="form-group mb-2">
               <label for="HeaderStruk">Header Struk Kasir</label>
               <textarea class="form-control" name="HeaderStrukKasir" required>{{ old('HeaderStrukKasir')}}</textarea>
@@ -82,13 +82,13 @@
                 Ip Printer harus diisi!
               </div>
             </div>
-            <div class="form-group mb-2">
+            <!-- <div class="form-group mb-2">
               <label for="IpServer">Ip Server</label>
               <input type="text" class="form-control" value="{{ old('IpServer')}}" name="IpServer" id="IpServer" placeholder="0.0.0.0" required>
               <div class="invalid-feedback">
                 Ip Server harus diisi!
               </div>
-            </div>
+            </div> -->
             <div class="form-group mb-2">
               <label for="IpPrinter">Password Laci</label>
               <input type="password" class="form-control" value="{{ old('PasswordLaci')}}" name="PasswordLaci" id="PasswordLaciform" required>

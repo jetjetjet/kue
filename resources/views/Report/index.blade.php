@@ -12,94 +12,122 @@
 
 @section('content-form')
   <div class="widget-content widget-content-area br-6">
+    <div>
     <form id="formsub" class="needs-validation" method="get" novalidate action="{{ url('/laporan/') }}">
-      <div class="form-row">     
-        <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
-        <div class="col-md-6 mb-1">
-          <h4>Tanggal Awal</h4>
-          <input id="start" value="{{request('startdate')}}" name="startdate" class="form-control flatpickr flatpickr-input date">
+      <div class="form-row">
+        <div class="col-md-4 mb-1">
+          <h4>Periode</h4>
+          <input id="start" value="{{request('startdate')}}" name="startdate" class="form-control flatpickr flatpickr-input date" required>
         </div>
-        <div class="col-md-6 mb-1">
-          <h4>Tanggal Akhir</h4>
-          <input id="end" value="{{request('enddate')}}" name="enddate" class="form-control flatpickr flatpickr-input date">
-        </div>  
-        <div class="col-md-6 mb-1">
-          <h4>Karyawan</h4>
-          <select id='user' class="form-control select2" name="user">
-            <option value="Semua">Semua</option>
-            @foreach($user as $u)
-              <option value="{{$u->id}}" {{ request('user') == $u->id ? 'selected' : ''}}>{{$u->username}}</option>
-            @endforeach
-          </select>
-          <input type="hidden" id='domkar' name="reqkar">
-        </div>
-        <div class="col-md-6 mb-1">
-          <h4>Status</h4>
+        <div class="col-md-4 mb-1">
+          <h4>Status Pemasukan</h4>
           <select id='status' class="form-control" name="status">
-            <option value="Semua">Semua</option>
-              <option value="PAID" {{ request('status') == 'PAID' ? 'selected' : ''}}>Lunas</option>
-              <option value="Diproses" {{ request('status') == 'Diproses' ? 'selected' : ''}}>Diproses</option>
-              <option value="VOIDED" {{ request('status') == 'VOIDED' ? 'selected' : ''}}>Dibatalkan</option>
+            <option value="">Selesai</option>
+            <option value="DRAFT" {{ request('status') == 'DRAFT' ? 'selected' : ''}}>Draf</option>
+            <option value="DP" {{ request('status') == 'DP' ? 'selected' : ''}}>DP</option>
+            <option value="PAID" {{ request('status') == 'PAID' ? 'selected' : ''}}>Lunas</option>
+            {{-- <option value="COMPLETED" {{ request('status') == 'COMPLETED' ? 'selected' : ''}}>Selesai</option> --}}
+            <option value="VOIDED" {{ request('status') == 'VOIDED' ? 'selected' : ''}}>Dibatalkan</option>
+          </select>
+        </div>
+        <div class="col-md-4 mb-1">
+          <h4>Tampilkan Pengeluaran</h4>
+          <select id='status' class="form-control" name="expense">
+            <option value="1">Ya</option>
+            <option value="0" {{ request('expense') == '0' ? 'selected' : ''}}>Tidak</option>
           </select>
         </div> 
       </div>
       <div class="float-right mb-3">
-        <button class="btn btn-primary mt-2" id="sub" type="submit">Cari</button>
+        <a class="btn btn-success mt-2" id="print">Cetak</a>
+        <a class="btn btn-primary mt-2" id="search">Cari</a>
       </div>
     </form>
-  @if($data->sub['total'] != 0)
+  </div>
+  @if(isset($data->grid))
     <div class="table-responsive mb-4 mt-4">
       <hr>
-      <h3 style="color:#1b55e2">Hasil Pencarian</h3>
+      <h4 style="color:#1b55e2">{{ $data->label }}</h4>
       <table id="grid" class="table table-hover" style="width:100%">
         <thead>
           <tr>
             <th>No</th>
-            <th>Tanggal</th>
-            <th>No. Invoice</th>
-            <th>Tipe Pesanan</th>
-            <th>Harga</th>
+            <th>Jenis Transaksi</th>
+            <th>#</th>
+            <th>Kode Transaksi</th>
+            <th>Nama Pelanggan</th>
+            <th>Tgl. Transaksi</th>
+            <th>Debit</th>
+            <th>Discount</th>
+            <th>Kredit</th>
             <th>Status</th>
-            <th>Karyawan</th>
+            <th>Oleh</th>
           </tr>
         </thead>
         <tbody>
-          @foreach($data as $key=>$row)
+          @foreach($data->grid as $key=>$row)
+          <?php
+            $link = $row->trxtype == 'Pemasukan' 
+              ? '/order/detail'
+              : '/pengeluaran/detail';
+          ?>
           <tr>
             <td>{{$key + 1}}</td>
-            <td>{{$row['tanggal']}}</td>
-            <td><a href="{{url('/order/detail')}}/{{$row['id']}}">{{$row['orderinvoice']}}</a></td>
-            <td>{{$row['ordertypetext']}}</td>
-            @if(isset($row['orderdiscountprice']))
-              <td>{{number_format($row['price'])}}<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign p-1 br-6 mb-1"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path><title>Potongan Harga {{number_format($row->orderdiscountprice)}}</title></svg></td>
-            @else 
-              <td>{{number_format($row['price'])}}</td>
-            @endif
-            <td>{{$row['orderstatuscase']}}</td>
-            <td>{{$row['username']}}</td>
+            <td>{{ $row->trxtype }}</td>
+            <td>{{ $row->trxname }}</td>
+            <td><a href="{{ url($link)}}/{{$row->id }}">{{ $row->trxcode }}</a></td>
+            <td>{{ $row->customername }}</td>
+            <td>{{ $row->trxdate }}</td>
+            <td class="text-right">{{ $row->debit == null ? '-' : number_format($row->debit) }}</td>
+            <td class="text-right">{{ $row->discount == null ? '-' : number_format($row->discount) }}</td>
+            <td class="text-right">{{ $row->kredit == null ? '-' : number_format($row->kredit) }}</td>
+            <td><b>{{ $row->trxstatus }}</b></td>
+            <td><b>{{ $row->trxusername }}</b></td>
           </tr>
           @endforeach
         </tbody>
+        @if(isset($data->sum))
+        <?php $sum = $data->sum ?>
         <tfoot>
-          <tr>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th></th>
-            <th class="text-right"><h3>Total : </h3></th>
-            <th><h3><b>{{number_format($data->sub['total'])}}</b></h3></th>
+          <tr class="text-right">
+            <td style="border: 10px solid transparent;" colspan="7"></td>
+            <td><h4> <strong>Total Debit</strong> </h4></td>
+            <td colspan="3"><h4><strong>{{ number_format($sum->total_debit) }}</strong></h4></td>
           </tr>
+          @if($sum->total_discount > 0)
+            <tr class="text-right">
+              <td style="border: 10px solid transparent;" colspan="7"></td>
+              <td><h4> <strong>Total Diskon</strong> </h4></td>
+              <td colspan="3"><h4><strong>{{ number_format($sum->total_discount) }}</strong></h4></td>
+            </tr>
+          @endif
+          <tr class="text-right">
+            <td style="border: 10px solid transparent;" colspan="7"></td>
+            <td><h4> <strong>Total Kredit</strong> </h4></td>
+            <td colspan="3"><h4><strong>{{ number_format($sum->total_kredit) }}</strong></h4></td>
+          </tr>
+          @if($sum->total_debit > 0 && $sum->total_kredit > 1)
+            <tr class="text-right">
+              <td style="border: 10px solid transparent;" colspan="7"></td>
+              <td><h4> <strong>Selisih</strong> </h4></td>
+              <td colspan="3"><h4><strong>{{ number_format($sum->sub_total) }}</strong></h4></td>
+            </tr>
+          @endif
+          @if($sum->total_debit > 0 && $sum->total_kredit < 1)
+            <tr class="text-right">
+              <td style="border: 10px solid transparent;" colspan="7"></td>
+              <td><h4> <strong>Selisih</strong> </h4></td>
+              <td colspan="3"><h4><strong>{{ number_format($sum->total_debit - $sum->total_discount) }}</strong></h4></td>
+            </tr>
+          @endif
         </tfoot>
+        @endif
       </table>
       </div>      
     </div>
     @else
     <div class="table-responsive mb-4 mt-4">
-    <div style="text-align:center;">
-      <h3>Data Kosong</h3>
     </div>
-  </div>
     @endif
   </div>
 @endsection
@@ -107,65 +135,47 @@
 @section('js-form')
   <script>
     $(document).ready(function (){
+      $('#print').click(function (e){
+        $('[name=print]').remove();
+        $('form')
+          .append('<input type="hidden" name="print" value="1" />')
+          .attr('target', '_blank')
+          .submit();
+      });
 
-      $('#user').select2({
-      tags: false,
-      searchInputPlaceholder: 'Search options',
+      $('#search').click(function (e){
+        $('[name=print]').remove();
+        $('form').removeAttr('target').submit();
       });
       
-      flatpickr($('#start'), {
-        dateFormat: "d-m-Y",
+      let fDate = flatpickr($('#start'), {
+        mode: "range",
         altinput: true,
         altformat: "Y-m-d",
-        maxDate: "today",
-        defaultDate: "{{ request('startdate') != null ? request('startdate') : Carbon\Carbon::now()->startOfMonth()->format('d-m-Y') }}",
+        dateFormat: "d-m-Y",
+        defaultDate: [
+          "{{ request('startdate') != null ? request('startdate') : Carbon\Carbon::now()->startOfMonth()->format('d-m-Y') }}",
+          "{{ request('enddate') != null ? request('enddate') : Carbon\Carbon::now()->endOfMonth()->format('d-m-Y')}}"
+        ],
         onChange: function (selectedDates, dateStr, instance) {
-          endPicker.set("minDate", dateStr);
-          $('#end').removeAttr('disabled')
-        }
+          if (selectedDates.length > 1) {
+            let range = instance.formatDate(selectedDates[1], 'U') - instance.formatDate(selectedDates[0], 'U');
+            range = range / 86400;
+
+            if(range > 30)
+            {
+              alert("Maksimal 30 hari!");
+              instance.clear()
+            }
+          }
+        },
+        // defaultDate: ["2016-10-10", "2016-10-20"]
       });
 
-      let endPicker = flatpickr($('#end'), {
-        dateFormat: "d-m-Y",
-        altinput: true,
-        altformat: "Y-m-d",
-        minDate: "{{request('startdate') != null ? request('startdate') : Carbon\Carbon::now()->startOfMonth()->format('d-m-Y') }}",
-        maxDate: "{{Carbon\Carbon::now()->endOfMonth()->format('d-m-Y')}}",
-        defaultDate: "{{ request('enddate') != null ? request('enddate') : Carbon\Carbon::now()->endOfMonth()->format('d-m-Y')}}"
+      $('#grid').DataTable( {
+        dom: '<"row"<"col-md-12" ><"col-md-12"rt> >',
+        paging: false
       });
-
-$('#formsub').on('submit', function(){
-  let us = $( "#user option:selected" ).text();
-  $('#domkar').val(us)
-})
-
-$('#grid').DataTable( {
-            dom: '<"row"<"col-md-12"<"row"<"col-md-6"B> > ><"col-md-12"rt> >',
-            buttons: {
-                buttons: [
-                    { extend: 'copy', text:'Salin', className: 'btn', footer:'true' },
-                    { 
-                      extend: 'print', 
-                      className: 'btn', 
-                      title:"",
-                      text:'PDF/Cetak',
-                      footer:'true',
-                      customize: function ( win ) {
-                        $(win.document.body)
-                          .prepend(
-                              "<br><h2><b>{{session('cafeName')}}</b></h2><hr>"+
-                              "<h2 style='color:#1b55e2'>Laporan Transaksi</h2>"+
-                              "<div class='form-row'>"+
-                              "<div class='col-md-6 float-left'><h4 id='kar'>Karyawan : <b>{{request('reqkar')}}</b></h4></div>"+
-                              "<div class='col-md-6'><h4 class='text-right'>{{request('startdate')}}/{{request('enddate')}}</h4></div>"+
-                              "</div>"
-                          );
-                      }
-                    },
-                ]
-            },
-            paging: false
-        } );
     
     });
   </script>

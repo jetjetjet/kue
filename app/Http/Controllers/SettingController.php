@@ -75,7 +75,7 @@ class SettingController extends Controller
 		if($inputs['settingkey'] == 'logoApp'){
 			$path = '\public\images';
 			$file = Helpers::prepareFile($inputs, $path);
-			$inputs['settingvalue'] = '\images\\' . $file->newName;
+			$inputs['settingvalue'] = '\storage\public\images\\' . $file->newName;
 		}
 		// dd($inputs);
 		$validator = validator::make($inputs, $rules);
@@ -117,9 +117,7 @@ class SettingController extends Controller
 		$rules = array(
 			'NamaApp' => 'required',
 			'Alamat' => 'required',
-			'KodeInvoice' => 'required',
-			'HeaderStruk' => 'required',
-			'FooterStruk' => 'required', 
+			'KodeInvoice' => 'required', 
 			'HeaderStrukKasir' => 'required',
 			'FooterStrukKasir' => 'required', 
 			'IpPrinter' => 'required',
