@@ -77,7 +77,7 @@ class SettingRepository
             continue;
           
           if($key == 'logoApp'){
-            $path = "\images\\";
+            $path = "\storage\images\\";
             $cr = Setting::create([
               'settingcategory' => 'AppLogo',
               'settingkey' => $key,

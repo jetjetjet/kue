@@ -174,7 +174,7 @@ class Cetak
       $printer->text(self::getAsStringkasirtotal("Total ", number_format($data->price), "Rp "));
       if($data->dp && $data->status != 'komplit'){
          $printer->text(self::getAsStringkasirtotal("Uang Muka" , number_format($data->dp), "Rp "));
-         $printer->text(self::getAsStringkasirtotal("Sisa Bayar" , number_format($data->repaid), "Rp "));       
+         $printer->text(self::getAsStringkasirtotal("Sisa Bayar" , number_format($data->price - $data->dp), "Rp "));       
       }else{
         $gTotal = $data->price;
         if($data->discountprice){
