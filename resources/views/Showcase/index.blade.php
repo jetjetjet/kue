@@ -30,7 +30,7 @@
           <select id="filterColumn" class="form-control form-control-sm" style="border-top-left-radius: 0px!important; border-bottom-left-radius: 0px!important;">
             <option value=""></option>
             <option value="productname">{{ trans('fields.productName') }}</option>
-            <option value="showcasecode">{{ trans('fields.code') }} {{ trans('fields.product') }}</option>
+            <option value="showcasecode">{{ trans('fields.productionCode') }}</option>
             <!-- <option value="orderstatus">Meja</option> -->
           </select>
         </div>
@@ -208,6 +208,15 @@
 
       window.location = "{{ url('/showcase/detail') . '/' }}" + rowData.id;
     });
+
+    $('#filterColumn').on('change',function(e){
+        if($(this).val() == ""){
+          $('#filterText').val(null);
+          $('#filterText').attr("disabled", "disabled")
+        } else {
+          $('#filterText').removeAttr("disabled")
+        }
+      });
     
     $('#grid').on('click', 'a.gridDelete', function (e) {
         e.preventDefault();
