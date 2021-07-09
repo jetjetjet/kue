@@ -14,7 +14,6 @@ class DashboardController extends Controller
   {
     $data = new \StdClass();
     $data->thn = Array();
-    $data->count = OrderRepository::dashboardCount();
     $data->PO = OrderRepository::dashboardPO();
     $thn = Carbon::now()->format('Y');
     $crThn = 2021 - $thn;
@@ -60,6 +59,10 @@ class DashboardController extends Controller
       1 => "odcreatedat::date between '". $awal . "'::date and '" . $akhir . "'::date"
     );
     $data['topMenu'] = ProductRepository::topProduct($filterMenu);
+    
+    $filterOrder = Array(1 => "orderdate::date between '". $awal . "'::date and '" . $akhir . "'::date");
+    $filterExpense = Array(1 => "expensedate::date between '". $awal . "'::date and '" . $akhir . "'::date");
+    $data['count'] = OrderRepository::dashboardCount($filterOrder, $filterExpense);
 
     return response()->json($data);
   }

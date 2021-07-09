@@ -34,31 +34,31 @@
 		<div class="tile is-ancestor has-text-centered">
 			<a href="{{ url('/') }}/order/index?status=" class="tile is-parent">
 				<article class="tile is-child box">
-					<p class="title">{{ $data->count['orderCount'] }}</p>
+					<p class="title" id="order"></p>
 					<p class="subtitle">{{ trans('fields.totalTransaction') }}</p>
 				</article>
 			</a>
 			<a href="{{ url('/') }}/order/index?status=DRAFT" class="tile is-parent">
 				<article class="tile is-child box">
-					<p class="title">{{ $data->count['orderDraft'] }}</p>
+					<p class="title" id="draf"></p>
 					<p class="subtitle">{{ trans('fields.totalDraft') }}</p>
 				</article>
 			</a>
 			<a href="{{ url('/') }}/pengeluaran" class="tile is-parent">
 				<article class="tile is-child box">
-					<p class="title">{{ $data->count['expenseCount'] }}</p>
+					<p class="title" id="pengeluaran"></p>
 					<p class="subtitle">Total Pengeluaran</p>
 				</article>
 			</a>
 			<a href="{{ url('/') }}/order/preorder" class="tile is-parent">
 				<article class="tile is-child box">
-					<p class="title">{{ $data->count['preOrderSum'] }}</p>
+					<p class="title" id="preorder"></p>
 					<p class="subtitle">{{ trans('fields.preOrder') }}</p>
 				</article>
 			</a>
 			<a href="{{ url('/') }}/showcase" class="tile is-parent">
 				<article class="tile is-child box">
-					<p class="title">{{ $data->count['stockSum'] }}</p>
+					<p class="title" id="readystock"></p>
 					<p class="subtitle">{{ trans('fields.readyStock') }}</p>
 				</article>
 			</a>
@@ -297,6 +297,12 @@
 					'<td><div class="td-content">'+ formatter.format(val.totalorder) +'</div></td></tr>';
 				tbody.append(tr);
 			})
+
+      $('#order').text(data.count.orderCount)
+      $('#draf').text(data.count.orderDraft)
+      $('#pengeluaran').text(data.count.expenseCount)
+      $('#preorder').text(data.count.preOrderSum)
+      $('#readystock').text(data.count.stockSum)
 		}
 	</script>
 @endsection
