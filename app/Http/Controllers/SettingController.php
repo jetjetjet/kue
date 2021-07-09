@@ -73,7 +73,7 @@ class SettingController extends Controller
 		}
 
 		if($inputs['settingkey'] == 'logoApp'){
-			$path = '\images';
+			$path = '\images\\';
 			$file = Helpers::prepareFile($inputs, $path);
 			$inputs['settingvalue'] = '\storage\images\\' . $file->newName;
 		}
@@ -126,7 +126,7 @@ class SettingController extends Controller
 		);
 
 		$inputs = $request->all();
-		$inputs['logoApp'] = Helpers::prepareFile($inputs, '/images');
+		$inputs['logoApp'] = Helpers::prepareFile($inputs, '/images//');
 		$inputs['PasswordLaci'] = Hash::make($inputs['PasswordLaci']);
 		$validator = validator::make($inputs, $rules);
 
