@@ -45,9 +45,9 @@ class ShowcaseRepository
     if (!empty($filter->filterStatus)){
       // if (empty($filterText)) continue;
       $trimmedFilter= trim($filter->filterStatus);
-      $fText;
+      $fText = null;
       if($trimmedFilter == 'ReadyStock'){
-        $fText = 'showcaseexpiredat is null and ps.qty > 1';
+        $fText = 'showcaseexpiredat is null and ps.qty > 0';
       } else if ( $trimmedFilter == 'Kadaluarsa'){
         $fText = 'showcaseexpiredat is not null';
       } else if($trimmedFilter == 'Habis'){
