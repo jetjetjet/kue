@@ -14,7 +14,7 @@
   $odtype = $sub->odtype ?? null;
   $showcaseCode = $sub->showcaseCode ?? null;
   $orderPaid = $data->orderpaid;
-// dd($sub);
+  $stockqty = $sub->stockqty ?? null;
 ?>
 
 <tr class="subitem">
@@ -30,8 +30,8 @@
     <input type="hidden" name="dtl[{{ $rowIndex }}][odshowcasecode]" value="{{$odshowcasecode}}" />
     @if(($data->orderstatus != 'DRAFT' && !isset($rowIndex)) ||  Perm::can(['order_deleteDetail']) )
       <select id="productType" class="" name="dtl[{{ $rowIndex }}][odtype]" deliver-row>
-        <option value="READYSTOCK">{{ trans('fields.readyStock') }}</option>
-        <option value="PO">{{ trans('fields.preOrder') }}</option>
+        <option value="READYSTOCK" {{ $odtype == 'READYSTOCK' ? 'selected' : ''}}>{{ trans('fields.readyStock') }}</option>
+        <option value="PO" {{ $odtype == 'PO' ? 'selected' : ''}}>{{ trans('fields.preOrder') }}</option>
       </select>
     @else
       <p id="dtl[{{ $rowIndex }}][odshowcase]">{{ $odtype }}</p>
@@ -47,7 +47,7 @@
   <td class="text-center">
     @if(($data->orderstatus != 'DRAFT' && !isset($rowIndex)) ||  Perm::can(['order_deleteDetail']) )
       <span class="input-number-decrement" counter-down>–</span>
-        <input type="number" class="input-number subQty" min="1" name="dtl[{{ $rowIndex }}][odqty]" value="{{$productQty}}" sub-input >
+        <input type="number" class="input-number subQty" min="1" max="{{ $stockqty != null  && $odtype == 'READYSTOCK' ? $stockqty : '1000' }}" name="dtl[{{ $rowIndex }}][odqty]" value="{{$productQty}}" sub-input >
       <span class="input-number-increment" counter-up>+</span> 
     @else
       <input type="hidden" name="dtl[{{ $rowIndex }}][odqty]" value="{{$productQty}}">
