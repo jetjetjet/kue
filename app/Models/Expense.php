@@ -32,6 +32,7 @@ class Expense extends Model
       $model->expensedate = null;
       $model->expenseexecutedby = null;
       $model->expenseexecutedby = null;
+      $model->proses = null;
   
       return $model;
     }
