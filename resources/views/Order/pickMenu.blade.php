@@ -517,15 +517,13 @@
     
 
     $( ".subQty" ).change(function() {
-        var value = $(this).val();
-        alert(value)
+      let value = $(this).val();
+      
+      if ((value !== '') && (value.indexOf('.') === -1)) {
+        $(this).val(Math.max(Math.min(value, 90), -90));
+      }
         
-        if ((value !== '') && (value.indexOf('.') === -1)) {
-            
-            $(this).val(Math.max(Math.min(value, 90), -90));
-        }
-        
-        })
+    })
   });
 
   function setupTableGrid($targetContainer)
@@ -533,16 +531,29 @@
     // Setups add grid. 
     $targetContainer.registerAddRow($('.row-template'), $('.add-row'));
     $targetContainer.on('row-added', function (e, $row){
+      
       let rowProductText = $("#addToTableProduct").attr('data-pProductText'),
-          rowProductPrice = $("#addToTableProduct").attr('data-pProductPrice'),
-          rowProductPriceRaw = $("#addToTableProduct").attr('data-pProductPriceRaw'),
-          rowId = $("#addToTableProduct").attr('data-pId'),
-          rowPromo = $("#addToTableProduct").attr('data-pPromo'),
-          rowPromoId = $("#addToTableProduct").attr('data-pPromoId'),
-          // rowProductType = $("#addToTableProduct").attr('data-pProductType') ?? "PO",
-          qty = 1,
-          // remark = $('#uiModalInstance').find('#productRemark').val(),
-          tprice = qty*rowProductPrice;
+        rowProductPrice = $("#addToTableProduct").attr('data-pProductPrice'),
+        rowProductPriceRaw = $("#addToTableProduct").attr('data-pProductPriceRaw'),
+        rowId = $("#addToTableProduct").attr('data-pId'),
+        rowPromo = $("#addToTableProduct").attr('data-pPromo'),
+        rowPromoId = $("#addToTableProduct").attr('data-pPromoId'),
+        // rowProductType = $("#addToTableProduct").attr('data-pProductType') ?? "PO",
+        qty = 1,
+        // remark = $('#uiModalInstance').find('#productRemark').val(),
+        tprice = qty*rowProductPrice;
+        
+      let curPrdk = $row.find('[name^=dtl][name$="[odproductid]"]').val();
+      let gridRow = $('#detailOrder').find('[id^=dtl][id$="[odproducttext]"]').closest('tr');
+
+      gridRow.each(function(){
+        let prodk = $(this).find('[name^=dtl][name$="[odproductid]"]').val();
+        let typek = $(this).find('[name^=dtl][name$="[odtype]"]').val();
+        if(typek === 'PO' && prodk == rowId){
+          //rm row
+          $row.find('[name^=dtl][name$="[odshowcaseid]"]').closest('tr').remove();
+        }
+      });
 
       let promoTeks = '';
       if(rowPromo){
@@ -561,11 +572,11 @@
       $row.find('[name^=dtl][name$="[odpriceraw]"]').val(rowProductPriceRaw);
 
       // $row.find('[id^=dtl][id$="[odtype]"]').html(rowProductType);
-      // $row.find('[name^=dtl][name$="[odtype]"]').val(rowProductType);
+      $row.find('[name^=dtl][name$="[odtype]"]').val('READYSTOCK');
       $row.find('[name^=dtl][name$="[odshowcaseid]"]').val("");
 
       window.setTimeout(() => {
-        selectOrderReady($row);
+        selectOrderReady($row, $targetContainer);
         caclculatedOrder()        
       }, 0);
     })
@@ -624,7 +635,7 @@
       caclculatedOrder();
     })
     .on('row-delivering', function (e, $row){
-      selectOrderReady($row);
+      selectOrderReady($row, $targetContainer);
     });
   }
   
@@ -639,7 +650,7 @@
     $('[name="orderprice"]').val(totalPrice);
   }
 
-  function selectOrderReady($row){
+  function selectOrderReady($row, $targetContainer){
     let productId = $row.find('[name^=dtl][name$="[odproductid]"]').val(),
         productType = $row.find('[name^=dtl][name$="[odtype]"]');
 
@@ -669,6 +680,14 @@
               
               let rqt = $row.find('[name^=dtl][name$="[odqty]"]');
               rqt.attr('max', stock) 
+              
+              let gridRow = $('#detailOrder').find('[id^=dtl][id$="[odproducttext]"]').closest('tr');
+              gridRow.each(function(){
+                let showcase = $(this).find('[name^=dtl][name$="[odshowcaseid]"]').val();
+                if(showcase == selected){
+                  $row.find('[name^=dtl][name$="[odshowcaseid]"]').closest('tr').remove();
+                }
+              });
 
               $row.find('[name^=dtl][name$="[odshowcaseid]"]').val(selected);
               $row.find('[id^=dtl][id$="[odshowcase]"]').html('Kd. Produksi:' + code);
