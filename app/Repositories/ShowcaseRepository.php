@@ -21,7 +21,7 @@ class ShowcaseRepository
       'ps.qty as showcaseqty',
       DB::raw("to_char(showcasedate, 'DD-MM-YYYY') as showcasedate"),
       DB::raw("to_char(showcaseexpdate, 'DD-MM-YYYY') as showcaseexpdate"),
-      DB::raw("case when showcaseexpiredat is not null then 'Kadaluarsa' when showcaseexpiredat is null and ps.qty > 1  then 'ReadyStock' when showcaseexpiredat is null and ps.qty is null then 'Habis' end as status"),
+      DB::raw("case when showcaseexpiredat is not null then 'Kadaluarsa' when showcaseexpiredat is null and ps.qty > 0  then 'ReadyStock' when showcaseexpiredat is null and ps.qty is null then 'Habis' end as status"),
       DB::raw($perms['save']),
       DB::raw($perms['delete']));
     
@@ -45,9 +45,9 @@ class ShowcaseRepository
     if (!empty($filter->filterStatus)){
       // if (empty($filterText)) continue;
       $trimmedFilter= trim($filter->filterStatus);
-      $fText;
+      $fText = null;
       if($trimmedFilter == 'ReadyStock'){
-        $fText = 'showcaseexpiredat is null and ps.qty > 1';
+        $fText = 'showcaseexpiredat is null and ps.qty > 0';
       } else if ( $trimmedFilter == 'Kadaluarsa'){
         $fText = 'showcaseexpiredat is not null';
       } else if($trimmedFilter == 'Habis'){

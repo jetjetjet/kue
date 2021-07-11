@@ -43,7 +43,7 @@
         <div class="widget-content widget-content-area">
           <div class="text-center">
             <span class="profile-picture">
-              <img class="editable img-fluid" alt=" Avatar" id="avatar" src="{{ '/kincaycake' . $data->productimg }}">
+              <img class="editable img-fluid" alt=" Avatar" id="avatar" src="{{ url('/storage/images/products/thumbnail')}}/{{ $data->productimg }}">
             </span>
           </div>
           <div class="col-12 my-3">
@@ -252,7 +252,7 @@
 
     $('#productsearch').on('select2:select', function (e) {
       let data = e.params.data;
-      $('#avatar').attr('src', '/kincaycake' + data.img)
+      $('#avatar').attr('src', "{{ url('/storage/images/products/thumbnail') }}/" + data.img)
       $('#prodName').val(data.productname)
       $('#prodPrice').val(formatter.format(data.price))
       $('#productsearch').attr('data-has-changed', '1');

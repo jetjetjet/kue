@@ -73,9 +73,9 @@ class SettingController extends Controller
 		}
 
 		if($inputs['settingkey'] == 'logoApp'){
-			$path = '\public\images';
+			$path = '\images\\';
 			$file = Helpers::prepareFile($inputs, $path);
-			$inputs['settingvalue'] = '\images\\' . $file->newName;
+			$inputs['settingvalue'] = '\storage\images\\' . $file->newName;
 		}
 		// dd($inputs);
 		$validator = validator::make($inputs, $rules);
@@ -117,9 +117,7 @@ class SettingController extends Controller
 		$rules = array(
 			'NamaApp' => 'required',
 			'Alamat' => 'required',
-			'KodeInvoice' => 'required',
-			'HeaderStruk' => 'required',
-			'FooterStruk' => 'required', 
+			'KodeInvoice' => 'required', 
 			'HeaderStrukKasir' => 'required',
 			'FooterStrukKasir' => 'required', 
 			'IpPrinter' => 'required',
@@ -128,7 +126,7 @@ class SettingController extends Controller
 		);
 
 		$inputs = $request->all();
-		$inputs['logoApp'] = Helpers::prepareFile($inputs, '\public\images');
+		$inputs['logoApp'] = Helpers::prepareFile($inputs, '/images//');
 		$inputs['PasswordLaci'] = Hash::make($inputs['PasswordLaci']);
 		$validator = validator::make($inputs, $rules);
 
