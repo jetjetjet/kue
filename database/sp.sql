@@ -98,7 +98,8 @@ create or replace function report_transaction
 	p_startdate timestamp,
   p_enddate timestamp,
   p_in varchar,
-  p_out int
+  p_out int,
+  p_userid int
 )
 returns table(
   id bigint, 
@@ -141,6 +142,7 @@ begin
           and orderactive = '1'
           and orderstatus = 'DRAFT'
           and orderdate between p_startdate and p_enddate
+          and case when p_userid is not null then u1.id = p_userid else true end
           union all 
           select odp.id, orderdate, orderdp, 'DP', case when orderstatus = 'VOIDED' then 'DP (Refund)' else 'DP' end, udp.username 
           from orders odp
@@ -149,6 +151,7 @@ begin
           where orderdp is not null
           and orderactive = '1'
           and orderdate between p_startdate and p_enddate
+          and case when p_userid is not null then udp.id = p_userid else true end
           union all 
           select ol.id, orderpaidat, orderprice , 'PAID', 'Lunas', ul.username 
           from orders ol
@@ -159,6 +162,7 @@ begin
           and orderstatus = 'PAID'
           and ordercompleteddate is null
           and orderpaidat between p_startdate and p_enddate
+          and case when p_userid is not null then ul.id = p_userid else true end
           union all
           select oc.id, ordercompleteddate ,
             case when orderremainingpaid is not null then orderremainingpaid + coalesce(orderdiscountprice, 0)
@@ -171,6 +175,7 @@ begin
           and orderactive = '1'
           and orderstatus = 'COMPLETED'
           and ordercompleteddate between p_startdate and p_enddate
+          and case when p_userid is not null then uv.id = p_userid else true end
           union all
           select ov.id, 
             ordervoidedat, 
@@ -183,6 +188,7 @@ begin
           	on uo.id = ov.ordervoidedby 
           where ordervoid is not null 
           and ordervoidedat between p_startdate and p_enddate
+          and case when p_userid is not null then uo.id = p_userid else true end
         ) a
         on a.id = o2.id
       where 1=1
@@ -209,6 +215,7 @@ begin
       where expenseactive = '1'
       and expenseexecutedat between p_startdate and p_enddate
       and 1 = p_out
+      and case when p_userid is not null then ue.id = p_userid else true end
     ) aa
     order by aa.orderdate;
 end;
