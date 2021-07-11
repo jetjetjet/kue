@@ -35,7 +35,7 @@
           <select id='userid' class="form-control" name="userid">
             <option value = "">Semua</option>
             @foreach($user as $u)
-              <option value="{{$u->id}}" {{ request('user') == $u->id ? 'selected' : ''}}>{{$u->username}}</option>
+              <option value="{{$u->id}}" {{ request('userid') == $u->id ? 'selected' : ''}}>{{$u->username}}</option>
             @endforeach
           </select>
         </div> 
