@@ -2,10 +2,19 @@
 namespace App\Repositories;
 
 use App\Models\Product;
+use App\Models\User;
 use DB;
 
 class ReportRepository
 {
+
+  public static function getName()
+  {
+    return User::where('useractive', '1')
+      ->select('id', 'username')
+      ->get();
+  }
+
   public static function grid($filter)
   { 
     $temp = array();
@@ -14,7 +23,8 @@ class ReportRepository
         $filter['startdate'] ?? null,
         $filter['enddate'] ?? null,
         $filter['status'] ?? null,
-        intval($filter['expense']) ?? null);
+        intval($filter['expense']) ?? null,
+        $filter['userid'] ?? null);
       $paramsQuery = implode(',', array_map(function ($val){ return '?'; }, $params));
       $rows = DB::select('select * from report_transaction(' . $paramsQuery . ')', $params);
       $sumDisc = 0;
