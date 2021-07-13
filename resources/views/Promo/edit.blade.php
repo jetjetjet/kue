@@ -51,7 +51,7 @@
               </div>
               <div class="col-md-6 mb-2">
                 <label for="promodiscount">Potongan Promo</label>
-                <input type="number" name="promodiscount" id="promodiscount" value="{{ old('promodiscount', $data->promodiscount) }}" class="form-control" {{ !$canEdit ? 'readonly' : '' }} required>
+                <input type="number" name="promodiscount" id="promodiscount" value="{{ old('promodiscount', $data->promodiscount) }}" class="form-control nominus" {{ !$canEdit ? 'readonly' : '' }} required>
                 <div class="invalid-feedback">
                   Potongan promo harus diisi dan kelipatan dari 500!
                 </div>

@@ -135,6 +135,7 @@ Route::group(array('middleware' => 'auth'), function ()
   Route::post('/showcase/simpan', [ShowcaseController::class, 'save'])->middleware('can:showcase_simpan');
   Route::post('/showcase/hapus/{id}', [ShowcaseController::class, 'deleteById'])->middleware('can:showcase_hapus');
   Route::post('/showcase/expired/{id}', [ShowcaseController::class, 'expiredById'])->middleware('can:showcase_hapus');
+  Route::post('/showcase/update/{id}', [ShowcaseController::class, 'updateById'])->middleware('can:showcase_simpan');
   
   Route::get('/user', [UserController::class, 'index'])->middleware('can:user_lihat');
   Route::get('/user/grid', [UserController::class, 'getLists'])->middleware('can:user_lihat');

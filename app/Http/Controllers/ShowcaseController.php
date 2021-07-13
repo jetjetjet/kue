@@ -96,4 +96,15 @@ class ShowcaseController extends Controller
 
 		return response()->json($results);
 	}
+  public function updateById(Request $request, $id)
+	{
+		$respon = Helpers::$responses;
+    $inputs = $request->all();
+
+		$loginid = Auth::user()->getAuthIdentifier();
+		$results = ShowcaseRepository::updateStock($respon, $id, $inputs, $loginid);
+		AuditTrailRepository::saveAuditTrail($request->path(), $results, 'Update Stock Showcase', $loginid);
+
+		return response()->json($results);
+	}
 }

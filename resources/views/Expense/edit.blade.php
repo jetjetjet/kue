@@ -55,7 +55,7 @@
                     <div class="input-group-prepend">
                       <span class="input-group-text" id="inputGroup-sizing-sm">Rp </span>
                     </div>
-                    <input type="number" name="expenseprice" value="{{ old('expenseprice', $data->expenseprice) }}" class="form-control text-right" id="pricing" placeholder="Jumlah" required {{ isset($data->expenseexecutedat) ? 'readonly' : '' }}>
+                    <input type="number" name="expenseprice" value="{{ old('expenseprice', $data->expenseprice) }}" class="form-control text-right nominus" id="pricing" placeholder="Jumlah" required {{ isset($data->expenseexecutedat) ? 'readonly' : '' }}>
                   </div>
               </div>
               <div class="col-md-12 mb-3">

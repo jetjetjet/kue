@@ -76,7 +76,7 @@
                       <input type="text" id="showcasecode" name="showcasecode" value="{{ $data->showcasecode }}" style="font-weight: bold;" class="form-control" readonly>
                     </div>
                     @endif
-                    @if($data->status=="ReadyStock" || empty($data->status))
+                    @if(empty($data->status))
                       <div class="col-12">
                         <label for="cate">{{ trans('fields.name') }} {{ trans('fields.product') }}</label>
                         <select class="" id="productsearch" name="showcaseproductid">
@@ -97,7 +97,7 @@
                       </div>
                       <div class="col-6 mb-2">
                         <label for="name">{{ trans('fields.qty') }} {{ trans('fields.showcase') }}</label>
-                        <input type="number" id="showcaseqty" name="showcaseqty" value="{{ old('showcaseqty', $data->showcaseqty) }}" class="form-control text-right">
+                        <input type="number" id="showcaseqty" name="showcaseqty" value="{{ old('showcaseqty', $data->showcaseqty) }}" class="form-control text-right nominus">
                       </div>
                       <div class="col-6 mb-2">
                         <label for="showcasedate">{{ trans('fields.date') }} {{ trans('fields.product') }} </label>
@@ -131,13 +131,20 @@
                       </div>
                       <div class="col-6 mb-2">
                         <label for="showcaseexpdate">{{ trans('fields.expDate') }} {{ trans('fields.product') }}</label>
-                        <input type="text" name="showcaseexpdate" value="{{ old('showcaseexpdate', $data->showcaseexpdate) }}" class="form-control" readonly {{ $data->showcaseexpdate ? "" : "disabled" }} >
+                        @if($data->status=="ReadyStock")
+                        <input type="date" name="showcaseexpdate" id="showcaseexpdate" value="{{ old('showcaseexpdate', $data->showcaseexpdate) }}" class="form-control flatpickr flatpickr-input active" >
+                        @else
+                        <input type="text" name="showcaseexpdate" value="{{ old('showcaseexpdate', $data->showcaseexpdate) }}" class="form-control" disabled >
+                        @endif
                       </div>
                     @endif
                   </div>
                   <div class="float-left mt-2">
                     @if($data->status =="ReadyStock" && isset($data->id) && Perm::can(['showcase_kadaluarsa']))
                       <a type="button" id="expBtn" class="btn btn-danger mt-2">{{ trans('fields.expired') }}</a>
+                    @endif
+                    @if($data->status=="ReadyStock" || $data->status=="Habis")
+                    <button type="button"class="btn btn-primary mt-2" data-toggle="modal" data-target="#upBtn">Update Stok</button>
                     @endif
                   </div>
                   <div class="float-right mt-2">
@@ -147,6 +154,36 @@
                     @endif
                   </div>
                 </form>
+              </div>
+              <div class="modal fade" id="upBtn" tabindex="-1" role="dialog" aria-labelledby="updateStock" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Update Stock</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="col-md-12">
+                        <label for="name">Qty Lama</label>
+                        <input type="number" id="showcaseqty" name="showcaseqty" value="{{ old('showcaseqty', $data->showcaseqty) }}" class="form-control text-right" readonly>
+                      </div>
+                      <div class="col-md-12">
+                        <label for="name">Stok Sekarang</label>
+                        <input type="number" id="stock" name="stock" value="{{ old('stock', $data->stock) }}" class="form-control text-right" readonly>
+                      </div>
+                      <div class="col-md-12">
+                        <label for="name">Update Stock</label>
+                        <input type="number" id="updateStock" name="updateStock" class="form-control text-right">
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-danger" data-dismiss="modal">Batal</button>
+                      <button type="button" id="ubhBtn" class="btn btn-primary">Ubah</button>
+                    </div>
+                  </div>
+                </div>
               </div>
               @if(isset($data->id))
               <hr/>
@@ -171,6 +208,7 @@
                         <div class="col">
                           <strong>{{ trans('fields.modifiedBy') }}</strong>
                           <p><strong>{{ $data->showcasemodifiedby }}</strong> - {{ $data->showcasemodifiedat }}</p>
+                          <p class="{{empty($data->showcaseremark) ? 'd-none':''}}"><strong>{{ trans('fields.stockChange')}}</strong> = {{ $data->showcaseremark }}</p>
                         </div>
                         @endif
                         @if(isset($data->showcasesoldat))
@@ -218,6 +256,35 @@
         type: "post",
         data: {
           expiredqty: qty
+        },
+        success: function(result){
+          let msg=result.messages[0]
+          if(result.status == "success"){
+            toast({
+              type: 'success',
+              title: msg
+            })
+            location.reload()
+          } else{
+            toast({
+              type: 'error',
+              title: msg
+            })
+          }
+        },
+        error: function(error){
+          console.log(error)
+        }
+      })
+    })
+
+    $("#ubhBtn").click(function(){
+      let updateStock=$("#updateStock").val()
+      $.ajax({
+        url: "{{url('showcase/update')}}"+"/"+"{{$data->id}}",
+        type: "post",
+        data: {
+          updateStock: updateStock
         },
         success: function(result){
           let msg=result.messages[0]

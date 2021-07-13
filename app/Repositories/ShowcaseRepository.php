@@ -104,6 +104,8 @@ class ShowcaseRepository
           'productprice',
           'productimg',
           'showcaseqty',
+          'ps.qty as stock',
+          'showcaseremark',
           DB::raw("to_char(showcasedate, 'dd-mm-yyyy') as showcasedate"),
           DB::raw("to_char(showcaseexpdate, 'dd-mm-yyyy') as showcaseexpdate"),
           'showcasestatus',
@@ -227,6 +229,32 @@ class ShowcaseRepository
     return $respon;
   }
 
+  public static function updateStock($respon, $id, $inputs, $loginid){
+    $data = Showcase::where('showcaseactive', '1')
+    ->where('id', $id);
+    $get=$data->first();
+    
+    $cekDelete = false;
+
+    if ($data != null){
+      $data->update([
+        'showcasemodifiedby' => $loginid,
+        'showcasemodifiedat' => now()->toDateTimeString(),
+        'showcaseqty' => $inputs["updateStock"] + $get["showcaseqty"],
+        'showcaseremark' => $inputs["updateStock"]
+      ]);
+      
+      $cekDelete = true;
+    }
+
+    $respon['status'] = $data != null && $cekDelete ? 'success': 'error';
+    $data != null && $cekDelete
+      ? array_push($respon['messages'], trans('fields.showcase'). ' Berhasil Diupdate.')
+      : array_push($respon['messages'], ' Error Kesalahan.');
+    
+    return $respon;
+  }
+
   public static function getFields($model)
   {
     $model->id = null;
@@ -249,6 +277,8 @@ class ShowcaseRepository
     $model->showcaseexpiredat= null;
     $model->showcaseexpiredby= null;
     $model->status= null;
+    $model->showcaseremark= null;
+    $model->stock= null;
 
     return $model;
   }

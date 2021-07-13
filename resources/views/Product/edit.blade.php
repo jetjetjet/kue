@@ -72,7 +72,7 @@ box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
                   <div class="input-group-prepend">
                     <span class="input-group-text" id="inputGroup-sizing-sm">Rp </span>
                   </div>
-                  <input name="productprice" type="number" min="0" value="{{ old('productprice', $data->productprice) }}" class="form-control text-right" id="pricing" placeholder="Harga" required>
+                  <input name="productprice" type="number" min="0" value="{{ old('productprice', $data->productprice) }}" class="form-control text-right nominus" id="pricing" placeholder="Harga" required>
                 </div>
               </div>
               <div class="col-md-6 mb-2">

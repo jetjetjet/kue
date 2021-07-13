@@ -52,4 +52,5 @@ return [
   'view' => 'Lihat',
   'void' => 'Batal',
   'executedBy' => 'Diselesaikan oleh: ',
+  'stockChange' => 'Perubahan Stok',
 ];

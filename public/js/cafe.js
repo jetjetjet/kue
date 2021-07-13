@@ -464,9 +464,8 @@ $.fn.registerAddRow = function ($rowTemplateContainer, $addRow, rowAddedFn, vali
     }
   });
 }
-$('[type=number]').keydown( function(e) {
-  console.log(e)
-  if(e.keyCode == 189 || e.keyCode == 69 || e.keyCode ==109 ) {
+$('.nominus').keydown( function(e) {
+  if(e.keyCode == 189 || e.keyCode == 69 || e.keyCode ==109 || e.keyCode == 38 || e.keyCode == 40 ) {
       return false;
     }
   })
