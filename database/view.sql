@@ -17,7 +17,7 @@ create or replace VIEW product_stock AS
 				ON s.id = odshowcaseid
 			WHERE odactive = '1'
 			AND orderactive = '1'
-			AND orderpaid = '1'
+			AND orderstatus = 'COMPLETED' OR orderstatus = 'DRAFT' 
 			AND odtype = 'READYSTOCK'
 			UNION ALL 
 			SELECT showcaseproductid,

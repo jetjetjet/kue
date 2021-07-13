@@ -18,6 +18,7 @@ class ReportController extends Controller
 	{
 		$inputs = $request->all();
 		$data = new \stdClass;
+    $user = ReportRepository::getName();
 
 		if(isset($inputs['startdate'])){
 			$explode = explode(" to ", $inputs['startdate']);
@@ -42,7 +43,7 @@ class ReportController extends Controller
 		}else{
 			$data = [];
 		}
-		return view('Report.index')->with('data', $data);
+		return view('Report.index')->with('data', $data)->with('user', $user);
 	}
 
 	public function productReport(Request $request)

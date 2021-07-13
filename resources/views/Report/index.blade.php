@@ -15,11 +15,11 @@
     <div>
     <form id="formsub" class="needs-validation" method="get" novalidate action="{{ url('/laporan/') }}">
       <div class="form-row">
-        <div class="col-md-4 mb-1">
+        <div class="col-md-6 mb-1">
           <h4>Periode</h4>
           <input id="start" value="{{request('startdate')}}" name="startdate" class="form-control flatpickr flatpickr-input date" required>
         </div>
-        <div class="col-md-4 mb-1">
+        <div class="col-md-6 mb-1">
           <h4>Status Pemasukan</h4>
           <select id='status' class="form-control" name="status">
             <option value="">Selesai</option>
@@ -30,7 +30,16 @@
             <option value="VOIDED" {{ request('status') == 'VOIDED' ? 'selected' : ''}}>Dibatalkan</option>
           </select>
         </div>
-        <div class="col-md-4 mb-1">
+        <div class="col-md-6 mb-1">
+          <h4>Karyawan</h4>
+          <select id='userid' class="form-control" name="userid">
+            <option value = "">Semua</option>
+            @foreach($user as $u)
+              <option value="{{$u->id}}" {{ request('user') == $u->id ? 'selected' : ''}}>{{$u->username}}</option>
+            @endforeach
+          </select>
+        </div> 
+        <div class="col-md-6 mb-1">
           <h4>Tampilkan Pengeluaran</h4>
           <select id='status' class="form-control" name="expense">
             <option value="1">Ya</option>

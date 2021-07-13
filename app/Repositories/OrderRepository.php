@@ -227,6 +227,7 @@ class OrderRepository
     } else {
       $respon['data'] = self::dbOrderHeader($data);
     }
+    
     return $respon;
   }
 
@@ -240,6 +241,8 @@ class OrderRepository
         'spproductid',
         'promodiscount'
       );
+    
+    $status= Order::where('id', $idOrder)->select('orderstatus')->first();
 
     return OrderDetail::join('products',function($q){
       $q->whereRaw("productactive = '1'")
@@ -251,12 +254,18 @@ class OrderRepository
         ->leftJoin('showcases as sc', function($join){
           $join->on('sc.id', 'odshowcaseid');
         })
+        ->leftJoin('product_stock as ps', function($join){
+          $join->on('ps.productid', 'odproductid')
+            ->on('stockshowcaseid', 'odshowcaseid');
+        })
         ->where('odactive', '1')
         ->where('odorderid', $idOrder)
         ->select(
+          'odshowcaseid',
           'orderdetail.id',
           'showcasecode as odshowcasecode',
           'odproductid',
+          DB::raw("case when '" . $status->orderstatus . "' = 'DRAFT' then ps.qty else ps.qty + odqty end as stockqty" ),
           DB::raw("productname as odproducttext"),
           'odqty',
           'odtype',
@@ -833,11 +842,18 @@ class OrderRepository
     return $respon;
   }
 
-  public static function dashboardCount()
+  public static function dashboardCount($filterOd, $filterEx)
   {
     $qOrder = Order::where('orderactive', '1')
-      ->whereNotIn('orderstatus', Array('DRAFT', 'VOIDED'))
-      ->count();
+      ->whereNotIn('orderstatus', Array('DRAFT', 'VOIDED'));
+      if($filterOd){
+        foreach($filterOd as $f)
+        {
+          $qOrder = $qOrder->whereRaw($f);
+        }
+      }
+      $qOrder = $qOrder->count();
+
 
     $qDraft = Order::where('orderactive', '1')
       ->where('orderstatus', 'DRAFT')
@@ -845,8 +861,16 @@ class OrderRepository
     
     $qExpense = DB::table('expenses as e')
       ->where('expenseactive', '1')
-      ->whereNotNull('expenseexecutedat')
-      ->count();
+      ->whereNotNull('expenseexecutedat');
+      if($filterEx){
+        foreach($filterEx as $f)
+        {
+          $qExpense = $qExpense->whereRaw($f);
+        }
+      }
+      $qExpense = $qExpense->count();
+
+
     
     $qPO = DB::table('orderdetail as od')
       ->join('orders as o', 'o.id', 'od.odorderid')

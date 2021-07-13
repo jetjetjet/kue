@@ -17,6 +17,10 @@ class Helpers
     try {
       $file = isset($inputs['file']) ? $inputs['file'] : null;
       if($file != null){
+        $path = storage_path('app/public/') . $subFolder;
+        if (!File::isDirectory($path)) {
+          File::makeDirectory($path);
+        }
         $file->path = storage_path('app/public/') . $subFolder;
         $file->newName = time()."_".$file->getClientOriginalName();
         $file->originalName = explode('.',$file->getClientOriginalName())[0];
@@ -33,6 +37,7 @@ class Helpers
         $img->resize(160, 160)->save($tumbPath . $file->newName);
       }
     } catch (Exception $e){
+      dd($e);
         // supress
     }
     return $file;

@@ -95,11 +95,11 @@ class Cetak
     // dd($data);
     try{
       $profile = CapabilityProfile::load("simple");
-      // $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
+      $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
 
       // // virtualprinter
       // $connector = null;
-      $connector = new WindowsPrintConnector("test2");
+      // $connector = new WindowsPrintConnector("test2");
 
       $printer = new Printer($connector, $profile);
       $printer->setJustification(Printer::JUSTIFY_CENTER);
@@ -174,7 +174,7 @@ class Cetak
       $printer->text(self::getAsStringkasirtotal("Total ", number_format($data->price), "Rp "));
       if($data->dp && $data->status != 'komplit'){
          $printer->text(self::getAsStringkasirtotal("Uang Muka" , number_format($data->dp), "Rp "));
-         $printer->text(self::getAsStringkasirtotal("Sisa Bayar" , number_format($data->repaid), "Rp "));       
+         $printer->text(self::getAsStringkasirtotal("Sisa Bayar" , number_format($data->price - $data->dp), "Rp "));       
       }else{
         $gTotal = $data->price;
         if($data->discountprice){
@@ -232,9 +232,9 @@ class Cetak
   {
     try{
       $profile = CapabilityProfile::load("simple");
-      // $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
-      $connector = null;
-      $connector = new WindowsPrintConnector("test2");
+      $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
+      // $connector = null;
+      // $connector = new WindowsPrintConnector("test2");
       $printer = new Printer($connector, $profile);
       $printer -> pulse();
       $printer->close();
@@ -251,9 +251,9 @@ class Cetak
   {
     try{
       $profile = CapabilityProfile::load("simple");
-      // $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
-      $connector = null;
-      $connector = new WindowsPrintConnector("test2");
+      $connector = new NetworkPrintConnector(self::getSetting()['IpPrinter'], 9100, 2);
+      // $connector = null;
+      // $connector = new WindowsPrintConnector("test2");
       $printer = new Printer($connector, $profile);
       $printer->close();
       $respon['status'] = 'success';

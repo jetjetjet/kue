@@ -32,33 +32,21 @@
 	</section>
 	<section class="info-tiles mt-5">
 		<div class="tile is-ancestor has-text-centered">
-			<a href="{{ url('/') }}/order/index?status=" class="tile is-parent">
-				<article class="tile is-child box">
-					<p class="title">{{ $data->count['orderCount'] }}</p>
-					<p class="subtitle">{{ trans('fields.totalTransaction') }}</p>
-				</article>
-			</a>
 			<a href="{{ url('/') }}/order/index?status=DRAFT" class="tile is-parent">
 				<article class="tile is-child box">
-					<p class="title">{{ $data->count['orderDraft'] }}</p>
+					<p class="title" id="draf"></p>
 					<p class="subtitle">{{ trans('fields.totalDraft') }}</p>
-				</article>
-			</a>
-			<a href="{{ url('/') }}/pengeluaran" class="tile is-parent">
-				<article class="tile is-child box">
-					<p class="title">{{ $data->count['expenseCount'] }}</p>
-					<p class="subtitle">Total Pengeluaran</p>
 				</article>
 			</a>
 			<a href="{{ url('/') }}/order/preorder" class="tile is-parent">
 				<article class="tile is-child box">
-					<p class="title">{{ $data->count['preOrderSum'] }}</p>
+					<p class="title" id="preorder"></p>
 					<p class="subtitle">{{ trans('fields.preOrder') }}</p>
 				</article>
 			</a>
 			<a href="{{ url('/') }}/showcase" class="tile is-parent">
 				<article class="tile is-child box">
-					<p class="title">{{ $data->count['stockSum'] }}</p>
+					<p class="title" id="readystock"></p>
 					<p class="subtitle">{{ trans('fields.readyStock') }}</p>
 				</article>
 			</a>
@@ -121,37 +109,55 @@
 			</div>
 		</div>
 		@endif
+    <div class="col-12">    
+      <div class="panel">
+        <div class="panel-heading">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for=""> Bulan </label>
+                <select id="bln" class="form-control filter">
+                  @foreach($data->bln as $bln)
+                    <option value="{{$bln->val}}" {{$bln->skrg ? 'Selected' : ''}}>{{$bln->bln}}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+              <label for=""> Tahun </label>
+                <select id="thn" class="form-control filter">
+                  @foreach($data->thn as $t)
+                    <option value="{{$t}}">{{$t}}</option>
+                  @endforeach
+                </select>
+              </div>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 mb-5">
+      <section class="info-tiles mt-5">
+        <div class="tile is-ancestor has-text-centered">
+          <a href="{{ url('/') }}/order/index?status=" class="tile is-parent">
+            <article class="tile is-child box">
+              <p class="title" id="order"></p>
+              <p class="subtitle">{{ trans('fields.totalTransaction') }}</p>
+            </article>
+          </a>
+          <a href="{{ url('/') }}/pengeluaran" class="tile is-parent">
+            <article class="tile is-child box">
+              <p class="title" id="pengeluaran"></p>
+              <p class="subtitle">Total Pengeluaran</p>
+            </article>
+          </a>
+        </div>
+      </section>
+    </div>
 		<!-- </div> -->
 		@if(Perm::can(['laporan_lihat']))
 		<hr />
-			<div class="col-12">    
-				<div class="panel">
-					<div class="panel-heading">
-						<div class="row">
-							<div class="col-md-6">
-								<div class="form-group">
-									<label for=""> Bulan </label>
-									<select id="bln" class="form-control filter">
-										@foreach($data->bln as $bln)
-											<option value="{{$bln->val}}" {{$bln->skrg ? 'Selected' : ''}}>{{$bln->bln}}</option>
-										@endforeach
-									</select>
-								</div>
-							</div>
-							<div class="col-md-6">
-								<div class="form-group">
-								<label for=""> Tahun </label>
-									<select id="thn" class="form-control filter">
-										@foreach($data->thn as $t)
-											<option value="{{$t}}">{{$t}}</option>
-										@endforeach
-									</select>
-								</div>
-								</div>
-							</div>
-					</div>
-				</div>
-			</div>
 			<div class="col-xl-8 col-lg-8 col-md-12 col-sm-12 col-12 layout-spacing">
 				<div class="widget widget-chart-one">
 						<div class="widget-heading">
@@ -297,6 +303,12 @@
 					'<td><div class="td-content">'+ formatter.format(val.totalorder) +'</div></td></tr>';
 				tbody.append(tr);
 			})
+
+      $('#order').text(data.count.orderCount)
+      $('#draf').text(data.count.orderDraft)
+      $('#pengeluaran').text(data.count.expenseCount)
+      $('#preorder').text(data.count.preOrderSum)
+      $('#readystock').text(data.count.stockSum)
 		}
 	</script>
 @endsection

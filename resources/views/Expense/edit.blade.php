@@ -72,7 +72,7 @@
                     @endif 
                   </div>
                 </form>
-                @if($data->expenseexecutedby == '0' && Perm::can(['pengeluaran_proses']))
+                @if($data->proses == '0' && Perm::can(['pengeluaran_proses']))
                 <form method="post" novalidate action="{{ url('/pengeluaran/proses').'/'.$data->id }}">
                   <input type="hidden" name="_token"  value="{{ csrf_token() }}" />
                   <input type="hidden" name="id" value="{{ old('id', $data->id) }}" />

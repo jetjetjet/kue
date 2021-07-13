@@ -35,6 +35,7 @@ class ExpenseRepository
         'mod.username as expensemodifiedby',
         DB::raw("to_char(expensedate, 'DD-MM-YYYY')as expensedateraw"), 
         'expensedetail', 
+        'expenseexecutedby as proses',
         'expensedate')
         ->first();
   
