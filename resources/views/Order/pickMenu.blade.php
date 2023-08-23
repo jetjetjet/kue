@@ -297,53 +297,55 @@
     </div>
   </div>
   <div class="col-6 xs-col-12">
-    <div class="statbox box" >
-      <div class="widget-content widget-content-area" style="margin-bottom:25px">
-        <form id="orderProductForm" method="post" novalidate action="{{url('/order/save')}}">
-          <div class="orderCust" style="padding-bottom:5px">
-            <input type="hidden" id="id" name="id" value="{{ old('id', $data->id) }}" />
-            <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
-            @if(isset($data->id))
-              <div class="form-group row divMeja">
-                <div class="col-sm-12">
-                  <p><h4>{{ trans('fields.invoiceNo') }}: <b>{{ old('orderinvoice', $data->orderinvoice) }}</b></h4></p>
+    <div class=" position-fixed" style="width: 47%;" >
+      <div class="statbox box">
+        <div class="widget-content widget-content-area" style="margin-bottom:25px">
+          <form id="orderProductForm" method="post" novalidate action="{{url('/order/save')}}">
+            <div class="orderCust" style="padding-bottom:5px">
+              <input type="hidden" id="id" name="id" value="{{ old('id', $data->id) }}" />
+              <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" />
+              @if(isset($data->id))
+                <div class="form-group row divMeja">
+                  <div class="col-sm-12">
+                    <p><h4>{{ trans('fields.invoiceNo') }}: <b>{{ old('orderinvoice', $data->orderinvoice) }}</b></h4></p>
+                  </div>
                 </div>
+              @endif
+            </div>
+            <div class="form-row">
+              <table id="detailOrder" class="table table-hover dtl-order">
+                <thead>
+                  <tr>
+                    <th width="30%">{{ trans('fields.product') }}</th>
+                    <th>Tipe Pesananan</th>
+                    <th>Harga</th>
+                    <th width="20%" class="text-center">qty</th>
+                    <th>Total</th>
+                    <th>Cttn</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                @foreach ($subs as $sub)
+                  @include('Order.subOrder', Array('rowIndex' => $loop->index))
+                @endforeach
+                </tbody>
+              </table>
+            </div>
+            <div class="">
+              <div class="float-left">
+                <h2>Total =</h2>
               </div>
-            @endif
-          </div>
-          <div class="form-row">
-            <table id="detailOrder" class="table table-hover dtl-order">
-              <thead>
-                <tr>
-                  <th width="30%">{{ trans('fields.product') }}</th>
-                  <th>Tipe Pesananan</th>
-                  <th>Harga</th>
-                  <th width="20%" class="text-center">qty</th>
-                  <th>Total</th>
-                  <th>Cttn</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-              @foreach ($subs as $sub)
-                @include('Order.subOrder', Array('rowIndex' => $loop->index))
-              @endforeach
-              </tbody>
-            </table>
-          </div>
-          <div class="">
-            <div class="float-left">
-              <h2>Total =</h2>
+              <div class="float-right">
+                <h2 id="idTotal">0</h2>
+                <input type="hidden" name="orderprice" value="{{ old('orderprice', $data->orderprice) }}" required>
+                <button type="button" id="addToTableProduct" class="btn btn-sm btn-success d-none add-row" >
+                  <span class="fa fa-plus fa-fw"></span>
+                </button>
+              </div>
             </div>
-            <div class="float-right">
-              <h2 id="idTotal">0</h2>
-              <input type="hidden" name="orderprice" value="{{ old('orderprice', $data->orderprice) }}" required>
-              <button type="button" id="addToTableProduct" class="btn btn-sm btn-success d-none add-row" >
-                <span class="fa fa-plus fa-fw"></span>
-              </button>
-            </div>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
    </div>
   </div>
